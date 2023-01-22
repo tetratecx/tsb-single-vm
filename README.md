@@ -74,7 +74,7 @@ east-west gateways.
 Although ingress and eastwest gateways can be combined into one single gateway, we have chosen
 top deploy seperate instances for the sake of clarity, seperation of concerns and security.
 
-**DOC REF** More information on the different gateway types supporte by TSB can be found
+**DOC REF** More information on the different gateway types supported by TSB can be found
 [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/howto/gateway)
 
 ### TSB tenancy design
