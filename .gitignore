@@ -1,0 +1,9 @@
+# Temporary setup resources
+config/mgmt-cluster/clusteroperators.yaml
+config/mgmt-cluster/*.pem
+config/active-cluster/cluster-service-account.jwk
+config/active-cluster/controlplane-secrets.yaml
+config/active-cluster/controlplane.yaml
+config/standby-cluster/cluster-service-account.jwk
+config/standby-cluster/controlplane-secrets.yaml
+config/standby-cluster/controlplane.yaml

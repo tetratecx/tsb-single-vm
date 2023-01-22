@@ -1,0 +1,46 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: tier1
+  group: tier1-gateway
+  name: gw-tier1-abc
+spec:
+  displayName: AppABC Tier1GW
+  workloadSelector:
+    namespace: gateway-tier1
+    labels:
+      app: gw-tier1-abc
+  externalServers:
+  - name: abc
+    hostname: abc.tetrate.prod
+    port: 80
+    clusters:
+    - name: active-cluster
+    - name: standby-cluster
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abc
+  group: abc-gateway
+  name: gw-ingress-abc
+spec:
+  displayName: AppABC IngressGW
+  workloadSelector:
+    namespace: gateway-abc
+    labels:
+      app: gw-ingress-abc
+  http:
+  - name: abc
+    hostname: abc.tetrate.prod
+    port: 80
+    routing:
+      rules:
+      - route:
+          host: ns-a/app-a.ns-a.svc.cluster.local
+          port: 80

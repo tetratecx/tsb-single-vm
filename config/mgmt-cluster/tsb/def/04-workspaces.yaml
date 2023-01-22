@@ -1,0 +1,27 @@
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: def
+spec:
+  displayName: Application_DEF
+  namespaceSelector:
+    names:
+      - "*/gateway-def"
+      - "*/ns-d"
+      - "*/ns-e"
+      - "*/ns-f"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: tier1
+spec:
+  displayName: Shared_Infra_Tier1
+  namespaceSelector:
+    names:
+      - "demo/gateway-tier1"

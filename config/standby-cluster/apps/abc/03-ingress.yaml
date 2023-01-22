@@ -1,0 +1,16 @@
+---
+apiVersion: install.tetrate.io/v1alpha1
+kind: IngressGateway
+metadata:
+  name: gw-ingress-abc
+  namespace: gateway-abc
+spec:
+  eastWestOnly: false
+---
+apiVersion: install.tetrate.io/v1alpha1
+kind: IngressGateway
+metadata:
+  name: gw-eastwest-abc
+  namespace: gateway-abc
+spec:
+  eastWestOnly: true

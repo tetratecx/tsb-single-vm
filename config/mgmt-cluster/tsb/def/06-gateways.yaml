@@ -1,0 +1,69 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: tier1
+  group: tier1-gateway
+  name: gw-tier1-def
+spec:
+  displayName: AppDEF Tier1GW
+  workloadSelector:
+    namespace: gateway-tier1
+    labels:
+      app: gw-tier1-def
+  externalServers:
+  - name: def
+    hostname: def.tetrate.prod
+    port: 80
+    clusters:
+    - name: active-cluster
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: def
+  group: def-gateway
+  name: gw-ingress-def
+spec:
+  displayName: AppDEF IngressGW
+  workloadSelector:
+    namespace: gateway-def
+    labels:
+      app: gw-ingress-def
+  http:
+  - name: def
+    hostname: def.tetrate.prod
+    port: 80
+    routing:
+      rules:
+      - route:
+          host: ns-d/app-d.ns-d.svc.cluster.local
+          port: 80
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: def
+  group: def-gateway
+  name: gw-ingress-f
+spec:
+  displayName: AppF IngressGW
+  workloadSelector:
+    namespace: gateway-def
+    labels:
+      app: gw-ingress-def
+  http:
+  - name: f
+    hostname: app-f.ns-f
+    port: 80
+    routing:
+      rules:
+      - route:
+          host: ns-f/app-f.ns-f.svc.cluster.local
+          port: 80

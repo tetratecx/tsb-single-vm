@@ -1,0 +1,65 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abc
+  name: abc-gateway
+spec:
+  displayName: AppABC_Gateway
+  namespaceSelector:
+    names:
+      - "*/gateway-abc"
+      - "*/ns-a"
+      - "*/ns-b"
+      - "*/ns-c"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+Metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abc
+  name: abc-traffic
+spec:
+  displayName: AppABC_Traffic
+  namespaceSelector:
+    names:
+      - "*/gateway-abc"
+      - "*/ns-a"
+      - "*/ns-b"
+      - "*/ns-c"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+Metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abc
+  name: abc-security
+spec:
+  displayName: AppABC_Security
+  namespaceSelector:
+    names:
+      - "*/gateway-abc"
+      - "*/ns-a"
+      - "*/ns-b"
+      - "*/ns-c"
+  configMode: BRIDGED
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: tier1
+  name: tier1-gateway
+spec:
+  displayName: Tier1_Gateway
+  namespaceSelector:
+    names:
+      - "demo/gateway-tier1"
+  configMode: BRIDGED
