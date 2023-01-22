@@ -80,7 +80,7 @@ top deploy seperate instances for the sake of clarity, seperation of concerns an
 ### TSB tenancy design
 
 The following diagram shows how we configured TSB multi-tenancy concepts like organization,
-tenants, workspaces and groups, which for the foundation of our RBAC system and also play
+tenants, workspaces and groups, which form the foundation of our RBAC system and also play
 an important role in the configuration of traffic control and security.
 
 ![TSB Tenancy](./imgs/POC-TSB-Tenancy.drawio.png "TSB Tenancy")
