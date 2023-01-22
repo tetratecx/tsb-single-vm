@@ -89,6 +89,8 @@ Note that TSB, by leveraging namespace selectors, is able to create an abstracti
 application deployment strategy and therefor provides a mapping to your organizational 
 structure, compared to traditional K8s RBAC approaches.
 
+**DOC REF** More information on our tenancy concepts can be found in the official documentation [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/concepts/security)
+
 
 ## Installation
 
