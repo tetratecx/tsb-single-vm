@@ -36,7 +36,7 @@ function sync_images {
   docker login -u ${TSB_DOCKER_USERNAME} -p ${TSB_DOCKER_PASSWORD} containers.dl.tetrate.io ;
 
   # Sync all tsb images locally (if not yet available)
-  for image in `tctl install image-sync --just-print --raw` ; do
+  for image in `tctl install image-sync --just-print --raw --accept-eula` ; do
     if ! docker image inspect ${image} &>/dev/null ; then
       docker pull ${image} ;
     fi
@@ -47,7 +47,7 @@ function sync_images {
 #   args:
 #     (1) minikube profile name
 function load_images {
-    for image in `tctl install image-sync --just-print --raw` ; do
+    for image in `tctl install image-sync --just-print --raw --accept-eula` ; do
       if ! minikube --profile ${1} image ls | grep ${image} &>/dev/null ; then
         echo "Syncing image ${image} to minikube profile ${1}" ;
         minikube --profile ${1} image load ${image} ;
