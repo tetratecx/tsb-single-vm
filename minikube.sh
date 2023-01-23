@@ -36,7 +36,7 @@ function sync_images {
   docker login -u ${TSB_DOCKER_USERNAME} -p ${TSB_DOCKER_PASSWORD} containers.dl.tetrate.io ;
 
   # Sync all tsb images locally (if not yet available)
-  for image in `tctl install image-sync --just-print --raw` ; do
+  for image in `tctl install image-sync --just-print --raw --accept-eula` ; do
     if ! docker image inspect ${image} &>/dev/null ; then
       docker pull ${image} ;
     fi
