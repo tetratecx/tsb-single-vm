@@ -17,6 +17,20 @@ function login_tsb_admin {
 DONE
 }
 
+# Pull and load demo application image
+#   args:
+#     (1) minikube profile name
+function load_demo_app_image {
+  if ! docker image inspect containers.dl.tetrate.io/obs-tester-server:1.0 &>/dev/null ; then
+    docker pull containers.dl.tetrate.io/obs-tester-server:1.0 ;
+  fi
+
+  if ! minikube --profile ${1} image ls | grep containers.dl.tetrate.io/obs-tester-server:1.0 &>/dev/null ; then
+    echo "Syncing image containers.dl.tetrate.io/obs-tester-server:1.0 to minikube profile ${1}" ;
+    minikube --profile ${1} image load containers.dl.tetrate.io/obs-tester-server:1.0 ;
+  fi
+}
+
 
 if [[ ${ACTION} = "deploy-app-abc" ]]; then
 
@@ -53,9 +67,10 @@ if [[ ${ACTION} = "deploy-app-def" ]]; then
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
 
-  docker pull containers.dl.tetrate.io/obs-tester-server:1.0 ;
-  minikube --profile ${ACTIVE_CLUSTER_PROFILE} image load containers.dl.tetrate.io/obs-tester-server:1.0 ;
-  minikube --profile ${STANDBY_CLUSTER_PROFILE} image load containers.dl.tetrate.io/obs-tester-server:1.0 ;
+  # Pull and load demo application image
+  load_demo_app_image ${ACTIVE_CLUSTER_PROFILE}
+  load_demo_app_image ${STANDBY_CLUSTER_PROFILE}
+
 
   # Tier 1 GW in mgmt cluster
   kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;

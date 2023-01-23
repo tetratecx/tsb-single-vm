@@ -61,7 +61,7 @@ function load_images {
 
   # Load image for application deployment
   if ! minikube --profile ${1} image ls | grep containers.dl.tetrate.io/obs-tester-server:1.0 &>/dev/null ; then
-    echo "Syncing image ${image} to minikube profile ${1}" ;
+    echo "Syncing image containers.dl.tetrate.io/obs-tester-server:1.0 to minikube profile ${1}" ;
     minikube --profile ${1} image load containers.dl.tetrate.io/obs-tester-server:1.0 ;
   fi
 }
