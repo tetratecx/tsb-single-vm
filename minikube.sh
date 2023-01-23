@@ -31,7 +31,7 @@ function configure_metallb {
 DONE
 }
 
-# Sync tsb docker images 
+# Pull tsb docker images 
 function sync_images {
   docker login -u ${TSB_DOCKER_USERNAME} -p ${TSB_DOCKER_PASSWORD} containers.dl.tetrate.io ;
 
@@ -48,7 +48,7 @@ function sync_images {
   fi
 }
 
-# Load docker into minikube profile 
+# Load docker images into minikube profile 
 #   args:
 #     (1) minikube profile name
 function load_images {
