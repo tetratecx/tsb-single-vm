@@ -6,6 +6,21 @@ MGMT_CLUSTER_PROFILE=mgmt-cluster-m1
 ACTIVE_CLUSTER_PROFILE=active-cluster-m2
 STANDBY_CLUSTER_PROFILE=standby-cluster-m3
 
+# Patch deployments that are still using dockerhub (redis & ratelimit)
+function patch_dockerhub_deps {
+  while ! kubectl --context ${MGMT_CLUSTER_PROFILE} -n tsb set image deployment/ratelimit-redis redis=containers.dl.tetrate.io/redis:7.0.5-alpine &>/dev/null;
+  do
+    sleep 1 ;
+  done
+  echo "Deployment tsb/ratelimit-redis sucessfully patched"
+
+  while ! kubectl --context ${MGMT_CLUSTER_PROFILE} -n istio-system set image deployment/ratelimit-server ratelimit=containers.dl.tetrate.io/ratelimit:5e9a43f9 &>/dev/null;
+  do
+    sleep 1 ;
+  done
+  echo "Deployment istio-system/ratelimit-server sucessfully patched"
+}
+
 # Create cacert secret in istio-system namespace
 #   args:
 #     (1) cluster name
@@ -43,6 +58,9 @@ if [[ ${ACTION} = "install-mgmt-plane" ]]; then
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/demo-installation
   #   NOTE: the demo profile deploys both the mgmt plane AND the ctrl plane in a demo cluster!
   tctl install demo --registry containers.dl.tetrate.io --admin-password admin ;
+
+  # start patching dockerhub asynchronously
+  patch_dockerhub_deps &
 
   # Wait for the management, control and data plane to become available
   kubectl wait deployment -n tsb tsb-operator-management-plane --for condition=Available=True --timeout=600s
