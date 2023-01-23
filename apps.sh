@@ -23,9 +23,9 @@ if [[ ${ACTION} = "deploy-app-abc" ]]; then
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
 
-  docker pull docker.io/nacx/obs-tester-server:1.0 ;
-  minikube --profile ${ACTIVE_CLUSTER_PROFILE} image load docker.io/nacx/obs-tester-server:1.0 ;
-  minikube --profile ${STANDBY_CLUSTER_PROFILE} image load docker.io/nacx/obs-tester-server:1.0 ;
+  docker pull containers.dl.tetrate.io/obs-tester-server:1.0 ;
+  minikube --profile ${ACTIVE_CLUSTER_PROFILE} image load containers.dl.tetrate.io/obs-tester-server:1.0 ;
+  minikube --profile ${STANDBY_CLUSTER_PROFILE} image load containers.dl.tetrate.io/obs-tester-server:1.0 ;
 
   # Tier 1 GW in mgmt cluster
   kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;
@@ -53,9 +53,9 @@ if [[ ${ACTION} = "deploy-app-def" ]]; then
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
 
-  docker pull docker.io/nacx/obs-tester-server:1.0 ;
-  minikube --profile ${ACTIVE_CLUSTER_PROFILE} image load docker.io/nacx/obs-tester-server:1.0 ;
-  minikube --profile ${STANDBY_CLUSTER_PROFILE} image load docker.io/nacx/obs-tester-server:1.0 ;
+  docker pull containers.dl.tetrate.io/obs-tester-server:1.0 ;
+  minikube --profile ${ACTIVE_CLUSTER_PROFILE} image load containers.dl.tetrate.io/obs-tester-server:1.0 ;
+  minikube --profile ${STANDBY_CLUSTER_PROFILE} image load containers.dl.tetrate.io/obs-tester-server:1.0 ;
 
   # Tier 1 GW in mgmt cluster
   kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;

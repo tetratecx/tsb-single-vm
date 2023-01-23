@@ -47,7 +47,7 @@ spec:
       serviceAccountName: sa-app-e
       containers:
         - name: obs-tester
-          image: docker.io/nacx/obs-tester-server:1.0
+          image: containers.dl.tetrate.io/obs-tester-server:1.0
           imagePullPolicy: Always
           args:
             - '--log-output-level=all:debug'
