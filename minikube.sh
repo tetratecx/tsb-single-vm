@@ -41,18 +41,29 @@ function sync_images {
       docker pull ${image} ;
     fi
   done
+
+  # Sync image for application deployment
+  if ! docker image inspect containers.dl.tetrate.io/obs-tester-server:1.0 &>/dev/null ; then
+    docker pull containers.dl.tetrate.io/obs-tester-server:1.0 ;
+  fi
 }
 
 # Load docker into minikube profile 
 #   args:
 #     (1) minikube profile name
 function load_images {
-    for image in `tctl install image-sync --just-print --raw --accept-eula` ; do
-      if ! minikube --profile ${1} image ls | grep ${image} &>/dev/null ; then
-        echo "Syncing image ${image} to minikube profile ${1}" ;
-        minikube --profile ${1} image load ${image} ;
-      fi
-    done
+  for image in `tctl install image-sync --just-print --raw --accept-eula` ; do
+    if ! minikube --profile ${1} image ls | grep ${image} &>/dev/null ; then
+      echo "Syncing image ${image} to minikube profile ${1}" ;
+      minikube --profile ${1} image load ${image} ;
+    fi
+  done
+
+  # Load image for application deployment
+  if ! minikube --profile ${1} image ls | grep containers.dl.tetrate.io/obs-tester-server:1.0 &>/dev/null ; then
+    echo "Syncing image ${image} to minikube profile ${1}" ;
+    minikube --profile ${1} image load containers.dl.tetrate.io/obs-tester-server:1.0 ;
+  fi
 }
 
 if [[ ${ACTION} = "up" ]]; then

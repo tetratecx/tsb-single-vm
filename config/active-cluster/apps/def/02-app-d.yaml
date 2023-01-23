@@ -48,7 +48,7 @@ spec:
       containers:
         - name: obs-tester
           image: containers.dl.tetrate.io/obs-tester-server:1.0
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           args:
             - '--log-output-level=all:debug'
             - '--http-listen-address=:8000' # address the http server in the container listens on
