@@ -48,6 +48,7 @@ Note that the following binaries needs to be installed and runnable on the syste
  - **expect** : to automate shell interaction
  - **docker** : this demo is using docker support within minikube
  - **kubectl** : to interact with the kubernetes clusters
+ - **jq** : to parse json of docker/minikube network (subnet extraction)
 
 **DOC REF** Installation instructions for tctl can be found [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/reference/cli/guide/index#installation)
 
