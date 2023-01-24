@@ -73,7 +73,7 @@ if [[ ${ACTION} = "up" ]]; then
   minikube start --kubernetes-version=v${K8S_VERSION} --profile ${ACTIVE_CLUSTER_PROFILE} --network ${MINIKUBE_NETWORK} ;
   minikube start --kubernetes-version=v${K8S_VERSION} --profile ${STANDBY_CLUSTER_PROFILE} --network ${MINIKUBE_NETWORK} ;
 
-  # Extract the docker/minikube network subnet (default 192.168.49.0/24) 
+  # Extract the docker/minikube network subnet (default 192.168.49.0/24)
   # If another docker/minikube subnet pre-existed, it will be a different subnet
   MINIKUBE_NETWORK_SUBNET=$(docker network inspect ${MINIKUBE_NETWORK} | jq -r .[].IPAM.Config[0].Subnet | awk -F '.' '{ print $1"."$2"."$3".";}')
 
