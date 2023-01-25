@@ -41,11 +41,20 @@ onboard-app-clusters: ## Onboard application clusters
 config-tsb: ## Configure TSB
 	@/bin/sh -c './tsb.sh config-tsb'
 
+reset-tsb: ## Reset all TSB configuration
+	@/bin/sh -c './tsb.sh reset-tsb'
+
 deploy-app-abc: ## Deploy abc application
 	@/bin/sh -c './apps.sh deploy-app-abc'
 
 deploy-app-def: ## Deploy def application
 	@/bin/sh -c './apps.sh deploy-app-def'
+
+undeploy-app-abc: ## Undeploy abc application
+	@/bin/sh -c './apps.sh undeploy-app-abc'
+
+undeploy-app-def: ## Undeploy def application
+	@/bin/sh -c './apps.sh undeploy-app-def'
 
 test-app-abc: ## Generate curl commands to test ABC traffic
 	@/bin/sh -c './apps.sh traffic-cmd-abc'

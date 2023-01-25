@@ -41,14 +41,15 @@ if [[ ${ACTION} = "deploy-app-abc" ]]; then
   load_demo_app_image ${ACTIVE_CLUSTER_PROFILE}
   load_demo_app_image ${STANDBY_CLUSTER_PROFILE}
 
-  # Tier 1 GW in mgmt cluster
+  # Deploy tier 1 GW in mgmt cluster
   kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;
   kubectl apply -f ./config/mgmt-cluster/k8s/abc ;
 
-  # Workspaces, groups and gateways for abc (mgmt cluster)
+  # Deploy workspaces, groups, gateways and security for ABC (mgmt cluster)
   tctl apply -f ./config/mgmt-cluster/tsb/abc/04-workspaces.yaml ;
   tctl apply -f ./config/mgmt-cluster/tsb/abc/05-groups.yaml ;
   tctl apply -f ./config/mgmt-cluster/tsb/abc/06-gateways.yaml ;
+  tctl apply -f ./config/mgmt-cluster/tsb/abc/07-security.yaml ;
 
   # Application deployment in active cluster
   kubectl config use-context ${ACTIVE_CLUSTER_PROFILE} ;
@@ -57,6 +58,33 @@ if [[ ${ACTION} = "deploy-app-abc" ]]; then
   # Application deployment in standby cluster
   kubectl config use-context ${STANDBY_CLUSTER_PROFILE} ;
   kubectl apply -f ./config/standby-cluster/apps/abc ;
+
+  exit 0
+fi
+
+
+if [[ ${ACTION} = "undeploy-app-abc" ]]; then
+
+  # Login again as tsb admin in case of a session time-out
+  login_tsb_admin tetrate ;
+
+  # Application removal in standby cluster
+  kubectl config use-context ${STANDBY_CLUSTER_PROFILE} ;
+  kubectl delete -f ./config/standby-cluster/apps/abc ;
+
+  # Application removal in active cluster
+  kubectl config use-context ${ACTIVE_CLUSTER_PROFILE} ;
+  kubectl delete -f ./config/active-cluster/apps/abc ;
+
+  # Remove workspaces, groups, gateways and security for ABC (mgmt cluster)
+  tctl delete -f ./config/mgmt-cluster/tsb/abc/07-security.yaml ;
+  tctl delete -f ./config/mgmt-cluster/tsb/abc/06-gateways.yaml ;
+  tctl delete -f ./config/mgmt-cluster/tsb/abc/05-groups.yaml ;
+  tctl delete -f ./config/mgmt-cluster/tsb/abc/04-workspaces.yaml ;
+
+  # Remove tier 1 GW in mgmt cluster
+  kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;
+  kubectl delete -f ./config/mgmt-cluster/k8s/abc ;
 
   exit 0
 fi
@@ -71,14 +99,15 @@ if [[ ${ACTION} = "deploy-app-def" ]]; then
   load_demo_app_image ${ACTIVE_CLUSTER_PROFILE}
   load_demo_app_image ${STANDBY_CLUSTER_PROFILE}
 
-  # Tier 1 GW in mgmt cluster
+  # Deploy tier 1 GW in mgmt cluster
   kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;
   kubectl apply -f ./config/mgmt-cluster/k8s/def ;
 
-  # Workspaces, groups and gateways for abc (mgmt cluster)
+  # Deploy workspaces, groups, gateways and security for DEF (mgmt cluster)
   tctl apply -f ./config/mgmt-cluster/tsb/def/04-workspaces.yaml ;
   tctl apply -f ./config/mgmt-cluster/tsb/def/05-groups.yaml ;
   tctl apply -f ./config/mgmt-cluster/tsb/def/06-gateways.yaml ;
+  tctl apply -f ./config/mgmt-cluster/tsb/def/07-security.yaml ;
 
   # Application deployment in active cluster
   kubectl config use-context ${ACTIVE_CLUSTER_PROFILE} ;
@@ -87,6 +116,33 @@ if [[ ${ACTION} = "deploy-app-def" ]]; then
   # Application deployment in standby cluster
   kubectl config use-context ${STANDBY_CLUSTER_PROFILE} ;
   kubectl apply -f ./config/standby-cluster/apps/def ;
+
+  exit 0
+fi
+
+
+if [[ ${ACTION} = "undeploy-app-def" ]]; then
+
+  # Login again as tsb admin in case of a session time-out
+  login_tsb_admin tetrate ;
+
+  # Application removal in standby cluster
+  kubectl config use-context ${STANDBY_CLUSTER_PROFILE} ;
+  kubectl delete -f ./config/standby-cluster/apps/def ;
+
+  # Application removal in active cluster
+  kubectl config use-context ${ACTIVE_CLUSTER_PROFILE} ;
+  kubectl delete -f ./config/active-cluster/apps/def ;
+
+  # Remove workspaces, groups, gateways and security for DEF (mgmt cluster)
+  tctl delete -f ./config/mgmt-cluster/tsb/def/07-security.yaml ;
+  tctl delete -f ./config/mgmt-cluster/tsb/def/06-gateways.yaml ;
+  tctl delete -f ./config/mgmt-cluster/tsb/def/05-groups.yaml ;
+  tctl delete -f ./config/mgmt-cluster/tsb/def/04-workspaces.yaml ;
+
+  # Remove tier 1 GW in mgmt cluster
+  kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;
+  kubectl delete -f ./config/mgmt-cluster/k8s/def ;
 
   exit 0
 fi
@@ -129,7 +185,9 @@ fi
 
 echo "Please specify one of the following action:"
 echo "  - deploy-app-abc"
-echo "  - deploy-app-def"
+echo "  - undeploy-app-def"
+echo "  - deploy-app-abc"
+echo "  - undeploy-app-def"
 echo "  - traffic-cmd-abc"
 echo "  - traffic-cmd-def"
 exit 1

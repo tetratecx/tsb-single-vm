@@ -4,14 +4,35 @@ kind: Workspace
 metadata:
   organization: tetrate
   tenant: prod
-  name: def
+  name: app-d-ws
 spec:
-  displayName: Application_DEF
+  displayName: AppD_WS
   namespaceSelector:
     names:
-      - "*/gateway-def"
       - "*/ns-d"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: app-e-ws
+spec:
+  displayName: AppE_WS
+  namespaceSelector:
+    names:
       - "*/ns-e"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: app-f-ws
+spec:
+  displayName: AppF_WS
+  namespaceSelector:
+    names:
       - "*/ns-f"
 ---
 apiversion: api.tsb.tetrate.io/v2
@@ -19,9 +40,21 @@ kind: Workspace
 metadata:
   organization: tetrate
   tenant: prod
-  name: tier1
+  name: gw-def-ws
 spec:
-  displayName: Shared_Infra_Tier1
+  displayName: GatewayDEF_WS
+  namespaceSelector:
+    names:
+      - "*/gateway-def"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: gw-tier1-ws
+spec:
+  displayName: GatewayTier1_WS
   namespaceSelector:
     names:
       - "demo/gateway-tier1"

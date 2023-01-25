@@ -4,23 +4,20 @@ kind: Workspace
 metadata:
   organization: tetrate
   tenant: prod
-  name: abc
+  name: app-a-ws
 spec:
-  displayName: Application_ABC
+  displayName: AppA_WS
   namespaceSelector:
     names:
-      - "*/gateway-abc"
       - "*/ns-a"
-      - "*/ns-b"
-      - "*/ns-c"
 ---
 apiVersion: api.tsb.tetrate.io/v2
 kind: WorkspaceSetting
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: abc
-  name: abc-setting
+  workspace: app-a-ws
+  name: app-a-ws-setting
 spec:
   defaultEastWestGatewaySettings:
     - workloadSelector:
@@ -31,9 +28,63 @@ spec:
       - serviceLabels:
           app: app-a
           service: app-a
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: app-b-ws
+spec:
+  displayName: AppB_WS
+  namespaceSelector:
+    names:
+      - "*/ns-b"
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: WorkspaceSetting
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-b-ws
+  name: app-b-ws-setting
+spec:
+  defaultEastWestGatewaySettings:
+    - workloadSelector:
+        namespace: gateway-abc
+        labels:
+          app: gw-eastwest-abc
+      exposedServices:
       - serviceLabels:
           app: app-b
           service: app-b
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: app-c-ws
+spec:
+  displayName: AppC_WS
+  namespaceSelector:
+    names:
+      - "*/ns-c"
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: WorkspaceSetting
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-c-ws
+  name: app-c-ws-setting
+spec:
+  defaultEastWestGatewaySettings:
+    - workloadSelector:
+        namespace: gateway-abc
+        labels:
+          app: gw-eastwest-abc
+      exposedServices:
       - serviceLabels:
           app: app-c
           service: app-c
@@ -43,9 +94,21 @@ kind: Workspace
 metadata:
   organization: tetrate
   tenant: prod
-  name: tier1
+  name: gw-abc-ws
 spec:
-  displayName: Shared_Infra_Tier1
+  displayName: GatewayABC_WS
+  namespaceSelector:
+    names:
+      - "*/gateway-abc"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: gw-tier1-ws
+spec:
+  displayName: GatewayTier1_WS
   namespaceSelector:
     names:
       - "demo/gateway-tier1"

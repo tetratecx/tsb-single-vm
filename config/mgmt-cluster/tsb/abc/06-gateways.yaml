@@ -4,11 +4,11 @@ kind: Tier1Gateway
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: tier1
-  group: tier1-gateway
+  workspace: gw-tier1-ws
+  group: gw-tier1-group
   name: gw-tier1-abc
 spec:
-  displayName: AppABC Tier1GW
+  displayName: AppABC_Tier1GW
   workloadSelector:
     namespace: gateway-tier1
     labels:
@@ -26,11 +26,11 @@ kind: IngressGateway
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: abc
-  group: abc-gateway
+  workspace: gw-abc-ws
+  group: gw-abc-group
   name: gw-ingress-abc
 spec:
-  displayName: AppABC IngressGW
+  displayName: AppABC_IngressGW
   workloadSelector:
     namespace: gateway-abc
     labels:

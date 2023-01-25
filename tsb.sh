@@ -218,8 +218,27 @@ if [[ ${ACTION} = "config-tsb" ]]; then
 fi
 
 
+if [[ ${ACTION} = "reset-tsb" ]]; then
+
+  # Login again as tsb admin in case of a session time-out
+  login_tsb_admin tetrate ;
+
+  kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;
+
+  # Remove all TSB configuration objects
+  tctl get all --org tetrate --tenant prod | tctl delete -f - ;
+
+  # Remove all TSB kubernetes installation objects
+  kubectl get -A egressgateways.install.tetrate.io,ingressgateways.install.tetrate.io,tier1gateways.install.tetrate.io -o yaml \
+   | kubectl delete -f - ;
+
+  exit 0
+fi
+
+
 echo "Please specify one of the following action:"
 echo "  - install-mgmt-plane"
 echo "  - onboard-app-clusters"
 echo "  - config-tsb"
+echo "  - reset-tsb"
 exit 1

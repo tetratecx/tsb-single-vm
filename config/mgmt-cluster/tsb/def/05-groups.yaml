@@ -1,52 +1,100 @@
-apiVersion: gateway.tsb.tetrate.io/v2
+---
+apiVersion: traffic.tsb.tetrate.io/v2
 kind: Group
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: def
-  name: def-gateway
+  workspace: app-d-ws
+  name: app-d-traffic-group
 spec:
-  displayName: AppDEF_Gateway
+  displayName: AppD_TrafficGroup
   namespaceSelector:
     names:
-      - "*/gateway-def"
       - "*/ns-d"
-      - "*/ns-e"
-      - "*/ns-f"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-d-ws
+  name: app-d-security-group
+spec:
+  displayName: AppD_SecurityGroup
+  namespaceSelector:
+    names:
+      - "*/ns-d"
   configMode: BRIDGED
 ---
 apiVersion: traffic.tsb.tetrate.io/v2
 kind: Group
-Metadata:
+metadata:
   organization: tetrate
   tenant: prod
-  workspace: def
-  name: def-traffic
+  workspace: app-e-ws
+  name: app-e-traffic-group
 spec:
-  displayName: AppDEF_Traffic
+  displayName: AppE_TrafficGroup
   namespaceSelector:
     names:
-      - "*/gateway-def"
-      - "*/ns-d"
       - "*/ns-e"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-e-ws
+  name: app-e-security-group
+spec:
+  displayName: AppE_SecurityGroup
+  namespaceSelector:
+    names:
+      - "*/ns-e"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-f-ws
+  name: app-f-traffic-group
+spec:
+  displayName: AppF_TrafficGroup
+  namespaceSelector:
+    names:
       - "*/ns-f"
   configMode: BRIDGED
 ---
 apiVersion: security.tsb.tetrate.io/v2
 kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-f-ws
+  name: app-f-security-group
+spec:
+  displayName: AppF_SecurityGroup
+  namespaceSelector:
+    names:
+      - "*/ns-f"
+  configMode: BRIDGED
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
 Metadata:
   organization: tetrate
   tenant: prod
-  workspace: def
-  name: def-security
+  workspace: gw-def-ws
+  name: gw-def-group
 spec:
-  displayName: AppDEF_Security
+  displayName: GatewayDEF_Group
   namespaceSelector:
     names:
       - "*/gateway-def"
-      - "*/ns-d"
-      - "*/ns-e"
-      - "*/ns-f"
   configMode: BRIDGED
 ---
 apiVersion: gateway.tsb.tetrate.io/v2
@@ -54,10 +102,10 @@ kind: Group
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: tier1
-  name: tier1-gateway
+  workspace: gw-tier1-ws
+  name: gw-tier1-group
 spec:
-  displayName: Tier1_Gateway
+  displayName: GatewayTier1_Group
   namespaceSelector:
     names:
       - "demo/gateway-tier1"
