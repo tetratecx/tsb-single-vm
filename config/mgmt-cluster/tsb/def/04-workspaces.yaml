@@ -11,6 +11,20 @@ spec:
     names:
       - "*/ns-d"
 ---
+apiVersion: api.tsb.tetrate.io/v2
+kind: WorkspaceSetting
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-d-ws
+  name: app-d-ws-setting
+spec:
+  defaultTrafficSetting:
+    reachability:
+      hosts:
+      - ns-e/*
+      mode: CUSTOM
+---
 apiversion: api.tsb.tetrate.io/v2
 kind: Workspace
 metadata:
@@ -23,6 +37,21 @@ spec:
     names:
       - "*/ns-e"
 ---
+apiVersion: api.tsb.tetrate.io/v2
+kind: WorkspaceSetting
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-e-ws
+  name: app-e-ws-setting
+spec:
+  defaultTrafficSetting:
+    reachability:
+      hosts:
+      - ns-f/*
+      - "*/app-f.ns-f"
+      mode: CUSTOM
+---
 apiversion: api.tsb.tetrate.io/v2
 kind: Workspace
 metadata:
@@ -34,6 +63,20 @@ spec:
   namespaceSelector:
     names:
       - "*/ns-f"
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: WorkspaceSetting
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-f-ws
+  name: app-f-ws-setting
+spec:
+  defaultTrafficSetting:
+    reachability:
+      hosts:
+      - ./*
+      mode: CUSTOM
 ---
 apiversion: api.tsb.tetrate.io/v2
 kind: Workspace
