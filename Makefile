@@ -44,17 +44,41 @@ config-tsb: ## Configure TSB
 reset-tsb: ## Reset all TSB configuration
 	@/bin/sh -c './tsb.sh reset-tsb'
 
-deploy-app-abc: ## Deploy abc application
-	@/bin/sh -c './apps.sh deploy-app-abc'
+deploy-app-abc-http: ## Deploy abc application (tier1 http)
+	@/bin/sh -c './apps.sh deploy-app-abc http'
 
-deploy-app-def: ## Deploy def application
-	@/bin/sh -c './apps.sh deploy-app-def'
+deploy-app-abc-https: ## Deploy abc application (tier1 https)
+	@/bin/sh -c './apps.sh deploy-app-abc https'
 
-undeploy-app-abc: ## Undeploy abc application
-	@/bin/sh -c './apps.sh undeploy-app-abc'
+deploy-app-abc-mtls: ## Deploy abc application (tier1 mtls)
+	@/bin/sh -c './apps.sh deploy-app-abc mtls'
 
-undeploy-app-def: ## Undeploy def application
-	@/bin/sh -c './apps.sh undeploy-app-def'
+undeploy-app-abc-http: ## Undeploy abc application (tier1 http)
+	@/bin/sh -c './apps.sh undeploy-app-abc http'
+
+undeploy-app-abc-https: ## Undeploy abc application (tier1 https)
+	@/bin/sh -c './apps.sh undeploy-app-abc https'
+
+undeploy-app-abc-mtls: ## Undeploy abc application (tier1 mtls)
+	@/bin/sh -c './apps.sh undeploy-app-abc mtls'
+
+deploy-app-def-http: ## Deploy def application (tier1 http)
+	@/bin/sh -c './apps.sh deploy-app-def http'
+
+deploy-app-def-https: ## Deploy def application (tier1 https)
+	@/bin/sh -c './apps.sh deploy-app-def https'
+
+deploy-app-def-mtls: ## Deploy def application (tier1 mtls)
+	@/bin/sh -c './apps.sh deploy-app-def mtls'
+
+undeploy-app-def-http: ## Undeploy def application (tier1 http)
+	@/bin/sh -c './apps.sh undeploy-app-def http'
+
+undeploy-app-def-https: ## Undeploy def application (tier1 https)
+	@/bin/sh -c './apps.sh undeploy-app-def https'
+
+undeploy-app-def-mtls: ## Undeploy def application (tier1 mtls)
+	@/bin/sh -c './apps.sh undeploy-app-def mtls'
 
 test-app-abc: ## Generate curl commands to test ABC traffic
 	@/bin/sh -c './apps.sh traffic-cmd-abc'

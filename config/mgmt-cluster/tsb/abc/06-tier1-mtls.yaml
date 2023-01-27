@@ -14,9 +14,12 @@ spec:
     labels:
       app: gw-tier1-abc
   externalServers:
-  - name: abc
+  - name: abc-https
     hostname: abc.tetrate.prod
-    port: 80
+    port: 443
+    tls:
+      mode: MUTUAL
+      secretName: app-abc-certs
     clusters:
     - name: active-cluster
     - name: standby-cluster
