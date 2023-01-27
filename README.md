@@ -395,6 +395,8 @@ Application ABC is deployed in an active/standby mode. This means that in a norm
 
 Application DEF is deployed to show another use case, where an application consist of microservices deployed into different clusters. There might be various reasons to do so, which include failure and security domain isolation, or data sensitive back-end applications on premises that need to be reachable from front-end deployed in the cloud (reach-back scenario's).
 
+You have the option to terminate Tier1 connections on HTTP/80, HTTPS/443 server side TLS or HTTPS/443 mTLS (check make commands).
+
 ```console
 $ make deploy-app-abc-http
 spawn tctl login --username admin --password admin --org tetrate
@@ -485,7 +487,7 @@ curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:443:192.168.49.101" 
 
 ```
 
-The first curl command above will send traffic to our Tier1 gateway in the mgmt cluster. Because of the URL path provided (proxy/app-b.ns-b/proxy/app-c.ns-c), the first hop app-a will be able to know that it needs to send traffic to app-b in namespace ns-b. It will strip that part and forward it to the next hop, where app-b will know it needs to send traffic to app-c in namespace ns-c.
+One of the curl command above will send traffic to our Tier1 gateway in the mgmt cluster. Because of the URL path provided (proxy/app-b.ns-b/proxy/app-c.ns-c), the first hop app-a will be able to know that it needs to send traffic to app-b in namespace ns-b. It will strip that part and forward it to the next hop, where app-b will know it needs to send traffic to app-c in namespace ns-c.
 
 You can use the same techique to deploy and test application DEF. Try sending some traffic across a path that you do not expect to be available (eg app-a => app-e etc).
 
