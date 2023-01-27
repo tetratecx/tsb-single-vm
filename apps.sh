@@ -108,13 +108,13 @@ if [[ ${ACTION} = "undeploy-app-abc" ]]; then
   tctl delete -f ./config/mgmt-cluster/tsb/abc/07-security.yaml ;
   tctl delete -f ./config/mgmt-cluster/tsb/abc/06-ingress.yaml ;
   if [[ ${TIER1_MODE} = "http" ]]; then
-    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-tier1-http.yaml ;
+    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-tier1-http.yaml &>/dev/null;
   fi
   if [[ ${TIER1_MODE} = "https" ]]; then
-    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-tier1-https.yaml ;
+    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-tier1-https.yaml &>/dev/null;
   fi
   if [[ ${TIER1_MODE} = "mtls" ]]; then
-    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-tier1-mtls.yaml ;
+    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-tier1-mtls.yaml &>/dev/null;
   fi 
   tctl delete -f ./config/mgmt-cluster/tsb/abc/05-groups.yaml ;
   tctl delete -f ./config/mgmt-cluster/tsb/abc/04-workspaces.yaml ;
@@ -198,13 +198,13 @@ if [[ ${ACTION} = "undeploy-app-def" ]]; then
   tctl delete -f ./config/mgmt-cluster/tsb/def/07-security.yaml ;
   tctl delete -f ./config/mgmt-cluster/tsb/def/06-ingress.yaml ;
   if [[ ${TIER1_MODE} = "http" ]]; then
-    tctl delete -f ./config/mgmt-cluster/tsb/def/06-tier1-http.yaml ;
+    tctl delete -f ./config/mgmt-cluster/tsb/def/06-tier1-http.yaml &>/dev/null;
   fi
   if [[ ${TIER1_MODE} = "https" ]]; then
-    tctl delete -f ./config/mgmt-cluster/tsb/def/06-tier1-https.yaml ;
+    tctl delete -f ./config/mgmt-cluster/tsb/def/06-tier1-https.yaml &>/dev/null;
   fi
   if [[ ${TIER1_MODE} = "mtls" ]]; then
-    tctl delete -f ./config/mgmt-cluster/tsb/def/06-tier1-mtls.yaml ;
+    tctl delete -f ./config/mgmt-cluster/tsb/def/06-tier1-mtls.yaml &>/dev/null;
   fi 
   tctl delete -f ./config/mgmt-cluster/tsb/def/05-groups.yaml ;
   tctl delete -f ./config/mgmt-cluster/tsb/def/04-workspaces.yaml ;
