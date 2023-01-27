@@ -396,7 +396,7 @@ Application ABC is deployed in an active/standby mode. This means that in a norm
 Application DEF is deployed to show another use case, where an application consist of microservices deployed into different clusters. There might be various reasons to do so, which include failure and security domain isolation, or data sensitive back-end applications on premises that need to be reachable from front-end deployed in the cloud (reach-back scenario's).
 
 ```console
-$ make deploy-app-abc
+$ make deploy-app-abc-http
 spawn tctl login --username admin --password admin --org tetrate
 Tenant: 
 
@@ -460,18 +460,29 @@ We have provided a helper makefile target to give you an idea on how to use this
 
 ```console
 $ make test-app-abc 
+
 Switched to context "mgmt-cluster-m1".
 Switched to context "active-cluster-m2".
 Switched to context "standby-cluster-m3".
+****************************
+*** ABC Traffic Commands ***
+****************************
 
-ABC Traffic through T1 Gateway
-curl -k -v -H "X-B3-Sampled: 1" "http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" --resolve "abc.tetrate.prod:80:192.168.49.101"
+Traffic to Active Ingress Gateway
+curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:80:192.168.49.150" "http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
+Traffic to Standby Ingress Gateway
+curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:80:192.168.49.200" "http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
 
-ABC Traffic through Active Ingress Gateway
-curl -k -v -H "X-B3-Sampled: 1" "http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" --resolve "abc.tetrate.prod:80:192.168.49.150"
 
-ABC Traffic through Standby Ingress Gateway
-curl -k -v -H "X-B3-Sampled: 1" "http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" --resolve "abc.tetrate.prod:80:192.168.49.200"
+Traffic through T1 Gateway: HTTP
+curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:80:192.168.49.101" "http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
+
+Traffic through T1 Gateway: HTTPS
+curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:443:192.168.49.101" --cacert ca.crt=certs/root-cert.pem "https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
+
+Traffic through T1 Gateway: MTLS
+curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:443:192.168.49.101" --cacert ca.crt=certs/root-cert.pem --cert certs/app-abc/client.abc.tetrate.prod.pem --key certs/app-abc/client.abc.tetrate.prod.key "https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
+
 ```
 
 The first curl command above will send traffic to our Tier1 gateway in the mgmt cluster. Because of the URL path provided (proxy/app-b.ns-b/proxy/app-c.ns-c), the first hop app-a will be able to know that it needs to send traffic to app-b in namespace ns-b. It will strip that part and forward it to the next hop, where app-b will know it needs to send traffic to app-c in namespace ns-c.
