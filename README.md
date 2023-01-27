@@ -27,8 +27,19 @@ minikube-down                  Bring down and delete minikube clusters
 install-mgmt-plane             Install TSB management plane
 onboard-app-clusters           Onboard application clusters
 config-tsb                     Configure TSB
-deploy-app-abc                 Deploy abc application
-deploy-app-def                 Deploy def application
+reset-tsb                      Reset all TSB configuration
+deploy-app-abc-http            Deploy abc application (tier1 http)
+deploy-app-abc-https           Deploy abc application (tier1 https)
+deploy-app-abc-mtls            Deploy abc application (tier1 mtls)
+undeploy-app-abc-http          Undeploy abc application (tier1 http)
+undeploy-app-abc-https         Undeploy abc application (tier1 https)
+undeploy-app-abc-mtls          Undeploy abc application (tier1 mtls)
+deploy-app-def-http            Deploy def application (tier1 http)
+deploy-app-def-https           Deploy def application (tier1 https)
+deploy-app-def-mtls            Deploy def application (tier1 mtls)
+undeploy-app-def-http          Undeploy def application (tier1 http)
+undeploy-app-def-https         Undeploy def application (tier1 https)
+undeploy-app-def-mtls          Undeploy def application (tier1 mtls)
 test-app-abc                   Generate curl commands to test ABC traffic
 test-app-def                   Generate curl commands to test DEF traffic
 clean                          Clean resources

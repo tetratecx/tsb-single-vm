@@ -67,14 +67,16 @@ if [[ ${ACTION} = "deploy-app-abc" ]]; then
   tctl apply -f ./config/mgmt-cluster/tsb/abc/05-groups.yaml ;
   if [[ ${TIER1_MODE} = "http" ]]; then
     tctl apply -f ./config/mgmt-cluster/tsb/abc/06-tier1-http.yaml ;
+    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-ingress-http.yaml ;
   fi
   if [[ ${TIER1_MODE} = "https" ]]; then
     tctl apply -f ./config/mgmt-cluster/tsb/abc/06-tier1-https.yaml ;
+    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-ingress-https.yaml ;
   fi
   if [[ ${TIER1_MODE} = "mtls" ]]; then
     tctl apply -f ./config/mgmt-cluster/tsb/abc/06-tier1-mtls.yaml ;
+    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-ingress-https.yaml ;
   fi 
-  tctl apply -f ./config/mgmt-cluster/tsb/abc/06-ingress.yaml ;
   tctl apply -f ./config/mgmt-cluster/tsb/abc/07-security.yaml ;
 
 
@@ -82,10 +84,30 @@ if [[ ${ACTION} = "deploy-app-abc" ]]; then
   # Application deployment in active cluster
   kubectl config use-context ${ACTIVE_CLUSTER_PROFILE} ;
   kubectl apply -f ./config/active-cluster/apps/abc ;
+  if [[ ${TIER1_MODE} = "https" ]]; then
+    kubectl create secret tls app-abc-certs -n gateway-abc \
+      --key certs/app-abc/server.abc.tetrate.prod.key \
+      --cert certs/app-abc/server.abc.tetrate.prod.pem ;
+  fi
+  if [[ ${TIER1_MODE} = "mtls" ]]; then
+    kubectl create secret tls app-abc-certs -n gateway-abc \
+      --key certs/app-abc/server.abc.tetrate.prod.key \
+      --cert certs/app-abc/server.abc.tetrate.prod.pem ;
+  fi
 
   # Application deployment in standby cluster
   kubectl config use-context ${STANDBY_CLUSTER_PROFILE} ;
   kubectl apply -f ./config/standby-cluster/apps/abc ;
+  if [[ ${TIER1_MODE} = "https" ]]; then
+    kubectl create secret tls app-abc-certs -n gateway-abc \
+      --key certs/app-abc/server.abc.tetrate.prod.key \
+      --cert certs/app-abc/server.abc.tetrate.prod.pem ;
+  fi
+  if [[ ${TIER1_MODE} = "mtls" ]]; then
+    kubectl create secret tls app-abc-certs -n gateway-abc \
+      --key certs/app-abc/server.abc.tetrate.prod.key \
+      --cert certs/app-abc/server.abc.tetrate.prod.pem ;
+  fi
 
   exit 0
 fi
@@ -106,14 +128,16 @@ if [[ ${ACTION} = "undeploy-app-abc" ]]; then
 
   # Remove workspaces, groups, gateways and security for ABC (mgmt cluster)
   tctl delete -f ./config/mgmt-cluster/tsb/abc/07-security.yaml ;
-  tctl delete -f ./config/mgmt-cluster/tsb/abc/06-ingress.yaml ;
   if [[ ${TIER1_MODE} = "http" ]]; then
+    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-ingress-http.yaml &>/dev/null;
     tctl delete -f ./config/mgmt-cluster/tsb/abc/06-tier1-http.yaml &>/dev/null;
   fi
   if [[ ${TIER1_MODE} = "https" ]]; then
+    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-ingress-https.yaml &>/dev/null;
     tctl delete -f ./config/mgmt-cluster/tsb/abc/06-tier1-https.yaml &>/dev/null;
   fi
   if [[ ${TIER1_MODE} = "mtls" ]]; then
+    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-ingress-https.yaml &>/dev/null;
     tctl delete -f ./config/mgmt-cluster/tsb/abc/06-tier1-mtls.yaml &>/dev/null;
   fi 
   tctl delete -f ./config/mgmt-cluster/tsb/abc/05-groups.yaml ;
@@ -159,23 +183,45 @@ if [[ ${ACTION} = "deploy-app-def" ]]; then
   tctl apply -f ./config/mgmt-cluster/tsb/def/05-groups.yaml ;
   if [[ ${TIER1_MODE} = "http" ]]; then
     tctl apply -f ./config/mgmt-cluster/tsb/def/06-tier1-http.yaml ;
+    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-ingress-http.yaml ;
   fi
   if [[ ${TIER1_MODE} = "https" ]]; then
     tctl apply -f ./config/mgmt-cluster/tsb/def/06-tier1-https.yaml ;
+    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-ingress-https.yaml ;
   fi
   if [[ ${TIER1_MODE} = "mtls" ]]; then
     tctl apply -f ./config/mgmt-cluster/tsb/def/06-tier1-mtls.yaml ;
+    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-ingress-https.yaml ;
   fi 
-  tctl apply -f ./config/mgmt-cluster/tsb/def/06-ingress.yaml ;
   tctl apply -f ./config/mgmt-cluster/tsb/def/07-security.yaml ;
 
   # Application deployment in active cluster
   kubectl config use-context ${ACTIVE_CLUSTER_PROFILE} ;
   kubectl apply -f ./config/active-cluster/apps/def ;
+  if [[ ${TIER1_MODE} = "https" ]]; then
+    kubectl create secret tls app-def-certs -n gateway-def \
+      --key certs/app-def/server.def.tetrate.prod.key \
+      --cert certs/app-def/server.def.tetrate.prod.pem ;
+  fi
+  if [[ ${TIER1_MODE} = "mtls" ]]; then
+    kubectl create secret tls app-def-certs -n gateway-def \
+      --key certs/app-def/server.def.tetrate.prod.key \
+      --cert certs/app-def/server.def.tetrate.prod.pem ;
+  fi
 
   # Application deployment in standby cluster
   kubectl config use-context ${STANDBY_CLUSTER_PROFILE} ;
   kubectl apply -f ./config/standby-cluster/apps/def ;
+  if [[ ${TIER1_MODE} = "https" ]]; then
+    kubectl create secret tls app-def-certs -n gateway-def \
+      --key certs/app-def/server.def.tetrate.prod.key \
+      --cert certs/app-def/server.def.tetrate.prod.pem ;
+  fi
+  if [[ ${TIER1_MODE} = "mtls" ]]; then
+    kubectl create secret tls app-def-certs -n gateway-def \
+      --key certs/app-def/server.def.tetrate.prod.key \
+      --cert certs/app-def/server.def.tetrate.prod.pem ;
+  fi
 
   exit 0
 fi
@@ -198,12 +244,15 @@ if [[ ${ACTION} = "undeploy-app-def" ]]; then
   tctl delete -f ./config/mgmt-cluster/tsb/def/07-security.yaml ;
   tctl delete -f ./config/mgmt-cluster/tsb/def/06-ingress.yaml ;
   if [[ ${TIER1_MODE} = "http" ]]; then
+    tctl delete -f ./config/mgmt-cluster/tsb/def/06-ingress-http.yaml &>/dev/null;
     tctl delete -f ./config/mgmt-cluster/tsb/def/06-tier1-http.yaml &>/dev/null;
   fi
   if [[ ${TIER1_MODE} = "https" ]]; then
+    tctl delete -f ./config/mgmt-cluster/tsb/def/06-ingress-https.yaml &>/dev/null;
     tctl delete -f ./config/mgmt-cluster/tsb/def/06-tier1-https.yaml &>/dev/null;
   fi
   if [[ ${TIER1_MODE} = "mtls" ]]; then
+    tctl delete -f ./config/mgmt-cluster/tsb/def/06-ingress-https.yaml &>/dev/null;
     tctl delete -f ./config/mgmt-cluster/tsb/def/06-tier1-mtls.yaml &>/dev/null;
   fi 
   tctl delete -f ./config/mgmt-cluster/tsb/def/05-groups.yaml ;
