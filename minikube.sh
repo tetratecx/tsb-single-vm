@@ -88,9 +88,15 @@ if [[ ${ACTION} = "up" ]]; then
 
   # Pull images locally and sync them to minikube profiles
   sync_images ;
-  load_images ${MGMT_CLUSTER_PROFILE} ;
-  load_images ${ACTIVE_CLUSTER_PROFILE} ;
-  load_images ${STANDBY_CLUSTER_PROFILE} ;
+  load_images ${MGMT_CLUSTER_PROFILE} &
+  pid_load_images_mgmt_cluster=$!
+  load_images ${ACTIVE_CLUSTER_PROFILE} &
+  pid_load_images_active_cluster=$!
+  load_images ${STANDBY_CLUSTER_PROFILE} &
+  pid_load_images_standby_cluster=$!
+  wait $pid_load_images_mgmt_cluster
+  wait $pid_load_images_active_cluster
+  wait $pid_load_images_standby_cluster
 
   # Add nodes labels for locality based routing (region and zone)
   kubectl --context ${MGMT_CLUSTER_PROFILE} label node ${MGMT_CLUSTER_PROFILE} topology.kubernetes.io/region=region1 --overwrite=true ;
