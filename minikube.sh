@@ -46,6 +46,11 @@ function sync_images {
   if ! docker image inspect containers.dl.tetrate.io/obs-tester-server:1.0 &>/dev/null ; then
     docker pull containers.dl.tetrate.io/obs-tester-server:1.0 ;
   fi
+
+  # Sync image for debugging
+  if ! docker image inspect containers.dl.tetrate.io/netshoot &>/dev/null ; then
+    docker pull containers.dl.tetrate.io/netshoot ;
+  fi
 }
 
 # Load docker images into minikube profile 
@@ -64,14 +69,22 @@ function load_images {
     echo "Syncing image containers.dl.tetrate.io/obs-tester-server:1.0 to minikube profile ${1}" ;
     minikube --profile ${1} image load containers.dl.tetrate.io/obs-tester-server:1.0 ;
   fi
+
+  # Load image for debugging
+  if ! minikube --profile ${1} image ls | grep containers.dl.tetrate.io/netshoot &>/dev/null ; then
+    echo "Syncing image containers.dl.tetrate.io/netshoot to minikube profile ${1}" ;
+    minikube --profile ${1} image load containers.dl.tetrate.io/netshoot ;
+  fi
 }
 
 if [[ ${ACTION} = "up" ]]; then
+  # MINIKUBE_MGMT_CLUSTER_OPTS="--driver kvm --cpus=4 --memory=10g"
+  # MINIKUBE_APP_CLUSTER_OPTS="--driver kvm --cpus=4 --memory=9g"
 
   # Start minikube profiles for all clusters
-  minikube start --kubernetes-version=v${K8S_VERSION} --profile ${MGMT_CLUSTER_PROFILE} --network ${MINIKUBE_NETWORK} ;
-  minikube start --kubernetes-version=v${K8S_VERSION} --profile ${ACTIVE_CLUSTER_PROFILE} --network ${MINIKUBE_NETWORK} ;
-  minikube start --kubernetes-version=v${K8S_VERSION} --profile ${STANDBY_CLUSTER_PROFILE} --network ${MINIKUBE_NETWORK} ;
+  minikube start --kubernetes-version=v${K8S_VERSION} --profile ${MGMT_CLUSTER_PROFILE} --network ${MINIKUBE_NETWORK} ${MINIKUBE_MGMT_CLUSTER_OPTS} ;
+  minikube start --kubernetes-version=v${K8S_VERSION} --profile ${ACTIVE_CLUSTER_PROFILE} --network ${MINIKUBE_NETWORK} ${MINIKUBE_APP_CLUSTER_OPTS} ;
+  minikube start --kubernetes-version=v${K8S_VERSION} --profile ${STANDBY_CLUSTER_PROFILE} --network ${MINIKUBE_NETWORK} ${MINIKUBE_APP_CLUSTER_OPTS} ;
 
   # Extract the docker/minikube network subnet (default 192.168.49.0/24)
   # If another docker/minikube subnet pre-existed, it will be a different subnet

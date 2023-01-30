@@ -574,7 +574,9 @@ Now try to run this command in a while loop, while scaling the deployment of app
 
 > Open your browser and go to https://192.168.49.100:8443 (admin/admin) and notice the topology and traffic patterns.
 
-## Known issues
+## Troubleshooting
+
+### Known issues
 
 In case one of the cluster fails to bootstrap all pods correctly with the error "too many open files", modify the following settings (on Ubuntu) in the file `/etc/sysctl.conf` and add these lines:
 
@@ -623,4 +625,19 @@ Allocated resources:
   ephemeral-storage  0 (0%)        0 (0%)
   hugepages-1Gi      0 (0%)        0 (0%)
   hugepages-2Mi      0 (0%)        0 (0%)
+```
+
+### Debugging
+
+In order to debug issues, you can use the `netshoot` container with debug tools in any given cluster, namespace provided.
+
+```console
+# Netshoot in mgmt-cluster and default namespace
+kubectl --context mgmt-cluster-m1 -n default run tmp-shell --rm --image-pull-policy IfNotPresent -i --tty --image containers.dl.tetrate.io/netshoot -- /bin/bash
+
+# Netshoot in active-cluster and ns-a namespace
+kubectl --context active-cluster-m2 -n ns-a run tmp-shell --rm --image-pull-policy IfNotPresent -i --tty --image containers.dl.tetrate.io/netshoot -- /bin/bash
+
+# Netshoot in standby-cluster and ns-b namespace
+kubectl --context standby-cluster-m3 -n ns-b run tmp-shell --rm --image-pull-policy IfNotPresent -i --tty --image containers.dl.tetrate.io/netshoot -- /bin/bash
 ```
