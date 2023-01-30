@@ -183,15 +183,15 @@ if [[ ${ACTION} = "deploy-app-def" ]]; then
   tctl apply -f ./config/mgmt-cluster/tsb/def/05-groups.yaml ;
   if [[ ${TIER1_MODE} = "http" ]]; then
     tctl apply -f ./config/mgmt-cluster/tsb/def/06-tier1-http.yaml ;
-    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-ingress-http.yaml ;
+    tctl apply -f ./config/mgmt-cluster/tsb/def/06-ingress-http.yaml ;
   fi
   if [[ ${TIER1_MODE} = "https" ]]; then
     tctl apply -f ./config/mgmt-cluster/tsb/def/06-tier1-https.yaml ;
-    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-ingress-https.yaml ;
+    tctl apply -f ./config/mgmt-cluster/tsb/def/06-ingress-https.yaml ;
   fi
   if [[ ${TIER1_MODE} = "mtls" ]]; then
     tctl apply -f ./config/mgmt-cluster/tsb/def/06-tier1-mtls.yaml ;
-    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-ingress-https.yaml ;
+    tctl apply -f ./config/mgmt-cluster/tsb/def/06-ingress-https.yaml ;
   fi 
   tctl apply -f ./config/mgmt-cluster/tsb/def/07-security.yaml ;
 

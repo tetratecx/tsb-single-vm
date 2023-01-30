@@ -584,3 +584,43 @@ fs.inotify.max_user_instances = 512
 ```
 
 > **Reference:**  https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files
+
+
+### Resource requirements
+
+With the whole demo is running, including the 2 demo applications ABC and DEF, the following resource consumption per cluster is observer:
+
+```console
+# kubectl --context mgmt-cluster-m1 describe nodes | grep  "Allocated resources:" -A 8
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests      Limits
+  --------           --------      ------
+  cpu                4050m (50%)   20700m (258%)
+  memory             9434Mi (29%)  27714Mi (87%)
+  ephemeral-storage  0 (0%)        0 (0%)
+  hugepages-1Gi      0 (0%)        0 (0%)
+  hugepages-2Mi      0 (0%)        0 (0%)
+
+# kubectl --context active-cluster-m2 describe nodes | grep  "Allocated resources:" -A 8
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests      Limits
+  --------           --------      ------
+  cpu                4340m (54%)   26340m (329%)
+  memory             8102Mi (25%)  27546Mi (86%)
+  ephemeral-storage  0 (0%)        0 (0%)
+  hugepages-1Gi      0 (0%)        0 (0%)
+  hugepages-2Mi      0 (0%)        0 (0%)
+
+# kubectl --context standby-cluster-m3 describe nodes | grep  "Allocated resources:" -A 8
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests      Limits
+  --------           --------      ------
+  cpu                4112m (51%)   24212m (302%)
+  memory             7910Mi (24%)  26458Mi (83%)
+  ephemeral-storage  0 (0%)        0 (0%)
+  hugepages-1Gi      0 (0%)        0 (0%)
+  hugepages-2Mi      0 (0%)        0 (0%)
+```

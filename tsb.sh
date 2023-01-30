@@ -175,6 +175,7 @@ if [[ ${ACTION} = "onboard-app-clusters" ]]; then
   ###############
   # Apply AOP patch for more real time update in the UI (Apache SkyWalking demo tweak)
   kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;
+  kubectl -n tsb patch managementplanes managementplane --patch-file ./config/oap-deploy-patch.yaml --type merge
   kubectl -n istio-system patch controlplanes controlplane --patch-file ./config/oap-deploy-patch.yaml --type merge
   kubectl config use-context ${ACTIVE_CLUSTER_PROFILE} ;
   kubectl -n istio-system patch controlplanes controlplane --patch-file ./config/oap-deploy-patch.yaml --type merge
