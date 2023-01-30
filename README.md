@@ -588,7 +588,7 @@ fs.inotify.max_user_instances = 512
 
 ### Resource requirements
 
-With the whole demo is running, including the 2 demo applications ABC and DEF, the following resource consumption per cluster is observer:
+With the whole demo running, including the 2 demo applications ABC and DEF, the following resource consumption per cluster is observer:
 
 ```console
 # kubectl --context mgmt-cluster-m1 describe nodes | grep  "Allocated resources:" -A 8
