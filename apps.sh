@@ -328,8 +328,8 @@ fi
 
 echo "Please specify one of the following action:"
 echo "  - deploy-app-abc http/https/mtls"
-echo "  - undeploy-app-def http/https/mtls"
-echo "  - deploy-app-abc http/https/mtls"
+echo "  - undeploy-app-abc http/https/mtls"
+echo "  - deploy-app-def http/https/mtls"
 echo "  - undeploy-app-def http/https/mtls"
 echo "  - traffic-cmd-abc"
 echo "  - traffic-cmd-def"
