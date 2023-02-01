@@ -78,8 +78,8 @@ function load_images {
 }
 
 if [[ ${ACTION} = "up" ]]; then
-  # MINIKUBE_MGMT_CLUSTER_OPTS="--driver kvm --cpus=4 --memory=10g"
-  # MINIKUBE_APP_CLUSTER_OPTS="--driver kvm --cpus=4 --memory=9g"
+  # MINIKUBE_MGMT_CLUSTER_OPTS="--driver kvm --cpus=6 --memory=11g"
+  # MINIKUBE_APP_CLUSTER_OPTS="--driver kvm --cpus=6 --memory=9g"
 
   # Start minikube profiles for all clusters
   minikube start --kubernetes-version=v${K8S_VERSION} --profile ${MGMT_CLUSTER_PROFILE} --network ${MINIKUBE_NETWORK} ${MINIKUBE_MGMT_CLUSTER_OPTS} ;
@@ -88,7 +88,8 @@ if [[ ${ACTION} = "up" ]]; then
 
   # Extract the docker/minikube network subnet (default 192.168.49.0/24)
   # If another docker/minikube subnet pre-existed, it will be a different subnet
-  MINIKUBE_NETWORK_SUBNET=$(docker network inspect ${MINIKUBE_NETWORK} | jq -r .[].IPAM.Config[0].Subnet | awk -F '.' '{ print $1"."$2"."$3".";}')
+  # MINIKUBE_NETWORK_SUBNET=$(docker network inspect ${MINIKUBE_NETWORK} | jq -r .[].IPAM.Config[0].Subnet | awk -F '.' '{ print $1"."$2"."$3".";}')
+  MINIKUBE_NETWORK_SUBNET=$(minikube ip --profile ${MGMT_CLUSTER_PROFILE} | awk -F '.' '{ print $1"."$2"."$3".";}')
 
   # Configure and enable metallb in all clusters
   configure_metallb ${MGMT_CLUSTER_PROFILE} ${MINIKUBE_NETWORK_SUBNET}${MGMT_CLUSTER_METALLB_STARTIP} ${MINIKUBE_NETWORK_SUBNET}${MGMT_CLUSTER_METALLB_ENDIP} ;
