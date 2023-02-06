@@ -1,0 +1,16 @@
+---
+apiVersion: config.agent.onboarding.tetrate.io/v1alpha1
+kind: OnboardingConfiguration
+onboardingEndpoint:
+  host: __TSB_VM_ONBOARDING_ENDPOINT__
+  transportSecurity:
+    tls:
+      insecureSkipVerify: true
+      sni: vm-onboarding.tetrate.prod
+workloadGroup:
+  namespace: ns-c
+  name: app-c
+workload:
+  labels:
+    app: app-c
+    version: v1

@@ -1,0 +1,19 @@
+spec:
+  meshExpansion:
+    onboarding:
+      localRepository: {}
+      endpoint:
+        hosts:
+          - vm-onboarding.tetrate.prod
+        secretName: vm-onboarding
+      workloads:
+        authentication:
+          jwt:
+            issuers:
+            - issuer: https://sample-jwt-issuer.example
+              shortName: my-corp
+              tokenFields:
+                attributes:
+                  jsonPath: .custom_attributes
+              jwks: |
+                __TSB_VM_ONBOARDING_JWKS__

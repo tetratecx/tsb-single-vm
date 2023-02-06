@@ -21,9 +21,9 @@ TIER1_MODE := http
 TIER2_MODE := http
 # TIER2_MODE := https
 
-APP_ABC_MODE := active
+# APP_ABC_MODE := active
 # APP_ABC_MODE := active-standby
-# APP_ABC_MODE := active-vm
+APP_ABC_MODE := active-vm
 # APP_ABC_MODE := active-standby-vm
 
 
@@ -83,7 +83,7 @@ config-tsb: ## Configure TSB
 reset-tsb: ## Reset all TSB configuration
 	@/bin/sh -c './tsb.sh reset-tsb'
 
-deploy-app-abc: ## Deploy abc application
+deploy-app-abc: check-credentials ## Deploy abc application
 	@/bin/sh -c './apps.sh deploy-app-abc ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE}'
 
 undeploy-app-abc: ## Undeploy abc application
@@ -93,6 +93,9 @@ test-app-abc: ## Generate curl commands to test ABC traffic
 	@/bin/sh -c './apps.sh traffic-cmd-abc'
 
 
+
+info: ## Get infra environment info
+	@/bin/sh -c './infra.sh info'
 
 clean: ## Clean up all resources
 	@/bin/sh -c './infra.sh clean'

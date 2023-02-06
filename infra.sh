@@ -280,6 +280,17 @@ if [[ ${ACTION} = "vm-down" ]]; then
   exit 0
 fi
 
+if [[ ${ACTION} = "info" ]]; then
+
+  echo "kubectl --profile ${MGMT_CLUSTER_PROFILE} get pods -A"
+  echo "kubectl --profile ${ACTIVE_CLUSTER_PROFILE} get pods -A"
+  echo "kubectl --profile ${STANDBY_CLUSTER_PROFILE} get pods -A"
+  VM_IP=$(get_vm_bridge_ip ${VM_NAME}) ;
+  echo "ssh -i ${VM_CONFDIR}/tsbadmin -o StrictHostKeyChecking=no tsbadmin@${VM_IP}" ;
+
+  exit 0
+fi
+
 if [[ ${ACTION} = "clean" ]]; then
 
   # Delete minikube profiles
@@ -301,5 +312,6 @@ echo "  - vm-up"
 echo "  - cluster-down"
 echo "  - vm-down"
 
+echo "  - info"
 echo "  - clean"
 exit 1
