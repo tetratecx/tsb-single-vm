@@ -1,0 +1,9 @@
+spec:
+  components:
+    oap:
+      streamingLogEnabled: true
+      kubeSpec:
+        deployment:
+          env:
+          - name: SW_CORE_PERSISTENT_PERIOD
+            value: "5"

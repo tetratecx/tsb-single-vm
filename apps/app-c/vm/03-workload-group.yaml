@@ -1,0 +1,16 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: WorkloadGroup
+metadata:
+  name: app-c
+  namespace: ns-c
+  labels:
+    app: app-c
+    version: v1
+spec:
+  template:
+    labels:
+      app: app-c
+      version: v1
+    serviceAccount: sa-app-c
+    network: virtual-machines

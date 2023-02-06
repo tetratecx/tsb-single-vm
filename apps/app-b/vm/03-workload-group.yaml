@@ -1,0 +1,16 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: WorkloadGroup
+metadata:
+  name: app-b
+  namespace: ns-b
+  labels:
+    app: app-b
+    version: v1
+spec:
+  template:
+    labels:
+      app: app-b
+      version: v1
+    serviceAccount: sa-app-b
+    network: virtual-machines

@@ -1,9 +1,0 @@
-apiVersion: api.tsb.tetrate.io/v2
-kind: OrganizationSetting
-metadata:
-  name: tetrate-settings
-  organization: tetrate
-spec:
-  networkSettings:
-    networkReachability:
-      tier1: tier2

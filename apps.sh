@@ -2,13 +2,31 @@
 
 ACTION=${1}
 TIER1_MODE=${2}
+TIER2_MODE=${3}
+APP_ABC_MODE=${4}
 
 GREEN='\033[0;32m'
 NC='\033[0m'
 
-MGMT_CLUSTER_PROFILE=mgmt-cluster-m1
-ACTIVE_CLUSTER_PROFILE=active-cluster-m2
-STANDBY_CLUSTER_PROFILE=standby-cluster-m3
+MGMT_CLUSTER_PROFILE=mgmt-cluster
+ACTIVE_CLUSTER_PROFILE=active-cluster
+STANDBY_CLUSTER_PROFILE=standby-cluster
+
+TSB_CONFDIR=./config/00-tsb-config
+MGMT_CLUSTER_CONFDIR=./config/01-mgmt-cluster
+ACTIVE_CLUSTER_CONFDIR=./config/02-active-cluster
+STANDBY_CLUSTER_CONFDIR=./config/03-standby-cluster
+
+ROOT_CERTDIR=./certs
+APP_ABC_CERTDIR=${ROOT_CERTDIR}/app-abc
+MGMT_CLUSTER_CERTDIR=./certs/mgmt-cluster
+ACTIVE_CLUSTER_CERTDIR=./certs/active-cluster
+STANDBY_CLUSTER_CERTDIR=./certs/standby-cluster
+
+GW_K8S_CONFDIR=./apps/gateways
+APP_A_K8S_CONFDIR=./apps/app-a
+APP_B_K8S_CONFDIR=./apps/app-b
+APP_C_K8S_CONFDIR=./apps/app-c
 
 # Login as admin into tsb
 #   args:
@@ -21,92 +39,99 @@ function login_tsb_admin {
 DONE
 }
 
-# Pull and load demo application image
-#   args:
-#     (1) minikube profile name
-function load_demo_app_image {
-  if ! docker image inspect containers.dl.tetrate.io/obs-tester-server:1.0 &>/dev/null ; then
-    docker pull containers.dl.tetrate.io/obs-tester-server:1.0 ;
-  fi
-
-  if ! minikube --profile ${1} image ls | grep containers.dl.tetrate.io/obs-tester-server:1.0 &>/dev/null ; then
-    echo "Syncing image containers.dl.tetrate.io/obs-tester-server:1.0 to minikube profile ${1}" ;
-    minikube --profile ${1} image load containers.dl.tetrate.io/obs-tester-server:1.0 ;
-  fi
-}
-
 
 if [[ ${ACTION} = "deploy-app-abc" ]]; then
 
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
 
-  # Pull and load demo application image
-  load_demo_app_image ${ACTIVE_CLUSTER_PROFILE}
-  load_demo_app_image ${STANDBY_CLUSTER_PROFILE}
+  # Clusters, organization and tenants
+  tctl apply -f ${TSB_CONFDIR}/01-clusters.yaml ;
+  tctl apply -f ${TSB_CONFDIR}/02-organization.yaml ;
+  tctl apply -f ${TSB_CONFDIR}/03-tenants.yaml ;
 
-  # Deploy tier1 GW in mgmt cluster
+  # Deploy tier1 GW in mgmt cluster (certs if needed)
   kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;
-  kubectl apply -f ./config/mgmt-cluster/k8s/abc ;
-
-  # Deploy tier1 secrets if needed
+  kubectl apply -f ${GW_K8S_CONFDIR}/01-tier1-namespace.yaml ;
   if [[ ${TIER1_MODE} = "https" ]]; then
     kubectl create secret tls app-abc-certs -n gateway-tier1 \
-      --key certs/app-abc/server.abc.tetrate.prod.key \
-      --cert certs/app-abc/server.abc.tetrate.prod.pem ;
-  fi
-  if [[ ${TIER1_MODE} = "mtls" ]]; then
+      --key ${APP_ABC_CERTDIR}/server.abc.tetrate.prod.key \
+      --cert ${APP_ABC_CERTDIR}/server.abc.tetrate.prod.pem ;
+  elif [[ ${TIER1_MODE} = "mtls" ]]; then
     kubectl create secret generic app-abc-certs -n gateway-tier1 \
-      --from-file=tls.key=certs/app-abc/server.abc.tetrate.prod.key \
-      --from-file=tls.crt=certs/app-abc/server.abc.tetrate.prod.pem \
-      --from-file=ca.crt=certs/root-cert.pem ;
+      --from-file=tls.key=${APP_ABC_CERTDIR}/server.abc.tetrate.prod.key \
+      --from-file=tls.crt=${APP_ABC_CERTDIR}/server.abc.tetrate.prod.pem \
+      --from-file=ca.crt=${ROOT_CERTDIR}/root-cert.pem ;
+  fi
+  kubectl apply -f ${GW_K8S_CONFDIR}/02-tier1-gateway.yaml ;
+
+  # Deploy tier2 GW in active cluster
+  #   (with east-west GW if needed)
+  #   (with certs if needed)
+  kubectl config use-context ${ACTIVE_CLUSTER_PROFILE} ;
+  kubectl apply -f ${GW_K8S_CONFDIR}/03-tier2-namespace.yaml ;
+  if [[ ${TIER2_MODE} = "https" ]]; then
+    kubectl create secret tls app-abc-certs -n gateway-abc \
+      --key ${APP_ABC_CERTDIR}/server.abc.tetrate.prod.key \
+      --cert ${APP_ABC_CERTDIR}/server.abc.tetrate.prod.pem ;
+  fi
+  kubectl apply -f ${GW_K8S_CONFDIR}/04-tier2-gateway.yaml ;
+  if [[ ${APP_ABC_MODE} = "active-standby" ]] || [[ ${APP_ABC_MODE} = "active-standby-vm" ]]; then
+    kubectl apply -f ${GW_K8S_CONFDIR}/05-eastwest-gateway.yaml ;
   fi
 
-  # Deploy workspaces, groups, gateways and security for ABC (mgmt cluster)
-  tctl apply -f ./config/mgmt-cluster/tsb/abc/04-workspaces.yaml ;
-  tctl apply -f ./config/mgmt-cluster/tsb/abc/05-groups.yaml ;
+  # Deploy tier2 GW in standby cluster (if needed) with east-west GW
+  #   (with certs if needed)
+  if [[ ${APP_ABC_MODE} = "active-standby" ]] || [[ ${APP_ABC_MODE} = "active-standby-vm" ]]; then
+    kubectl config use-context ${STANDBY_CLUSTER_PROFILE} ;
+    kubectl apply -f ${GW_K8S_CONFDIR}/03-tier2-namespace.yaml ;
+    if [[ ${TIER2_MODE} = "https" ]]; then
+      kubectl create secret tls app-abc-certs -n gateway-abc \
+        --key ${APP_ABC_CERTDIR}/server.abc.tetrate.prod.key \
+        --cert ${APP_ABC_CERTDIR}/server.abc.tetrate.prod.pem ;
+    fi
+    kubectl apply -f ${GW_K8S_CONFDIR}/04-tier2-gateway.yaml ;
+    kubectl apply -f ${GW_K8S_CONFDIR}/05-eastwest-gateway.yaml ;
+  fi
+
+  # Deploy workspaces, workspacesettings, groups, gateways and security
+  tctl apply -f ${TSB_CONFDIR}/04-workspaces.yaml ;
+  if [[ ${APP_ABC_MODE} = "active" ]]; then
+    tctl apply -f ${TSB_CONFDIR}/05-workspace-settings.yaml ;
+  elif [[ ${APP_ABC_MODE} = "active-standby" ]]; then
+    tctl apply -f ${TSB_CONFDIR}/05-workspace-settings-failover.yaml ;
+  elif [[ ${APP_ABC_MODE} = "active-vm" ]]; then
+    tctl apply -f ${TSB_CONFDIR}/05-workspace-settings.yaml ;
+  elif [[ ${APP_ABC_MODE} = "active-standby-vm" ]]; then
+    tctl apply -f ${TSB_CONFDIR}/05-workspace-settings-failover.yaml ;
+  fi
+  tctl apply -f ${TSB_CONFDIR}/06-groups.yaml ;
   if [[ ${TIER1_MODE} = "http" ]]; then
-    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-tier1-http.yaml ;
-    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-ingress-http.yaml ;
-  fi
-  if [[ ${TIER1_MODE} = "https" ]]; then
-    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-tier1-https.yaml ;
-    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-ingress-https.yaml ;
-  fi
-  if [[ ${TIER1_MODE} = "mtls" ]]; then
-    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-tier1-mtls.yaml ;
-    tctl apply -f ./config/mgmt-cluster/tsb/abc/06-ingress-https.yaml ;
+    tctl apply -f ${TSB_CONFDIR}/07-tier1-http.yaml ;
+  elif [[ ${TIER1_MODE} = "https" ]]; then
+    tctl apply -f ${TSB_CONFDIR}/07-tier1-https.yaml ;
+  elif [[ ${TIER1_MODE} = "mtls" ]]; then
+    tctl apply -f ${TSB_CONFDIR}/07-tier1-mtls.yaml ;
   fi 
-  tctl apply -f ./config/mgmt-cluster/tsb/abc/07-security.yaml ;
-
-
+  if [[ ${TIER2_MODE} = "http" ]]; then
+    tctl apply -f ${TSB_CONFDIR}/08-ingress-http.yaml ;
+  elif [[ ${TIER2_MODE} = "https" ]]; then
+    tctl apply -f ${TSB_CONFDIR}/08-ingress-https.yaml ;
+  fi 
+  tctl apply -f ${TSB_CONFDIR}/09-security.yaml ;
 
   # Application deployment in active cluster
   kubectl config use-context ${ACTIVE_CLUSTER_PROFILE} ;
-  kubectl apply -f ./config/active-cluster/apps/abc ;
-  if [[ ${TIER1_MODE} = "https" ]]; then
-    kubectl create secret tls app-abc-certs -n gateway-abc \
-      --key certs/app-abc/server.abc.tetrate.prod.key \
-      --cert certs/app-abc/server.abc.tetrate.prod.pem ;
-  fi
-  if [[ ${TIER1_MODE} = "mtls" ]]; then
-    kubectl create secret tls app-abc-certs -n gateway-abc \
-      --key certs/app-abc/server.abc.tetrate.prod.key \
-      --cert certs/app-abc/server.abc.tetrate.prod.pem ;
-  fi
+  kubectl apply -f ${APP_A_K8S_CONFDIR}/k8s ;
+  kubectl apply -f ${APP_B_K8S_CONFDIR}/k8s ;
+  kubectl apply -f ${APP_C_K8S_CONFDIR}/k8s ;
 
   # Application deployment in standby cluster
-  kubectl config use-context ${STANDBY_CLUSTER_PROFILE} ;
-  kubectl apply -f ./config/standby-cluster/apps/abc ;
-  if [[ ${TIER1_MODE} = "https" ]]; then
-    kubectl create secret tls app-abc-certs -n gateway-abc \
-      --key certs/app-abc/server.abc.tetrate.prod.key \
-      --cert certs/app-abc/server.abc.tetrate.prod.pem ;
-  fi
-  if [[ ${TIER1_MODE} = "mtls" ]]; then
-    kubectl create secret tls app-abc-certs -n gateway-abc \
-      --key certs/app-abc/server.abc.tetrate.prod.key \
-      --cert certs/app-abc/server.abc.tetrate.prod.pem ;
+  if [[ ${APP_ABC_MODE} = "active-standby" ]] || [[ ${APP_ABC_MODE} = "active-standby-vm" ]]; then
+    kubectl config use-context ${STANDBY_CLUSTER_PROFILE} ;
+    kubectl apply -f ${APP_A_K8S_CONFDIR}/k8s ;
+    kubectl apply -f ${APP_B_K8S_CONFDIR}/k8s ;
+    kubectl apply -f ${APP_C_K8S_CONFDIR}/k8s ;
   fi
 
   exit 0
@@ -118,150 +143,30 @@ if [[ ${ACTION} = "undeploy-app-abc" ]]; then
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
 
-  # Application removal in standby cluster
-  kubectl config use-context ${STANDBY_CLUSTER_PROFILE} ;
-  kubectl delete -f ./config/standby-cluster/apps/abc ;
+  # Delete tsb configuration
+  for TSB_FILE in $(ls -1 ${TSB_CONFDIR} | sort -r) ; do
+    tctl delete -f ${TSB_CONFDIR}/${TSB_FILE} 2>/dev/null ;
+  done
 
-  # Application removal in active cluster
-  kubectl config use-context ${ACTIVE_CLUSTER_PROFILE} ;
-  kubectl delete -f ./config/active-cluster/apps/abc ;
-
-  # Remove workspaces, groups, gateways and security for ABC (mgmt cluster)
-  tctl delete -f ./config/mgmt-cluster/tsb/abc/07-security.yaml ;
-  if [[ ${TIER1_MODE} = "http" ]]; then
-    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-ingress-http.yaml &>/dev/null;
-    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-tier1-http.yaml &>/dev/null;
-  fi
-  if [[ ${TIER1_MODE} = "https" ]]; then
-    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-ingress-https.yaml &>/dev/null;
-    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-tier1-https.yaml &>/dev/null;
-  fi
-  if [[ ${TIER1_MODE} = "mtls" ]]; then
-    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-ingress-https.yaml &>/dev/null;
-    tctl delete -f ./config/mgmt-cluster/tsb/abc/06-tier1-mtls.yaml &>/dev/null;
-  fi 
-  tctl delete -f ./config/mgmt-cluster/tsb/abc/05-groups.yaml ;
-  tctl delete -f ./config/mgmt-cluster/tsb/abc/04-workspaces.yaml ;
-
-  # Remove tier1 GW in mgmt cluster
+  # Delete kubernetes configuration in mgmt cluster
   kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;
-  kubectl delete -f ./config/mgmt-cluster/k8s/abc ;
-  kubectl delete secret app-abc-certs -n gateway-tier1
+  kubectl delete -f ${GW_K8S_CONFDIR} 2>/dev/null ;
 
-  exit 0
-fi
-
-
-if [[ ${ACTION} = "deploy-app-def" ]]; then
-
-  # Login again as tsb admin in case of a session time-out
-  login_tsb_admin tetrate ;
-
-  # Pull and load demo application image
-  load_demo_app_image ${ACTIVE_CLUSTER_PROFILE}
-  load_demo_app_image ${STANDBY_CLUSTER_PROFILE}
-
-  # Deploy tier1 GW in mgmt cluster
-  kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;
-  kubectl apply -f ./config/mgmt-cluster/k8s/def ;
-
-  # Deploy tier1 secrets if needed
-  if [[ ${TIER1_MODE} = "https" ]]; then
-    kubectl create secret tls app-def-certs -n gateway-tier1 \
-      --key certs/app-def/server.def.tetrate.prod.key \
-      --cert certs/app-def/server.def.tetrate.prod.pem ;
-  fi
-  if [[ ${TIER1_MODE} = "mtls" ]]; then
-    kubectl create secret generic app-def-certs -n gateway-tier1 \
-      --from-file=tls.key=certs/app-def/server.def.tetrate.prod.key \
-      --from-file=tls.crt=certs/app-def/server.def.tetrate.prod.pem \
-      --from-file=ca.crt=certs/root-cert.pem ;
-  fi
-
-  # Deploy workspaces, groups, gateways and security for DEF (mgmt cluster)
-  tctl apply -f ./config/mgmt-cluster/tsb/def/04-workspaces.yaml ;
-  tctl apply -f ./config/mgmt-cluster/tsb/def/05-groups.yaml ;
-  if [[ ${TIER1_MODE} = "http" ]]; then
-    tctl apply -f ./config/mgmt-cluster/tsb/def/06-tier1-http.yaml ;
-    tctl apply -f ./config/mgmt-cluster/tsb/def/06-ingress-http.yaml ;
-  fi
-  if [[ ${TIER1_MODE} = "https" ]]; then
-    tctl apply -f ./config/mgmt-cluster/tsb/def/06-tier1-https.yaml ;
-    tctl apply -f ./config/mgmt-cluster/tsb/def/06-ingress-https.yaml ;
-  fi
-  if [[ ${TIER1_MODE} = "mtls" ]]; then
-    tctl apply -f ./config/mgmt-cluster/tsb/def/06-tier1-mtls.yaml ;
-    tctl apply -f ./config/mgmt-cluster/tsb/def/06-ingress-https.yaml ;
-  fi 
-  tctl apply -f ./config/mgmt-cluster/tsb/def/07-security.yaml ;
-
-  # Application deployment in active cluster
+  # Delete kubernetes configuration in active cluster
   kubectl config use-context ${ACTIVE_CLUSTER_PROFILE} ;
-  kubectl apply -f ./config/active-cluster/apps/def ;
-  if [[ ${TIER1_MODE} = "https" ]]; then
-    kubectl create secret tls app-def-certs -n gateway-def \
-      --key certs/app-def/server.def.tetrate.prod.key \
-      --cert certs/app-def/server.def.tetrate.prod.pem ;
+  kubectl delete -f ${APP_A_K8S_CONFDIR}/k8s 2>/dev/null ;
+  kubectl delete -f ${APP_B_K8S_CONFDIR}/k8s 2>/dev/null ;
+  kubectl delete -f ${APP_C_K8S_CONFDIR}/k8s 2>/dev/null ;
+  kubectl delete -f ${GW_K8S_CONFDIR} 2>/dev/null ;
+
+  # Delete kubernetes configuration in standby cluster (if needed)
+  if [[ ${APP_ABC_MODE} = "active-standby" ]] || [[ ${APP_ABC_MODE} = "active-standby-vm" ]]; then
+    kubectl config use-context ${STANDBY_CLUSTER_PROFILE} ;
+    kubectl delete -f ${APP_A_K8S_CONFDIR}/k8s 2>/dev/null ;
+    kubectl delete -f ${APP_B_K8S_CONFDIR}/k8s 2>/dev/null ;
+    kubectl delete -f ${APP_C_K8S_CONFDIR}/k8s 2>/dev/null ;
+    kubectl delete -f ${GW_K8S_CONFDIR} 2>/dev/null ;
   fi
-  if [[ ${TIER1_MODE} = "mtls" ]]; then
-    kubectl create secret tls app-def-certs -n gateway-def \
-      --key certs/app-def/server.def.tetrate.prod.key \
-      --cert certs/app-def/server.def.tetrate.prod.pem ;
-  fi
-
-  # Application deployment in standby cluster
-  kubectl config use-context ${STANDBY_CLUSTER_PROFILE} ;
-  kubectl apply -f ./config/standby-cluster/apps/def ;
-  if [[ ${TIER1_MODE} = "https" ]]; then
-    kubectl create secret tls app-def-certs -n gateway-def \
-      --key certs/app-def/server.def.tetrate.prod.key \
-      --cert certs/app-def/server.def.tetrate.prod.pem ;
-  fi
-  if [[ ${TIER1_MODE} = "mtls" ]]; then
-    kubectl create secret tls app-def-certs -n gateway-def \
-      --key certs/app-def/server.def.tetrate.prod.key \
-      --cert certs/app-def/server.def.tetrate.prod.pem ;
-  fi
-
-  exit 0
-fi
-
-
-if [[ ${ACTION} = "undeploy-app-def" ]]; then
-
-  # Login again as tsb admin in case of a session time-out
-  login_tsb_admin tetrate ;
-
-  # Application removal in standby cluster
-  kubectl config use-context ${STANDBY_CLUSTER_PROFILE} ;
-  kubectl delete -f ./config/standby-cluster/apps/def ;
-
-  # Application removal in active cluster
-  kubectl config use-context ${ACTIVE_CLUSTER_PROFILE} ;
-  kubectl delete -f ./config/active-cluster/apps/def ;
-
-  # Remove workspaces, groups, gateways and security for DEF (mgmt cluster)
-  tctl delete -f ./config/mgmt-cluster/tsb/def/07-security.yaml ;
-  tctl delete -f ./config/mgmt-cluster/tsb/def/06-ingress.yaml ;
-  if [[ ${TIER1_MODE} = "http" ]]; then
-    tctl delete -f ./config/mgmt-cluster/tsb/def/06-ingress-http.yaml &>/dev/null;
-    tctl delete -f ./config/mgmt-cluster/tsb/def/06-tier1-http.yaml &>/dev/null;
-  fi
-  if [[ ${TIER1_MODE} = "https" ]]; then
-    tctl delete -f ./config/mgmt-cluster/tsb/def/06-ingress-https.yaml &>/dev/null;
-    tctl delete -f ./config/mgmt-cluster/tsb/def/06-tier1-https.yaml &>/dev/null;
-  fi
-  if [[ ${TIER1_MODE} = "mtls" ]]; then
-    tctl delete -f ./config/mgmt-cluster/tsb/def/06-ingress-https.yaml &>/dev/null;
-    tctl delete -f ./config/mgmt-cluster/tsb/def/06-tier1-mtls.yaml &>/dev/null;
-  fi 
-  tctl delete -f ./config/mgmt-cluster/tsb/def/05-groups.yaml ;
-  tctl delete -f ./config/mgmt-cluster/tsb/def/04-workspaces.yaml ;
-
-  # Remove tier1 GW in mgmt cluster
-  kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;
-  kubectl delete -f ./config/mgmt-cluster/k8s/def ;
-  kubectl delete secret app-def-certs -n gateway-tier1
 
   exit 0
 fi
@@ -280,10 +185,15 @@ if [[ ${ACTION} = "traffic-cmd-abc" ]]; then
   echo "*** ABC Traffic Commands ***"
   echo "****************************"
   echo
-  echo "Traffic to Active Ingress Gateway"
+  echo "Traffic to Active Ingress Gateway: HTTP"
   printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.tetrate.prod:80:${INGRESS_ACTIVE_GW_IP}\" \"http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
-  echo "Traffic to Standby Ingress Gateway"
+  echo "Traffic to Standby Ingress Gateway: HTTP"
   printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.tetrate.prod:80:${INGRESS_STANDBY_GW_IP}\" \"http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
+  echo
+  echo "Traffic to Active Ingress Gateway: HTTPS"
+  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.tetrate.prod:443:${INGRESS_ACTIVE_GW_IP}\" --cacert ca.crt=certs/root-cert.pem \"https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
+  echo "Traffic to Standby Ingress Gateway: HTTPS"
+  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.tetrate.prod:443:${INGRESS_STANDBY_GW_IP}\" --cacert ca.crt=certs/root-cert.pem \"https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
   echo
   echo
   echo "Traffic through T1 Gateway: HTTP"
@@ -299,38 +209,9 @@ if [[ ${ACTION} = "traffic-cmd-abc" ]]; then
 fi
 
 
-if [[ ${ACTION} = "traffic-cmd-def" ]]; then
-
-  kubectl config use-context ${MGMT_CLUSTER_PROFILE} ;
-  T1_GW_IP=$(kubectl get svc -n gateway-tier1 gw-tier1-def --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
-  kubectl config use-context ${ACTIVE_CLUSTER_PROFILE} ;
-  INGRESS_ACTIVE_GW_IP=$(kubectl get svc -n gateway-def gw-ingress-def --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
-
-  echo "****************************"
-  echo "*** DEF Traffic Commands ***"
-  echo "****************************"
-  echo
-  echo "Traffic to Active Ingress Gateway"
-  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"def.tetrate.prod:80:${INGRESS_ACTIVE_GW_IP}\" \"http://def.tetrate.prod/proxy/app-e.ns-e/proxy/app-f.ns-f\" ${NC}\n"
-  echo
-  echo
-  echo "Traffic through T1 Gateway: HTTP"
-  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"def.tetrate.prod:80:${T1_GW_IP}\" \"http://def.tetrate.prod/proxy/app-e.ns-e/proxy/app-f.ns-f\" ${NC}\n"
-  echo
-  echo "Traffic through T1 Gateway: HTTPS"
-  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"def.tetrate.prod:443:${T1_GW_IP}\" --cacert ca.crt=certs/root-cert.pem \"https://def.tetrate.prod/proxy/app-e.ns-e/proxy/app-f.ns-f\" ${NC}\n"
-  echo
-  echo "Traffic through T1 Gateway: MTLS"
-  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"def.tetrate.prod:443:${T1_GW_IP}\" --cacert ca.crt=certs/root-cert.pem --cert certs/app-def/client.def.tetrate.prod.pem --key certs/app-def/client.def.tetrate.prod.key \"https://def.tetrate.prod/proxy/app-e.ns-e/proxy/app-f.ns-f\" ${NC}\n"
-  echo
-  exit 0
-fi
-
 echo "Please specify one of the following action:"
-echo "  - deploy-app-abc http/https/mtls"
-echo "  - undeploy-app-abc http/https/mtls"
-echo "  - deploy-app-def http/https/mtls"
-echo "  - undeploy-app-def http/https/mtls"
+echo "  - deploy-app-abc"
+echo "  - undeploy-app-abc"
 echo "  - traffic-cmd-abc"
 echo "  - traffic-cmd-def"
 exit 1

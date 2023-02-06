@@ -1,0 +1,30 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: app-b-vm-no-iptables
+  namespace: na-a
+spec:
+  workloadSelector:
+    labels:
+      app: app-b
+      version: v1
+  ingress:
+  - defaultEndpoint: 127.0.0.1:8008
+    port:
+      name: http
+      number: 8000
+      protocol: HTTP
+  egress:
+  - bind: 127.0.0.2
+    port:
+      number: 9411
+    hosts:
+    - istio-system/*
+  - bind: 127.0.0.2
+    port:
+      number: 80
+    hosts:
+    - ns-b/app-b.ns-b.svc.cluster.local
+    - ns-b/app-b.ns-b.svc.cluster.local
+    - ns-c/app-c.ns-c.svc.cluster.local
