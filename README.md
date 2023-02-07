@@ -74,9 +74,9 @@ Note that the following binaries needs to be installed and runnable on the syste
 The following diagram shows the overal architecture of the demo in terms of how various TSB 
 components are deployed throughout the 3 clusters.
 
-<center>
+<p align="center">
 ![TSB Clusters](./imgs/POC-TSB-Clusters.drawio.png "TSB Clusters")
-</center>
+</p>
 
 **DOC REF** More information on the overal TSB architecture and its different components can
 be found [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/concepts/architecture)
@@ -88,9 +88,9 @@ be found [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/concepts/arch
 The following diagram shows to application deployments and its corresponding tier1, ingress and
 east-west gateways for an active/standby scenario.
 
-<center>
+<p align="center">
 ![Kubernetes Active/Standby Deployment](./imgs/POC-Kubernetes.drawio.png "Kubernetes Active/Standby Deployment")
-</center>
+</p>
 
 Although ingress and eastwest gateways can be combined into one single gateway, we have chosen
 to deploy seperate instances for the sake of clarity, seperation of concerns and security.
