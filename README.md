@@ -101,14 +101,14 @@ to deploy seperate instances for the sake of clarity, seperation of concerns and
 #### Active/VMs Scenario
 
 The following diagram shows to application deployments and its corresponding tier1, ingress and
-east-west gateways for a k8s/vm scenario.
+vms for a k8s/vm scenario.
 
 <p align="center">
   <img src="./imgs/POC-VM.drawio.png">
 </p>
 
-Although ingress and eastwest gateways can be combined into one single gateway, we have chosen
-to deploy seperate instances for the sake of clarity, seperation of concerns and security.
+Every application can be deployed as pod, as vm or both. In case the full application is deployed
+as both pods and vm, full redudancy is provided (equal load balancing).
 
 **DOC REF** More information our different vm onboarding options can be found
 [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/workload_onboarding)
