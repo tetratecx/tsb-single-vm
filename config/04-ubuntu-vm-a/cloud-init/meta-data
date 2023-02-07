@@ -1,0 +1,5 @@
+local-hostname: ubuntu-vm-a
+
+network-interfaces: |
+  iface enp0s3 inet dhcp
+  iface enp0s8 inet dhcp

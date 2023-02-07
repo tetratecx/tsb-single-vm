@@ -1,16 +1,25 @@
 # Temporary setup resources
 config/01-mgmt-cluster/clusteroperators.yaml
 config/01-mgmt-cluster/*.pem
+
 config/02-active-cluster/cluster-service-account.jwk
 config/02-active-cluster/controlplane-secrets.yaml
 config/02-active-cluster/controlplane.yaml
 config/02-active-cluster/onboarding-vm-patch.yaml
+
 config/03-standby-cluster/cluster-service-account.jwk
 config/03-standby-cluster/controlplane-secrets.yaml
 config/03-standby-cluster/controlplane.yaml
-config/04-ubuntu-vm/*.iso
-config/04-ubuntu-vm/*.ova
-config/04-ubuntu-vm/install-onboarding.sh
-config/04-ubuntu-vm/apps/onboarding.config.yaml
-config/04-ubuntu-vm/onboarding-agent-sample-jwt-credential-plugin
+
+config/04-ubuntu-vm-a/install-onboarding.sh
+config/04-ubuntu-vm-a/apps/onboarding.config.yaml
+config/05-ubuntu-vm-b/install-onboarding.sh
+config/05-ubuntu-vm-b/apps/onboarding.config.yaml
+config/06-ubuntu-vm-c/install-onboarding.sh
+config/06-ubuntu-vm-c/apps/onboarding.config.yaml
+
+config/**/*.iso
+config/*.ova
+
+config/onboarding-agent-sample-jwt-credential-plugin
 

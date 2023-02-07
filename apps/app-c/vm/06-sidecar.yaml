@@ -3,7 +3,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: Sidecar
 metadata:
   name: app-c-vm-no-iptables
-  namespace: na-c
+  namespace: ns-c
 spec:
   workloadSelector:
     labels:

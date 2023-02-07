@@ -3,7 +3,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: Sidecar
 metadata:
   name: app-a-vm-no-iptables
-  namespace: na-a
+  namespace: ns-a
 spec:
   workloadSelector:
     labels:

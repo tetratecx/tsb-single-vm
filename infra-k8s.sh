@@ -22,10 +22,7 @@ STANDBY_CLUSTER_PROFILE=standby-cluster
 STANDBY_CLUSTER_METALLB_STARTIP=80
 STANDBY_CLUSTER_METALLB_ENDIP=99
 
-VM_NAME=ubuntu-vm
-VM_CONFDIR=./config/04-ubuntu-vm
-
-# Configure virtualbox IP subnet 
+# Get virtualbox IP subnet 
 #   args:
 #     (1) virtualbox bridge network name
 function get_vbox_subnet {
@@ -111,37 +108,6 @@ function load_images {
   echo "DONE"
 }
 
-# Download VM if not available
-#   args:
-#     (1) ova download url
-#     (2) target file
-function download_vm {
-  if [[ -f "${2}" ]]; then
-    echo "${2} exists, skipping download"
-    return
-  fi
-  curl ${1} --output ${2}
-}
-
-# Wait for vm bridge ip address to become available
-#   args:
-#     (1) vm name
-function wait_vm_bridge_ip {
-  echo "Waiting for vm ${1} to get bridge ip address"
-  while vboxmanage guestproperty get ${1} "/VirtualBox/GuestInfo/Net/0/V4/IP" | grep -q 'No value set!' &>/dev/null; do
-    echo -n .
-    sleep 5
-  done
-  echo "DONE"
-}
-
-# Get vm bridge ip address
-#   args:
-#     (1) vm name
-function get_vm_bridge_ip {
-  echo $(vboxmanage guestproperty get ${1} "/VirtualBox/GuestInfo/Net/0/V4/IP" | cut -d " " -f2)
-}
-
 ######################## START OF ACTIONS ########################
 
 if [[ ${ACTION} = "cluster-up" ]]; then
@@ -204,53 +170,7 @@ if [[ ${ACTION} = "cluster-up" ]]; then
   exit 0
 fi
 
-if [[ ${ACTION} = "vm-up" ]]; then
-  OVA_URL=https://cloud-images.ubuntu.com/jammy/20230110/jammy-server-cloudimg-amd64.ova
-  OVA_VM_NAME=ubuntu-jammy-22.04-cloudimg-20230110
-
-  VM_FILE=${VM_CONFDIR}/${VM_NAME}.ova
-  VM_CLOUD_INIT_ISO=${VM_CONFDIR}/${VM_NAME}-cloud-init.iso
-  CLOUD_INIT_USER_DATA=${VM_CONFDIR}/cloud-init/user-data
-  CLOUD_INIT_META_DATA=${VM_CONFDIR}/cloud-init/meta-data
-
-  if vboxmanage list vms | grep ubuntu-vm &>/dev/null ; then
-    echo "VM ${VM_NAME} already available"
-  else
-    # Download VM ova file if not present
-    download_vm ${OVA_URL} ${VM_FILE} ;
-
-    # Import and rename ova file into virtualbox
-    vboxmanage import ${VM_FILE} ;
-    vboxmanage modifyvm ${OVA_VM_NAME} --name ${VM_NAME} ;
-
-    # Generate cloud-init iso image
-    rm -f ${VM_CLOUD_INIT} ;
-    genisoimage -output ${VM_CLOUD_INIT_ISO} -volid cidata -joliet -rock ${CLOUD_INIT_USER_DATA} ${CLOUD_INIT_META_DATA} ;
-
-    # Add second adapter to bridge to the minikube clusters
-    vboxmanage modifyvm ${VM_NAME} --nic2 hostonly --hostonlyadapter2 vboxnet0 --nictype2 virtio ;
-    
-    # Add cloud-init iso image
-    vboxmanage storageattach ${VM_NAME} --storagectl "IDE" --port 0 --device 0 --type dvddrive --medium ${VM_CLOUD_INIT_ISO} ;
-  fi
-
-  if vboxmanage list runningvms | grep ubuntu-vm &>/dev/null ; then
-    echo "VM ${VM_NAME} already running"
-  else
-    # Start up the VM
-    vboxmanage startvm ${VM_NAME} --type headless ;
-  fi 
-
-  # Get the bridge ip from the vm
-  wait_vm_bridge_ip ${VM_NAME} ;
-  VM_IP=$(get_vm_bridge_ip ${VM_NAME}) ;
-  echo "VM is available through ssh (tsbadmin/tsbadmin)" ;
-  echo "ssh -i ${VM_CONFDIR}/tsbadmin -o StrictHostKeyChecking=no tsbadmin@${VM_IP}" ;
-
-  exit 0
-fi
-
-if [[ ${ACTION} = "mgmt-active-down" ]]; then
+if [[ ${ACTION} = "cluster-down" ]]; then
 
   if [[ ${CLUSTER} = "mgmt-cluster" ]]; then
     CLUSTER_PROFILE=${MGMT_CLUSTER_PROFILE}
@@ -272,21 +192,11 @@ if [[ ${ACTION} = "mgmt-active-down" ]]; then
   exit 0
 fi
 
-if [[ ${ACTION} = "vm-down" ]]; then
-
-  # Power off the VM
-  vboxmanage controlvm ${VM_NAME} poweroff ;
-
-  exit 0
-fi
-
 if [[ ${ACTION} = "info" ]]; then
 
   echo "kubectl --profile ${MGMT_CLUSTER_PROFILE} get pods -A"
   echo "kubectl --profile ${ACTIVE_CLUSTER_PROFILE} get pods -A"
   echo "kubectl --profile ${STANDBY_CLUSTER_PROFILE} get pods -A"
-  VM_IP=$(get_vm_bridge_ip ${VM_NAME}) ;
-  echo "ssh -i ${VM_CONFDIR}/tsbadmin -o StrictHostKeyChecking=no tsbadmin@${VM_IP}" ;
 
   exit 0
 fi
@@ -298,20 +208,12 @@ if [[ ${ACTION} = "clean" ]]; then
   minikube delete --profile ${ACTIVE_CLUSTER_PROFILE} 2>/dev/null ;
   minikube delete --profile ${STANDBY_CLUSTER_PROFILE} 2>/dev/null ;
 
-  # Remove the VM
-  vboxmanage controlvm ${VM_NAME} poweroff 2>/dev/null ;
-  vboxmanage unregistervm ${VM_NAME} --delete 2>/dev/null ;
-
   exit 0
 fi
 
 echo "Please specify one of the following action:"
 echo "  - cluster-up"
-echo "  - vm-up"
-
 echo "  - cluster-down"
-echo "  - vm-down"
-
 echo "  - info"
 echo "  - clean"
 exit 1

@@ -8,15 +8,15 @@ host:
         path: /usr/local/bin/onboarding-agent-sample-jwt-credential-plugin
         env:
         - name: SAMPLE_JWT_ISSUER
-          value: "https://sample-jwt-issuer.example"
+          value: "https://issuer-c.tetrate.prod"
         - name: SAMPLE_JWT_ISSUER_KEY
           value: "/var/run/secrets/onboarding-agent-sample-jwt-credential-plugin/jwt-issuer.jwk"
         - name: SAMPLE_JWT_SUBJECT
-          value: "ubuntu-vm.tetrate.prod"
+          value: "ubuntu-vm-c.tetrate.prod"
         - name: SAMPLE_JWT_ATTRIBUTES_FIELD
           value: "custom_attributes"
         - name: SAMPLE_JWT_ATTRIBUTES
-          value: "instance_name=ubuntu-vm,instance_role=app-b,region=region1"
+          value: "instance_name=ubuntu-vm-c,instance_role=app-c,region=region1"
     hostinfo:
       basic:
         networkInterfaces:

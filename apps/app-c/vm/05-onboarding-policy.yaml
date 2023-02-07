@@ -8,7 +8,7 @@ spec:
   allow:
   - workloads:
     - jwt:
-        issuer: "https://sample-jwt-issuer.example"
+        issuer: "https://issuer-c.tetrate.prod"
     onboardTo:
     - workloadGroupSelector:
         matchLabels:

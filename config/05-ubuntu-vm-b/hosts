@@ -1,0 +1,10 @@
+
+# The following lines are insterted for istio
+127.0.0.2 zipkin.istio-system.svc.cluster.local
+127.0.0.2 app-a.ns-a.svc.cluster.local
+127.0.0.2 app-b.ns-b.svc.cluster.local
+127.0.0.2 app-c.ns-c.svc.cluster.local
+127.0.0.2 zipkin.istio-system
+127.0.0.2 app-a.ns-a
+127.0.0.2 app-b.ns-b
+127.0.0.2 app-c.ns-c

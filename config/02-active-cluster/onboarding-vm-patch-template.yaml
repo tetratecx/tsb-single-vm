@@ -10,10 +10,24 @@ spec:
         authentication:
           jwt:
             issuers:
-            - issuer: https://sample-jwt-issuer.example
-              shortName: my-corp
+            - issuer: https://issuer-a.tetrate.prod
+              shortName: ubuntu-vm-a
               tokenFields:
                 attributes:
                   jsonPath: .custom_attributes
               jwks: |
-                __TSB_VM_ONBOARDING_JWKS__
+                ${JWKS_VM_A}
+            - issuer: https://issuer-b.tetrate.prod
+              shortName: ubuntu-vm-b
+              tokenFields:
+                attributes:
+                  jsonPath: .custom_attributes
+              jwks: |
+                ${JWKS_VM_B}
+            - issuer: https://issuer-c.tetrate.prod
+              shortName: ubuntu-vm-c
+              tokenFields:
+                attributes:
+                  jsonPath: .custom_attributes
+              jwks: |
+                ${JWKS_VM_C}

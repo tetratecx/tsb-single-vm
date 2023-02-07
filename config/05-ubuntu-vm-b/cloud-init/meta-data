@@ -1,4 +1,4 @@
-local-hostname: ubuntu-vm
+local-hostname: ubuntu-vm-b
 
 network-interfaces: |
   iface enp0s3 inet dhcp

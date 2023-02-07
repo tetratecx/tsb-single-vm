@@ -21,10 +21,12 @@ TIER1_MODE := http
 TIER2_MODE := http
 # TIER2_MODE := https
 
-# APP_ABC_MODE := active
+APP_ABC_MODE := active
 # APP_ABC_MODE := active-standby
-APP_ABC_MODE := active-vm
-# APP_ABC_MODE := active-standby-vm
+
+VM_APP_A := enabled
+VM_APP_B := enabled
+VM_APP_C := enabled
 
 
 check-credentials:
@@ -36,70 +38,83 @@ ifeq ($(TSB_DOCKER_PASSWORD),)
 endif
 
 prereqs: ## Make sure prerequisites are satisfied
-	@/bin/sh -c './init.sh ${TSB_VERSION}'
+	@/bin/bash -c './init.sh ${TSB_VERSION}'
 
 ###########################
 infra-mgmt-up: check-credentials ## Bring up and configure mgmt minikube cluster
-	@/bin/sh -c './infra.sh cluster-up mgmt-cluster ${K8S_VERSION}'
+	@/bin/bash -c './infra-k8s.sh cluster-up mgmt-cluster ${K8S_VERSION}'
 
 infra-active-up: check-credentials ## Bring up and configure active minikube cluster
-	@/bin/sh -c './infra.sh cluster-up active-cluster ${K8S_VERSION}'
+	@/bin/bash -c './infra-k8s.sh cluster-up active-cluster ${K8S_VERSION}'
 
 infra-standby-up: check-credentials ## Bring up and configure standby cluster
-	@/bin/sh -c './infra.sh cluster-up standby-cluster ${K8S_VERSION}'
+	@/bin/bash -c './infra-k8s.sh cluster-up standby-cluster ${K8S_VERSION}'
 
 infra-vm-up: check-credentials ## Bring up and configure vm
-	@/bin/sh -c './infra.sh vm-up'
+	@/bin/bash -c 'if [[ ${VM_APP_A} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-a ; fi'
+	@/bin/bash -c 'if [[ ${VM_APP_B} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-b ; fi'
+	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-c ; fi'
 
 ###########################
 infra-mgmt-down: check-credentials ## Bring down and delete mgmt clusters
-	@/bin/sh -c './infra.sh cluster-down mgmt-cluster'
+	@/bin/bash -c './infra-k8s.sh cluster-down mgmt-cluster'
 
 infra-active-down: check-credentials ## Bring down and delete active minikube cluster
-	@/bin/sh -c './infra.sh cluster-down active-cluster'
+	@/bin/bash -c './infra-k8s.sh cluster-down active-cluster'
 
 infra-standby-down: check-credentials ## Bring down and delete standby cluster
-	@/bin/sh -c './infra.sh cluster-down standby-cluster'
+	@/bin/bash -c './infra-k8s.sh cluster-down standby-cluster'
 
 infra-vm-down: check-credentials ## Bring down and delete vm
-	@/bin/sh -c './infra.sh vm-down'
+	@/bin/bash -c './infra-vm.sh vm-down'
 
 
 ###########################
 tsb-mgmt-install: ## Install TSB management, control and data plane in mgmt cluster (demo profile)
-	@/bin/sh -c './tsb.sh mgmt-cluster-install'
+	@/bin/bash -c './tsb.sh mgmt-cluster-install'
 
 tsb-active-install: ## Install TSB control and data plane in active cluster
-	@/bin/sh -c './tsb.sh app-cluster-install active-cluster'
+	@/bin/bash -c './tsb.sh app-cluster-install active-cluster'
 
 tsb-standby-install: ## Install TSB control and data plane in stanby cluster
-	@/bin/sh -c './tsb.sh app-cluster-install standby-cluster'
+	@/bin/bash -c './tsb.sh app-cluster-install standby-cluster'
 
 
 
 config-tsb: ## Configure TSB
-	@/bin/sh -c './tsb.sh config-tsb'
+	@/bin/bash -c './tsb.sh config-tsb'
 
 reset-tsb: ## Reset all TSB configuration
-	@/bin/sh -c './tsb.sh reset-tsb'
+	@/bin/bash -c './tsb.sh reset-tsb'
 
-deploy-app-abc: check-credentials ## Deploy abc application
-	@/bin/sh -c './apps.sh deploy-app-abc ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE}'
+deploy-app-abc-k8s: check-credentials ## Deploy abc application
+	@/bin/bash -c './apps-k8s.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE}'
 
-undeploy-app-abc: ## Undeploy abc application
-	@/bin/sh -c './apps.sh undeploy-app-abc ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE}'
+deploy-app-abc-vm: check-credentials ## Deploy abc application
+	@/bin/bash -c 'if [[ ${VM_APP_A} = "enabled" ]] ; then ./apps-vm.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-a ; fi'
+	@/bin/bash -c 'if [[ ${VM_APP_B} = "enabled" ]] ; then ./apps-vm.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-b ; fi'
+	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./apps-vm.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-c ; fi'
+
+undeploy-app-abc-k8s: ## Undeploy abc application as pod
+	@/bin/bash -c './apps-k8s.sh undeploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE}'
+
+undeploy-app-abc-vm: ## Undeploy abc application as vm
+	@/bin/bash -c 'if [[ ${VM_APP_A} = "enabled" ]] ; then ./apps-vm.sh undeploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-a ; fi'
+	@/bin/bash -c 'if [[ ${VM_APP_B} = "enabled" ]] ; then ./apps-vm.sh undeploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-b ; fi'
+	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./apps-vm.sh undeploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-c ; fi'
 
 test-app-abc: ## Generate curl commands to test ABC traffic
-	@/bin/sh -c './apps.sh traffic-cmd-abc'
+	@/bin/bash -c './apps.sh traffic-cmd-abc'
 
 
 
 info: ## Get infra environment info
-	@/bin/sh -c './infra.sh info'
+	@/bin/bash -c './infra-k8s.sh info'
+	@/bin/bash -c './infra-vm.sh info'
 
 clean: ## Clean up all resources
-	@/bin/sh -c './infra.sh clean'
-	@/bin/sh -c 'rm -f \
+	@/bin/bash -c './infra.sh clean'
+	@/bin/bash -c 'rm -f \
 		./config/01-mgmt-cluster/clusteroperators.yaml \
 		./config/01-mgmt-cluster/*.pem \
 		./config/02-active-cluster/cluster-service-account.jwk \
