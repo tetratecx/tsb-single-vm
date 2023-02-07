@@ -3,13 +3,14 @@
 
 ## Introduction
 
-The purpose of this repo is to showcase TSB multi cluster capabilities. In order to do so, we
-will deploy 2 micro service based applications:
+The purpose of this repo is to showcase TSB multi cluster and VM onboarding capabilities. In order to do so, we
+will deploy a micro service based application call **App ABC**:
 
- - **App ABC:** deployed in an active/standby configuration providing full redundancy
- - **App DEF:** D and E deployed in the one cluster, F deployed in another cluster
+ - You have the ability to deploy it in active mode
+ - You have the ability to deploy it in active/standby mode
+ - You have the ability to deploy it on VMs
 
-We will be using minikube to spin up the demo environment.
+We will be using [minikube](https://minikube.sigs.k8s.io/docs/start) and [virtualbox](https://www.virtualbox.org) to spin up the demo environment.
 
 Before digging into the demo ENV itself, we highly recommend reading up on the conceptual
 introduction in our official documentation [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/concepts).
@@ -22,27 +23,25 @@ The demo is fully scripted using shell scripts and makefile target.
 $ make
 help                           This help
 prereqs                        Make sure prerequisites are satisfied
-minikube-up                    Bring up and configure minikube clusters
-minikube-down                  Bring down and delete minikube clusters
-install-mgmt-plane             Install TSB management plane
-onboard-app-clusters           Onboard application clusters
-config-tsb                     Configure TSB
+infra-mgmt-up                  Bring up and configure mgmt minikube cluster
+infra-active-up                Bring up and configure active minikube cluster
+infra-standby-up               Bring up and configure standby minikube cluster
+infra-vm-up                    Bring up and configure vms
+infra-mgmt-down                Bring down and delete mgmt minikube cluster
+infra-active-down              Bring down and delete active minikube cluster
+infra-standby-down             Bring down and delete standby minikube cluster
+infra-vm-down                  Bring down and delete vms
+tsb-mgmt-install               Install TSB management/control/data plane in mgmt cluster (demo profile)
+tsb-active-install             Install TSB control/data plane in active cluster
+tsb-standby-install            Install TSB control/data plane in stanby cluster
 reset-tsb                      Reset all TSB configuration
-deploy-app-abc-http            Deploy abc application (tier1 http)
-deploy-app-abc-https           Deploy abc application (tier1 https)
-deploy-app-abc-mtls            Deploy abc application (tier1 mtls)
-undeploy-app-abc-http          Undeploy abc application (tier1 http)
-undeploy-app-abc-https         Undeploy abc application (tier1 https)
-undeploy-app-abc-mtls          Undeploy abc application (tier1 mtls)
-deploy-app-def-http            Deploy def application (tier1 http)
-deploy-app-def-https           Deploy def application (tier1 https)
-deploy-app-def-mtls            Deploy def application (tier1 mtls)
-undeploy-app-def-http          Undeploy def application (tier1 http)
-undeploy-app-def-https         Undeploy def application (tier1 https)
-undeploy-app-def-mtls          Undeploy def application (tier1 mtls)
+deploy-app-abc-k8s             Deploy abc application on kubernetes
+deploy-app-abc-vm              Deploy abc application on vms
+undeploy-app-abc-k8s           Undeploy abc application from kubernetes
+undeploy-app-abc-vm            Undeploy abc application from vms
 test-app-abc                   Generate curl commands to test ABC traffic
-test-app-def                   Generate curl commands to test DEF traffic
-clean                          Clean resources
+info                           Get infra environment info
+clean                          Clean up all resources
 ```
 
 In order to be able to sync the TSB docker images, you will need to set the following
@@ -54,12 +53,16 @@ export TSB_DOCKER_PASSWORD=<password>
 ```
 
 Note that the following binaries needs to be installed and runnable on the system:
- - **tctl** : the command line utility to interact with the TSB API's
- - **minikube** : we will be using the default docker drivers
+
+ - **awk** : to parse command line output
+ - **curl** : to download cloud ubuntu vm
+ - **docker** : to pull tsb images
  - **expect** : to automate shell interaction
- - **docker** : this demo is using docker support within minikube
+ - **genisoimage** : to generate cloud-init for vms
  - **kubectl** : to interact with the kubernetes clusters
- - **jq** : to parse json of docker/minikube network (subnet extraction)
+ - **minikube** : we will be using the virtualbox driver
+ - **tctl** : the command line utility to interact with the tsb api's
+ - **vboxmanage** : to automate vm handling
 
 **DOC REF** Installation instructions for tctl can be found [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/reference/cli/guide/index#installation)
 
@@ -78,10 +81,12 @@ be found [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/concepts/arch
 
 ### Kubernetes deployment design
 
-The following diagram shows to application deployments and its corresponding tier1, ingress and
-east-west gateways.
+#### Active/Standby
 
-![Kubernetes Deployment](./imgs/POC-Kubernetes.drawio.png "Kubernetes Deployment")
+The following diagram shows to application deployments and its corresponding tier1, ingress and
+east-west gateways for an active/standby scenario.
+
+![Kubernetes Active/Standby Deployment](./imgs/POC-Kubernetes.drawio.png "Kubernetes Active/Standby Deployment")
 
 Although ingress and eastwest gateways can be combined into one single gateway, we have chosen
 to deploy seperate instances for the sake of clarity, seperation of concerns and security.
@@ -89,7 +94,21 @@ to deploy seperate instances for the sake of clarity, seperation of concerns and
 **DOC REF** More information on the different gateway types supported by TSB can be found
 [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/howto/gateway)
 
-### TSB tenancy design
+#### Active/VMs
+
+The following diagram shows to application deployments and its corresponding tier1, ingress and
+east-west gateways for a k8s/vm scenario.
+
+![Kubernetes Active/VM Deployment](./imgs/POC-Kubernetes.drawio.png "Kubernetes Active/VM Deployment")
+
+Although ingress and eastwest gateways can be combined into one single gateway, we have chosen
+to deploy seperate instances for the sake of clarity, seperation of concerns and security.
+
+**DOC REF** More information our different vm onboarding options can be found
+[here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/workload_onboarding)
+
+
+### TSB multi-tenancy design
 
 The following diagram shows how we configured TSB multi-tenancy concepts like organization,
 tenants, workspaces and groups, which form the foundation of our RBAC system and also play
@@ -102,6 +121,9 @@ application deployment strategy and therefor provides a mapping to your organiza
 structure, compared to traditional K8s RBAC approaches.
 
 **DOC REF** More information on our tenancy concepts can be found in the official documentation [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/concepts/security)
+
+Note also that the multi-tenancy design takes complete abstraction of your workloads in terms of where
+and how they are hosted (PODs vs VMs).
 
 
 ## Installation

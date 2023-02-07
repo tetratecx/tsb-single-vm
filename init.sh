@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 TSB_VERSION=${1}
-DEPENDENCIES=( tctl minikube expect docker kubectl jq awk )
+DEPENDENCIES=( awk curl docker expect genisoimage kubectl minikube tctl vboxmanage )
 
 # check necessary dependencies are installed
 for dep in "${DEPENDENCIES[@]}"

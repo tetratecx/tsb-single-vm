@@ -209,6 +209,5 @@ fi
 echo "Please specify one of the following action:"
 echo "  - mgmt-cluster-install"
 echo "  - app-cluster-install"
-echo "  - config-tsb"
 echo "  - reset-tsb"
 exit 1

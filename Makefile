@@ -47,58 +47,53 @@ infra-mgmt-up: check-credentials ## Bring up and configure mgmt minikube cluster
 infra-active-up: check-credentials ## Bring up and configure active minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-up active-cluster ${K8S_VERSION}'
 
-infra-standby-up: check-credentials ## Bring up and configure standby cluster
+infra-standby-up: check-credentials ## Bring up and configure standby minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-up standby-cluster ${K8S_VERSION}'
 
-infra-vm-up: check-credentials ## Bring up and configure vm
+infra-vm-up: check-credentials ## Bring up and configure vms
 	@/bin/bash -c 'if [[ ${VM_APP_A} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-a ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_B} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-b ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-c ; fi'
 
 ###########################
-infra-mgmt-down: check-credentials ## Bring down and delete mgmt clusters
+infra-mgmt-down: check-credentials ## Bring down and delete mgmt minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-down mgmt-cluster'
 
 infra-active-down: check-credentials ## Bring down and delete active minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-down active-cluster'
 
-infra-standby-down: check-credentials ## Bring down and delete standby cluster
+infra-standby-down: check-credentials ## Bring down and delete standby minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-down standby-cluster'
 
-infra-vm-down: check-credentials ## Bring down and delete vm
+infra-vm-down: check-credentials ## Bring down and delete vms
 	@/bin/bash -c './infra-vm.sh vm-down'
 
 
 ###########################
-tsb-mgmt-install: ## Install TSB management, control and data plane in mgmt cluster (demo profile)
+tsb-mgmt-install: ## Install TSB management/control/data plane in mgmt cluster (demo profile)
 	@/bin/bash -c './tsb.sh mgmt-cluster-install'
 
-tsb-active-install: ## Install TSB control and data plane in active cluster
+tsb-active-install: ## Install TSB control/data plane in active cluster
 	@/bin/bash -c './tsb.sh app-cluster-install active-cluster'
 
-tsb-standby-install: ## Install TSB control and data plane in stanby cluster
+tsb-standby-install: ## Install TSB control/data plane in stanby cluster
 	@/bin/bash -c './tsb.sh app-cluster-install standby-cluster'
-
-
-
-config-tsb: ## Configure TSB
-	@/bin/bash -c './tsb.sh config-tsb'
 
 reset-tsb: ## Reset all TSB configuration
 	@/bin/bash -c './tsb.sh reset-tsb'
 
-deploy-app-abc-k8s: check-credentials ## Deploy abc application
+deploy-app-abc-k8s: check-credentials ## Deploy abc application on kubernetes
 	@/bin/bash -c './apps-k8s.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE}'
 
-deploy-app-abc-vm: check-credentials ## Deploy abc application
+deploy-app-abc-vm: check-credentials ## Deploy abc application on vms
 	@/bin/bash -c 'if [[ ${VM_APP_A} = "enabled" ]] ; then ./apps-vm.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-a ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_B} = "enabled" ]] ; then ./apps-vm.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-b ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./apps-vm.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-c ; fi'
 
-undeploy-app-abc-k8s: ## Undeploy abc application as pod
+undeploy-app-abc-k8s: ## Undeploy abc application from kubernetes
 	@/bin/bash -c './apps-k8s.sh undeploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE}'
 
-undeploy-app-abc-vm: ## Undeploy abc application as vm
+undeploy-app-abc-vm: ## Undeploy abc application from vms
 	@/bin/bash -c 'if [[ ${VM_APP_A} = "enabled" ]] ; then ./apps-vm.sh undeploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-a ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_B} = "enabled" ]] ; then ./apps-vm.sh undeploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-b ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./apps-vm.sh undeploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-c ; fi'
