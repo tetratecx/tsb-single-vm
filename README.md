@@ -58,13 +58,14 @@ Note that the following binaries needs to be installed and runnable on the syste
 
  - **awk** : to parse command line output
  - **curl** : to download cloud ubuntu vm
- - **docker** : to pull tsb images
- - **expect** : to automate shell interaction
- - **genisoimage** : to generate cloud-init for vms
- - **kubectl** : to interact with the kubernetes clusters
- - **minikube** : we will be using the virtualbox driver
- - **tctl** : the command line utility to interact with the tsb api's
- - **vboxmanage** : to automate vm handling
+ - **docker** : to pull tsb images [download](https://docs.docker.com/engine/install)
+ - **expect** : to automate shell interaction 
+ - **genisoimage** : to generate cloud-init for vms [download](https://pkgs.org/download/genisoimage)
+ - **kubectl** : to interact with the kubernetes clusters [download](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux)
+ - **minikube** : we will be using the virtualbox driver [download](https://minikube.sigs.k8s.io/docs/start)
+ - **tctl** : the command line utility to interact with the tsb api's [download](https://docs.tetrate.io/service-bridge/1.6.x/en-us/reference/cli/guide/index#installation)
+ - **vboxmanage** : to automate vm handling [download](https://www.virtualbox.org/wiki/Linux_Downloads)
+ - **virtualbox** : as vm driver for minikube [download](https://www.virtualbox.org/wiki/Linux_Downloads)
 
 **DOC REF** Installation instructions for tctl can be found [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/reference/cli/guide/index#installation)
 
