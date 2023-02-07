@@ -4,7 +4,7 @@
 ## Introduction
 
 The purpose of this repo is to showcase TSB multi cluster and VM onboarding capabilities. In order to do so, we
-will deploy a micro service based application call **App ABC**:
+will deploy a micro-service based demo application called **App ABC**:
 
  - You have the ability to deploy it in active mode
  - You have the ability to deploy it in active/standby mode
