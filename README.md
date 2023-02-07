@@ -76,7 +76,7 @@ components are deployed throughout the 3 clusters.
 
 <p align="center">
 ![TSB Clusters](./imgs/POC-TSB-Clusters.drawio.png "TSB Clusters")
-</p>
+
 
 **DOC REF** More information on the overal TSB architecture and its different components can
 be found [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/concepts/architecture)
@@ -90,7 +90,7 @@ east-west gateways for an active/standby scenario.
 
 <p align="center">
 ![Kubernetes Active/Standby Deployment](./imgs/POC-Kubernetes.drawio.png "Kubernetes Active/Standby Deployment")
-</p>
+
 
 Although ingress and eastwest gateways can be combined into one single gateway, we have chosen
 to deploy seperate instances for the sake of clarity, seperation of concerns and security.
