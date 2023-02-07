@@ -14,19 +14,21 @@ TSB_VERSION := 1.6.0
 K8S_VERSION := 1.24.9
 # K8S_VERSION := 1.23.15
 
+### Scenario configuration ###
 TIER1_MODE := http
 # TIER1_MODE := https
 # TIER1_MODE := mtls
-
 TIER2_MODE := http
 # TIER2_MODE := https
-
 APP_ABC_MODE := active
 # APP_ABC_MODE := active-standby
-
 VM_APP_A := enabled
+# VM_APP_A := disable	d
 VM_APP_B := enabled
+# VM_APP_B := disabled
 VM_APP_C := enabled
+# VM_APP_C := disabled
+### Scenario configuration ###
 
 
 check-credentials:
@@ -99,7 +101,7 @@ undeploy-app-abc-vm: ## Undeploy abc application from vms
 	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./apps-vm.sh undeploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-c ; fi'
 
 test-app-abc: ## Generate curl commands to test ABC traffic
-	@/bin/bash -c './apps.sh traffic-cmd-abc'
+	@/bin/bash -c './apps-k8s.sh traffic-cmd-abc'
 
 
 

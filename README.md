@@ -15,6 +15,8 @@ We will be using [minikube](https://minikube.sigs.k8s.io/docs/start) and [virtua
 Before digging into the demo ENV itself, we highly recommend reading up on the conceptual
 introduction in our official documentation [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/concepts).
 
+> **Note:** make sure to rad the [resource requirement](#Resource requirements) for your scenario.
+
 ## Prequisites
 
 The demo is fully scripted using shell scripts and makefile target.
@@ -147,17 +149,49 @@ environment variables before preparing the minikube ENV.
 ```console
 $ export TSB_DOCKER_USERNAME=<username>
 $ export TSB_DOCKER_PASSWORD=<password>
-
-$ make minikube-up
 ```
 
-Note that this step might take some time (20-30min), as we need to pull all the TSB docker images
-and also load them into the 3 different minikube profiles accordingly.
+In order to provide full demo flexibily, several scenario based [makefile](./Makefile) variables are available
+to tweak the behavior of your setup.
+
+| variable     | default | description                                 |
+|--------------|---------|---------------------------------------------|
+| TSB_VERSION  | 1.6.0   | TSB version                                 |
+| K8S_VERSION  | 1.24.9  | Kubernetes version                          |
+| TIER1_MODE   | http    | Tier1 exposure mode (http/https/mtls)       |
+| TIER2_MODE   | http    | Tier2 expose mode (http/https)              |
+| APP_ABC_MODE | active  | ABC deploy strategy (active/active-standby) |
+| VM_APP_A     | enabled | deploy app-a as VM (enabled/disabled)       |
+| VM_APP_B     | enabled | deploy app-b as VM (enabled/disabled)       |
+| VM_APP_C     | enabled | deploy app-c as VM (enabled/disabled)       |
+
+You have the option to change them manually at the top of the [makefile](./Makefile) or pass them as parameters
+with your chosen target.
+
+The following sequence will deploy the full demo ENV, including standby cluster and vms.
+```console
+$ export TSB_DOCKER_USERNAME=<username>
+$ export TSB_DOCKER_PASSWORD=<password>
+
+$ make APP_ABC_MODE=active-standby infra-mgmt-up infra-active-up infra-standby-up
+$ make APP_ABC_MODE=active-standby infra-vm-up 
+$ make APP_ABC_MODE=active-standby tsb-mgmt-install tsb-active-install tsb-standby-install
+$ make APP_ABC_MODE=active-standby deploy-app-abc-k8s deploy-app-abc-vm
+```
+
+Note that the initial step might take some time (20-30min), as we need to pull all the TSB docker images
+and also load them into the 2 or 3 different minikube profiles accordingly.
 
 After this step has successfully completed, you should be able to interact with the
 different clusters using kubectl.
 
 ```console
+$ export TSB_DOCKER_USERNAME=<username>
+$ export TSB_DOCKER_PASSWORD=<password>
+
+$ make APP_ABC_MODE=active-standby infra-mgmt-up infra-active-up infra-standby-up
+$ make APP_ABC_MODE=active-standby infra-vm-up
+
 $ minikube profile list
 |-----------------|------------|---------|----------------|------|---------|---------|-------|--------|
 |    Profile      | VM Driver  | Runtime |      IP        | Port | Version | Status  | Nodes | Active |
@@ -166,6 +200,23 @@ $ minikube profile list
 | mgmt-cluster    | virtualbox | docker  | 192.168.59.101 | 8443 | v1.24.9 | Running |     1 |        |
 | standby-cluster | virtualbox | docker  | 192.168.59.102 | 8443 | v1.24.9 | Running |     1 |        |
 |-----------------|------------|---------|----------------|------|---------|---------|-------|--------|
+
+$ vboxmanage list runningvms
+"mgmt-cluster" {99a4ccfd-e03a-4fb2-af75-46430e467684}
+"active-cluster" {cf652f97-78b7-4a38-a89b-ed3f91f1e6b6}
+"standby-cluster" {4d2aaf91-5a5f-4324-9f06-bdaf48acc982}
+"ubuntu-vm-a" {7e154342-f7ae-43cf-90b3-8b3f9bd11d70}
+"ubuntu-vm-b" {9ed3243f-b344-4b4e-9cac-75c3a2755565}
+"ubuntu-vm-c" {b25d6243-89e7-48ef-ac84-7cb8df321a5f}
+
+$ make info
+kubectl --profile mgmt-cluster get pods -A
+kubectl --profile active-cluster get pods -A
+kubectl --profile standby-cluster get pods -A
+TSB GUI: https://admin:admin@192.168.59.40:8443
+ssh -i ./config/04-ubuntu-vm-a/tsbadmin -o StrictHostKeyChecking=no tsbadmin@192.168.59.218
+ssh -i ./config/05-ubuntu-vm-b/tsbadmin -o StrictHostKeyChecking=no tsbadmin@192.168.59.219
+ssh -i ./config/06-ubuntu-vm-c/tsbadmin -o StrictHostKeyChecking=no tsbadmin@192.168.59.220
 
 $ kubectl --context mgmt-cluster get pods -A
 NAMESPACE        NAME                                      READY   STATUS    RESTARTS   AGE
@@ -215,74 +266,7 @@ In a production ENV this is not strictly necessary however. We will also leverag
 Tier1 Gateways, which will be the entrypoints for external traffic destined for application ABC and DEF.
 
 ```
-$ make install-mgmt-plane
-
-Switched to context "mgmt-cluster".
-namespace/istio-system created
-secret/cacerts created
- ✓ Installing operators... 
- ✓ Waiting for CRDs to be registered by the operators... 
- ✓ Installing Redis... 
- ✓ Waiting for Deployments to become ready...
- ✓ Installing Managementplane XCP certs... 
- ✓ Installing Managementplane... 
- ✓ Waiting for Deployments to become ready... 
- ✓ Waiting for StatefulSet to become ready...
-Configuring bridge address: 192.168.49.100:8443
-
-Login Successful!
-  Configured user: mgmt-cluster-admin
-  User "mgmt-cluster-admin" enabled in profile: mgmt-cluster
- ✓ Regenerating TSB certs with hosts [demo.tsb.tetrate.io 192.168.49.100] 
- ✓ Reloading Front Envoy...
- ✓ Fetching XCP central CA...
- ✓ Installing Controlplane... 
- ✓ Waiting for Deployments to become ready... 
-Management Plane UI accessible at: https://192.168.49.100:8443
-Admin credentials: username: admin, password: admin
-
-$ kubectl --context mgmt-cluster get pods -A
-NAMESPACE        NAME                                                    READY   STATUS      RESTARTS       AGE
-cert-manager     cert-manager-656c56ff7c-6cmz5                           1/1     Running     0              3m28s
-cert-manager     cert-manager-cainjector-5d4c4cd64c-mwd7r                1/1     Running     0              3m28s
-cert-manager     cert-manager-startupapicheck-f6q9l                      0/1     Completed   0              3m28s
-cert-manager     cert-manager-webhook-6f449bb5cf-mbrt7                   1/1     Running     0              3m28s
-istio-gateway    istio-operator-8579f6d5db-fpp2d                         1/1     Running     0              2m23s
-istio-gateway    tsb-operator-data-plane-54567fc4cf-7p2jd                1/1     Running     0              4m28s
-istio-system     edge-5c454f7588-pl6jk                                   1/1     Running     0              44s
-istio-system     istio-operator-d5896f8cd-x5dkd                          1/1     Running     0              2m14s
-istio-system     istio-system-custom-metrics-apiserver-54f85d79f-xh987   1/1     Running     2 (119s ago)   2m3s
-istio-system     istiod-55db5b49cc-kbmkf                                 1/1     Running     0              2m9s
-istio-system     oap-deployment-7cd44dcb54-6tgd5                         3/3     Running     0              2m3s
-istio-system     onboarding-operator-6649c9f9f-pnjfl                     1/1     Running     0              2m3s
-istio-system     otel-collector-6bd6d975c-cwzbj                          2/2     Running     0              2m3s
-istio-system     ratelimit-server-7548fddb7d-zbzgc                       1/1     Running     0              44s
-istio-system     tsb-operator-control-plane-9848bdf58-z866p              1/1     Running     0              4m28s
-istio-system     xcp-operator-edge-7bc85897df-wntpx                      1/1     Running     0              2m3s
-kube-system      coredns-57575c5f89-lgn6q                                1/1     Running     0              28m
-kube-system      etcd-mgmt-cluster                                       1/1     Running     0              28m
-kube-system      kube-apiserver-mgmt-cluster                             1/1     Running     0              28m
-kube-system      kube-controller-manager-mgmt-cluster                    1/1     Running     0              28m
-kube-system      kube-proxy-nmtsg                                        1/1     Running     0              28m
-kube-system      kube-scheduler-mgmt-cluster                             1/1     Running     0              28m
-kube-system      storage-provisioner                                     1/1     Running     0              28m
-metallb-system   controller-6747c7bbcb-g9sbs                             1/1     Running     0              27m
-metallb-system   speaker-njl6k                                           1/1     Running     0              27m
-tsb              central-67d9df7cd6-hzmjg                                1/1     Running     0              2m27s
-tsb              elasticsearch-0                                         1/1     Running     0              3m28s
-tsb              envoy-77f99bd488-8xrdk                                  1/1     Running     0              2m23s
-tsb              envoy-77f99bd488-rshth                                  1/1     Running     0              2m23s
-tsb              iam-55bf5fff6f-lnvdj                                    1/1     Running     0              2m52s
-tsb              ldap-6c788dc98b-jqrhs                                   1/1     Running     0              3m28s
-tsb              mpc-7558c466c5-2m27f                                    1/1     Running     0              2m52s
-tsb              oap-5d789646c5-w6tsg                                    1/1     Running     0              2m52s
-tsb              otel-collector-5857b88855-njl8n                         1/1     Running     0              2m52s
-tsb              postgres-6d64b478c4-cnl7j                               1/1     Running     0              3m28s
-tsb              ratelimit-redis-69b8bb7d75-w5t86                        1/1     Running     0              3m48s
-tsb              tsb-64766bbddd-6br4c                                    1/1     Running     0              2m52s
-tsb              tsb-operator-management-plane-79549d6d6c-555hp          1/1     Running     0              4m28s
-tsb              web-6f969f9699-wrj28                                    1/1     Running     0              2m52s
-tsb              xcp-operator-central-57d9d5d66f-jnt5j                   1/1     Running     0              2m52s
+$ make tsb-mgmt-install
 ```
 
 **DOC REF** More information on the mgmt plane installation, including the demo profile, can be found in the official documentation [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/management-plane-installation)
@@ -294,197 +278,29 @@ GUI as provided in the traces above.
 
 ### Step3: onboard application clusters
 
-In this step we will onboard the application clusters onto the management plane.
+In this step we will onboard the application clusters onto the management plane. 
 
 ```
-$ make onboard-app-clusters
-spawn tctl login --username admin --password admin --org tetrate
-Tenant: 
-
-Login Successful!
-  Configured user: mgmt-cluster-admin
-  User "mgmt-cluster-admin" enabled in profile: mgmt-cluster
-Switched to context "mgmt-cluster".
-Switched to context "active-cluster".
-namespace/istio-system created
-secret/cacerts created
-Warning: resource namespaces/istio-system is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
-namespace/istio-system configured
-serviceaccount/tsb-operator-control-plane created
-clusterrole.rbac.authorization.k8s.io/tsb-operator-control-plane-istio-system created
-clusterrolebinding.rbac.authorization.k8s.io/tsb-operator-control-plane-istio-system created
-service/tsb-operator-control-plane created
-deployment.apps/tsb-operator-control-plane created
-namespace/istio-gateway created
-serviceaccount/tsb-operator-data-plane created
-clusterrole.rbac.authorization.k8s.io/tsb-operator-data-plane-istio-gateway created
-clusterrolebinding.rbac.authorization.k8s.io/tsb-operator-data-plane-istio-gateway created
-service/tsb-operator-data-plane created
-deployment.apps/tsb-operator-data-plane created
-secret/elastic-credentials created
-secret/es-certs created
-secret/xcp-central-ca-bundle created
-secret/mp-certs created
-secret/cluster-service-account created
-No resources found in default namespace.
-controlplane.install.tetrate.io/controlplane created
-Switched to context "standby-cluster".
-namespace/istio-system created
-secret/cacerts created
-Warning: resource namespaces/istio-system is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
-namespace/istio-system configured
-serviceaccount/tsb-operator-control-plane created
-clusterrole.rbac.authorization.k8s.io/tsb-operator-control-plane-istio-system created
-clusterrolebinding.rbac.authorization.k8s.io/tsb-operator-control-plane-istio-system created
-service/tsb-operator-control-plane created
-deployment.apps/tsb-operator-control-plane created
-namespace/istio-gateway created
-serviceaccount/tsb-operator-data-plane created
-clusterrole.rbac.authorization.k8s.io/tsb-operator-data-plane-istio-gateway created
-clusterrolebinding.rbac.authorization.k8s.io/tsb-operator-data-plane-istio-gateway created
-service/tsb-operator-data-plane created
-deployment.apps/tsb-operator-data-plane created
-secret/elastic-credentials created
-secret/es-certs created
-secret/xcp-central-ca-bundle created
-secret/mp-certs created
-secret/cluster-service-account created
-No resources found in default namespace.
-controlplane.install.tetrate.io/controlplane created
-Switched to context "mgmt-cluster".
-controlplane.install.tetrate.io/controlplane patched
-Switched to context "active-cluster".
-controlplane.install.tetrate.io/controlplane patched
-Switched to context "standby-cluster".
-controlplane.install.tetrate.io/controlplane patched
-Switched to context "active-cluster".
-deployment.apps/tsb-operator-control-plane condition met
-deployment.apps/tsb-operator-data-plane condition met
-
-NAME   READY   UP-TO-DATE   AVAILABLE   AGE
-edge   0/1     0            0           0s
-deployment.apps/edge condition met
-
-$ kubectl --context active-cluster get pods -A
-NAMESPACE        NAME                                                    READY   STATUS      RESTARTS      AGE
-cert-manager     cert-manager-656c56ff7c-b5lfv                           1/1     Running     0             4m53s
-cert-manager     cert-manager-cainjector-5d4c4cd64c-ghh6t                1/1     Running     0             4m53s
-cert-manager     cert-manager-startupapicheck-nbc5w                      0/1     Completed   0             4m53s
-cert-manager     cert-manager-webhook-6f449bb5cf-d7v4c                   1/1     Running     0             4m53s
-istio-gateway    istio-operator-8579f6d5db-brlrx                         1/1     Running     0             5m
-istio-gateway    tsb-operator-data-plane-54567fc4cf-rwqgp                1/1     Running     0             5m17s
-istio-system     edge-5c575d9f86-dxlzn                                   1/1     Running     0             3m18s
-istio-system     istio-operator-d5896f8cd-mxhmh                          1/1     Running     0             5m6s
-istio-system     istio-system-custom-metrics-apiserver-54f85d79f-lzjp9   1/1     Running     0             4m53s
-istio-system     istiod-55d9cf8767-lmsrl                                 1/1     Running     0             5m2s
-istio-system     oap-deployment-7f77c45f74-wrssw                         3/3     Running     0             4m31s
-istio-system     onboarding-operator-6649c9f9f-7qdcc                     1/1     Running     0             4m53s
-istio-system     otel-collector-58b8b7c5bf-96gtg                         2/2     Running     0             4m56s
-istio-system     tsb-operator-control-plane-9848bdf58-c45ct              1/1     Running     0             5m17s
-istio-system     xcp-operator-edge-7bc85897df-f29nt                      1/1     Running     0             4m53s
-kube-system      coredns-57575c5f89-6c9d8                                1/1     Running     0             35m
-kube-system      etcd-active-cluster                                     1/1     Running     0             35m
-kube-system      kube-apiserver-active-cluster                           1/1     Running     0             35m
-kube-system      kube-controller-manager-active-cluster                  1/1     Running     0             35m
-kube-system      kube-proxy-gh9gt                                        1/1     Running     0             35m
-kube-system      kube-scheduler-active-cluster                           1/1     Running     0             35m
-kube-system      storage-provisioner                                     1/1     Running     1 (34m ago)   35m
-metallb-system   controller-6747c7bbcb-gw4jc                             1/1     Running     0             34m
-metallb-system   speaker-qnz78                                           1/1     Running     0             34m
+$ make tsb-active-install
+$ make tsb-standby-install
 ```
 
 **DOC REF** More information on the control plane installation, can be found in the official documentation [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters)
 
-### Step4: configure TSB
+### Step5: configure tsb and deploy the applications
 
-In this step we will be configuring TSB concepts like cluster, organization and tenants and prepare our tier1 namespace. The application deployment will leverage these concepts, so make sure not to skip this step.
-
-```console
-$ make config-tsb 
-spawn tctl login --username admin --password admin --org tetrate
-Tenant: 
-
-Login Successful!
-  Configured user: mgmt-cluster-admin
-  User "mgmt-cluster-admin" enabled in profile: mgmt-cluster
-Switched to context "mgmt-cluster".
-organizations/tetrate/clusters/demo updated
-organizations/tetrate/clusters/active-cluster updated
-organizations/tetrate/clusters/standby-cluster updated
-organizations/tetrate/settings/tetrate-settings created
-organizations/tetrate/tenants/prod created
-namespace/gateway-tier1 created
-```
+In this step we will be configuring TSB concepts like cluster, organization and tenants, prepare our tier1 namespace and deploy the actual application ABC.
 
 **DOC REF** More information on TSB configuration, can be found in the official documentation [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/quickstart)
 
-> Open your browser and go to https://192.168.49.100:8443 (admin/admin) and notice the clusters and tenants being available in the GUI as well.
+If application ABC is deployed in an active/standby mode. This means that in a normal situation, as traffic is routed to the active clusters and the traffic will remain there. If however, one of the microservices in the active cluster becomes unhealthy or unavailable, traffic will automatically be routed to the standby cluster, providing zero downtime.
 
-### Step5: deploy the applications
-
-In this step we will be deploying the actual applications ABC and DEF.
-
-Application ABC is deployed in an active/standby mode. This means that in a normal situation, as traffic is routed to the active clusters and the traffic will remain there. If however, one of the microservices in the active cluster becomes unhealthy or unavailable, traffic will automatically be routed to the standby cluster, providing zero downtime.
-
-Application DEF is deployed to show another use case, where an application consist of microservices deployed into different clusters. There might be various reasons to do so, which include failure and security domain isolation, or data sensitive back-end applications on premises that need to be reachable from front-end deployed in the cloud (reach-back scenario's).
-
-You have the option to terminate Tier1 connections on HTTP/80, HTTPS/443 server side TLS or HTTPS/443 mTLS (check make commands).
+You have the option to terminate Tier1 connections on HTTP/80, HTTPS/443 server side TLS or HTTPS/443 mTLS (check make commands) and Tier2 (ingress) Tier1 connections on HTTP/80, HTTPS/443 server side TLS. Check the
+[makefile](./Makefile) variables descrived earlier for more information.
 
 ```console
-$ make deploy-app-abc-http
-spawn tctl login --username admin --password admin --org tetrate
-Tenant: 
-
-Login Successful!
-  Configured user: mgmt-cluster-admin
-  User "mgmt-cluster-admin" enabled in profile: mgmt-cluster
-1.0: Pulling from nacx/obs-tester-server
-Digest: sha256:f68ff75f6895061a63c77e8ce44e44551b761591eb9dfc562e1aac848a0c36d3
-Status: Image is up to date for nacx/obs-tester-server:1.0
-docker.io/nacx/obs-tester-server:1.0
-Switched to context "mgmt-cluster".
-tier1gateway.install.tetrate.io/gw-tier1-abc created
-organizations/tetrate/tenants/prod/workspaces/abc created
-organizations/tetrate/tenants/prod/workspaces/tier1 created
-organizations/tetrate/tenants/prod/workspaces/abc/settings/abc-setting created
-organizations/tetrate/tenants/prod/workspaces/abc/gatewaygroups/abc-gateway created
-organizations/tetrate/tenants/prod/workspaces/abc/trafficgroups/abc-traffic created
-organizations/tetrate/tenants/prod/workspaces/abc/securitygroups/abc-security created
-organizations/tetrate/tenants/prod/workspaces/tier1/gatewaygroups/tier1-gateway created
-organizations/tetrate/tenants/prod/workspaces/tier1/gatewaygroups/tier1-gateway/tier1gateways/gw-tier1-abc created
-organizations/tetrate/tenants/prod/workspaces/abc/gatewaygroups/abc-gateway/ingressgateways/gw-ingress-abc created
-Switched to context "active-cluster".
-namespace/gateway-abc created
-namespace/ns-a created
-namespace/ns-b created
-namespace/ns-c created
-service/app-a created
-serviceaccount/sa-app-a created
-deployment.apps/app-a-v1 created
-service/app-b created
-serviceaccount/sa-app-b created
-deployment.apps/app-b-v1 created
-service/app-c created
-serviceaccount/sa-app-c created
-deployment.apps/app-c-v1 created
-ingressgateway.install.tetrate.io/gw-ingress-abc created
-ingressgateway.install.tetrate.io/gw-eastwest-abc created
-Switched to context "standby-cluster".
-namespace/gateway-abc created
-namespace/ns-a created
-namespace/ns-b created
-namespace/ns-c created
-service/app-a created
-serviceaccount/sa-app-a created
-deployment.apps/app-a-v1 created
-service/app-b created
-serviceaccount/sa-app-b created
-deployment.apps/app-b-v1 created
-service/app-c created
-serviceaccount/sa-app-c created
-deployment.apps/app-c-v1 created
-ingressgateway.install.tetrate.io/gw-ingress-abc created
-ingressgateway.install.tetrate.io/gw-eastwest-abc created
+$ make deploy-app-abc-k8s
+$ make deploy-app-abc-vm
 ```
 
 **DOC REF** More information on application onboarding, can be found in the official documentation [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/quickstart)
@@ -499,25 +315,30 @@ $ make test-app-abc
 Switched to context "mgmt-cluster".
 Switched to context "active-cluster".
 Switched to context "standby-cluster".
+
 ****************************
 *** ABC Traffic Commands ***
 ****************************
 
-Traffic to Active Ingress Gateway
-curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:80:192.168.49.150" "http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
-Traffic to Standby Ingress Gateway
-curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:80:192.168.49.200" "http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
+Traffic to Active Ingress Gateway: HTTP
+curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:80:192.168.59.60" "http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
+Traffic to Standby Ingress Gateway: HTTP
+curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:80:192.168.59.80" "http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
+
+Traffic to Active Ingress Gateway: HTTPS
+curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:443:192.168.59.60" --cacert ca.crt=certs/root-cert.pem "https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
+Traffic to Standby Ingress Gateway: HTTPS
+curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:443:192.168.59.80" --cacert ca.crt=certs/root-cert.pem "https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
 
 
 Traffic through T1 Gateway: HTTP
-curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:80:192.168.49.101" "http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
+curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:80:192.168.59.41" "http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
 
 Traffic through T1 Gateway: HTTPS
-curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:443:192.168.49.101" --cacert ca.crt=certs/root-cert.pem "https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
+curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:443:192.168.59.41" --cacert ca.crt=certs/root-cert.pem "https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
 
 Traffic through T1 Gateway: MTLS
-curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:443:192.168.49.101" --cacert ca.crt=certs/root-cert.pem --cert certs/app-abc/client.abc.tetrate.prod.pem --key certs/app-abc/client.abc.tetrate.prod.key "https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
-
+curl -k -v -H "X-B3-Sampled: 1" --resolve "abc.tetrate.prod:443:192.168.59.41" --cacert ca.crt=certs/root-cert.pem --cert certs/app-abc/client.abc.tetrate.prod.pem --key certs/app-abc/client.abc.tetrate.prod.key "https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c" 
 ```
 
 One of the curl command above will send traffic to our Tier1 gateway in the mgmt cluster. Because of the URL path provided (proxy/app-b.ns-b/proxy/app-c.ns-c), the first hop app-a will be able to know that it needs to send traffic to app-b in namespace ns-b. It will strip that part and forward it to the next hop, where app-b will know it needs to send traffic to app-c in namespace ns-c.
@@ -623,42 +444,52 @@ fs.inotify.max_user_instances = 512
 
 ### Resource requirements
 
-With the whole demo running, including the 2 demo applications ABC and DEF, the following resource consumption per cluster is observer:
+With the whole demo running in active-standby mode, the following resource consumption per cluster is observer:
 
 ```console
-# kubectl --context mgmt-cluster describe nodes | grep  "Allocated resources:" -A 8
+# kubectl --context mgmt-cluster describe nodes | grep  "Allocated resources:" -A 7
 Allocated resources:
   (Total limits may be over 100 percent, i.e., overcommitted.)
   Resource           Requests      Limits
   --------           --------      ------
-  cpu                4050m (50%)   20700m (258%)
-  memory             9434Mi (29%)  27714Mi (87%)
+  cpu                3950m (65%)   18700m (311%)
+  memory             9306Mi (77%)  26690Mi (223%)
   ephemeral-storage  0 (0%)        0 (0%)
-  hugepages-1Gi      0 (0%)        0 (0%)
   hugepages-2Mi      0 (0%)        0 (0%)
 
-# kubectl --context active-cluster describe nodes | grep  "Allocated resources:" -A 8
+
+# kubectl --context active-cluster describe nodes | grep  "Allocated resources:" -A 7
 Allocated resources:
   (Total limits may be over 100 percent, i.e., overcommitted.)
   Resource           Requests      Limits
   --------           --------      ------
-  cpu                4340m (54%)   26340m (329%)
-  memory             8102Mi (25%)  27546Mi (86%)
+  cpu                3894m (64%)   22184m (369%)
+  memory             7750Mi (86%)  25498Mi (285%)
   ephemeral-storage  0 (0%)        0 (0%)
-  hugepages-1Gi      0 (0%)        0 (0%)
   hugepages-2Mi      0 (0%)        0 (0%)
 
-# kubectl --context standby-cluster describe nodes | grep  "Allocated resources:" -A 8
+# kubectl --context standby-cluster describe nodes | grep  "Allocated resources:" -A 7
 Allocated resources:
   (Total limits may be over 100 percent, i.e., overcommitted.)
   Resource           Requests      Limits
   --------           --------      ------
-  cpu                4112m (51%)   24212m (302%)
-  memory             7910Mi (24%)  26458Mi (83%)
+  cpu                3894m (64%)   22184m (369%)
+  memory             7750Mi (86%)  25498Mi (285%)
   ephemeral-storage  0 (0%)        0 (0%)
-  hugepages-1Gi      0 (0%)        0 (0%)
   hugepages-2Mi      0 (0%)        0 (0%)
 ```
+
+The resource requirements reserved by the minikube vms and application vms are as follows:
+
+| Name            | Memory | Description                  |
+|-----------------|--------|------------------------------|
+| mgmt-cluster    | 12 GB  | tsb management place         |
+| active-cluster  | 9 GB   | active onboarded cluster     |
+| standby-cluster | 9 GB   | standby onboarded cluster    |
+| ubuntu-vm-a     | 2 GB   | app-a ubuntu vm              |
+| ubuntu-vm-b     | 2 GB   | app-b ubuntu vm              |
+| ubuntu-vm-c     | 2 GB   | app-c ubuntu vm              |
+| full demo       | 36 GB  | active/standby and abc as vm |
 
 ### Debugging
 
