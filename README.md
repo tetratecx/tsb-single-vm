@@ -277,7 +277,18 @@ $ make tsb-mgmt-install
 After this step has successfully completed, you should be able to log in into the management plane
 GUI as provided in the traces above.
 
-> Open your browser and go to https://192.168.49.100:8443 (admin/admin) to get a first glimps of the platform's GUI.
+```console
+$ make info
+kubectl --profile mgmt-cluster get pods -A
+kubectl --profile active-cluster get pods -A
+kubectl --profile standby-cluster get pods -A
+TSB GUI: https://192.168.59.40:8443 (admin/admin)
+ssh -i ./config/04-ubuntu-vm-a/tsbadmin -o StrictHostKeyChecking=no tsbadmin@192.168.59.218 -- docker logs app-a -f
+ssh -i ./config/05-ubuntu-vm-b/tsbadmin -o StrictHostKeyChecking=no tsbadmin@192.168.59.219 -- docker logs app-b -f
+ssh -i ./config/06-ubuntu-vm-c/tsbadmin -o StrictHostKeyChecking=no tsbadmin@192.168.59.220 -- docker logs app-c -f
+```
+
+> Open your browser and go to https://192.168.59.40:8443 (admin/admin) to get a first glimps of the platform's GUI.
 
 ### Step3: onboard application clusters
 
@@ -429,7 +440,18 @@ As you can see, every hop within the traffic path will also enrich the HTTP resp
 
 Now try to run this command in a while loop, while scaling the deployment of app-b in the active cluster to 0 in order to mimic an application failure. You will see the traffic automatically being switched to the standby cluster (observe the SPIFFE identifier in the above traces).
 
-> Open your browser and go to https://192.168.49.100:8443 (admin/admin) and notice the topology and traffic patterns.
+```console
+$ make info
+kubectl --profile mgmt-cluster get pods -A
+kubectl --profile active-cluster get pods -A
+kubectl --profile standby-cluster get pods -A
+TSB GUI: https://192.168.59.40:8443 (admin/admin)
+ssh -i ./config/04-ubuntu-vm-a/tsbadmin -o StrictHostKeyChecking=no tsbadmin@192.168.59.218 -- docker logs app-a -f
+ssh -i ./config/05-ubuntu-vm-b/tsbadmin -o StrictHostKeyChecking=no tsbadmin@192.168.59.219 -- docker logs app-b -f
+ssh -i ./config/06-ubuntu-vm-c/tsbadmin -o StrictHostKeyChecking=no tsbadmin@192.168.59.220 -- docker logs app-c -f
+```
+
+> Open your browser and go to https://192.168.59.40:8443 (admin/admin) and notice the topology and traffic patterns.
 
 ## Troubleshooting
 
