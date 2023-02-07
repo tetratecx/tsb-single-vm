@@ -74,7 +74,7 @@ Note that the following binaries needs to be installed and runnable on the syste
 The following diagram shows the overal architecture of the demo in terms of how various TSB 
 components are deployed throughout the 3 clusters.
 
-![TSB Clusters](./imgs/POC-TSB-Clusters.drawio.png "TSB Clusters")
+![TSB Clusters](./imgs/POC-TSB-Clusters.drawio.png "TSB Clusters"){:.centered}
 
 **DOC REF** More information on the overal TSB architecture and its different components can
 be found [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/concepts/architecture)
@@ -86,7 +86,7 @@ be found [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/concepts/arch
 The following diagram shows to application deployments and its corresponding tier1, ingress and
 east-west gateways for an active/standby scenario.
 
-![Kubernetes Active/Standby Deployment](./imgs/POC-Kubernetes.drawio.png "Kubernetes Active/Standby Deployment")
+![Kubernetes Active/Standby Deployment](./imgs/POC-Kubernetes.drawio.png "Kubernetes Active/Standby Deployment"){:.centered}
 
 Although ingress and eastwest gateways can be combined into one single gateway, we have chosen
 to deploy seperate instances for the sake of clarity, seperation of concerns and security.
@@ -99,7 +99,7 @@ to deploy seperate instances for the sake of clarity, seperation of concerns and
 The following diagram shows to application deployments and its corresponding tier1, ingress and
 east-west gateways for a k8s/vm scenario.
 
-![Kubernetes Active/VM Deployment](./imgs/POC-Kubernetes.drawio.png "Kubernetes Active/VM Deployment")
+![Kubernetes Active/VM Deployment](./imgs/POC-Kubernetes.drawio.png "Kubernetes Active/VM Deployment"){:.centered}
 
 Although ingress and eastwest gateways can be combined into one single gateway, we have chosen
 to deploy seperate instances for the sake of clarity, seperation of concerns and security.
@@ -114,7 +114,7 @@ The following diagram shows how we configured TSB multi-tenancy concepts like or
 tenants, workspaces and groups, which form the foundation of our RBAC system and also play
 an important role in the configuration of traffic control and security.
 
-![TSB Tenancy](./imgs/POC-TSB-Tenancy.drawio.png "TSB Tenancy")
+![TSB Tenancy](./imgs/POC-TSB-Tenancy.drawio.png "TSB Tenancy"){:.centered}
 
 Note that TSB, by leveraging namespace selectors, is able to create an abstraction of your
 application deployment strategy and therefor provides a mapping to your organizational 
