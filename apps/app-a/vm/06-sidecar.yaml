@@ -9,6 +9,7 @@ spec:
     labels:
       app: app-a
       version: v1
+      class: vm
   ingress:
   - defaultEndpoint: 127.0.0.1:8080
     port:
