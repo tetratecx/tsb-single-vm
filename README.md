@@ -74,7 +74,9 @@ Note that the following binaries needs to be installed and runnable on the syste
 The following diagram shows the overal architecture of the demo in terms of how various TSB 
 components are deployed throughout the 3 clusters.
 
-![TSB Clusters](./imgs/POC-TSB-Clusters.drawio.png "TSB Clusters"){:.centered}
+<center>
+![TSB Clusters](./imgs/POC-TSB-Clusters.drawio.png "TSB Clusters")
+</center>
 
 **DOC REF** More information on the overal TSB architecture and its different components can
 be found [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/concepts/architecture)
