@@ -198,6 +198,9 @@ if [[ ${ACTION} = "info" ]]; then
   echo "kubectl --profile ${ACTIVE_CLUSTER_PROFILE} get pods -A"
   echo "kubectl --profile ${STANDBY_CLUSTER_PROFILE} get pods -A"
 
+  TSB_API_ENDPOINT=$(kubectl --context ${MGMT_CLUSTER_PROFILE} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  echo "TSB GUI: https://admin:admin@${TSB_API_ENDPOINT}:8443"
+
   exit 0
 fi
 
