@@ -15,7 +15,7 @@ We will be using [minikube](https://minikube.sigs.k8s.io/docs/start) and [virtua
 Before digging into the demo ENV itself, we highly recommend reading up on the conceptual
 introduction in our official documentation [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/concepts).
 
-> **Note:** make sure to read the [resource requirement](#Resource requirements) for your scenario.
+> **Note:** make sure to read the [resource requirement](#resource-requirements) for your scenario.
 
 ## Prequisites
 
@@ -180,7 +180,7 @@ $ make APP_ABC_MODE=active-standby tsb-mgmt-install tsb-active-install tsb-stand
 $ make APP_ABC_MODE=active-standby deploy-app-abc-k8s deploy-app-abc-vm
 ```
 
-> **Note:** make sure to read the [resource requirement](#Resource requirements) for your scenario.
+> **Note:** make sure to read the [resource requirement](#resource-requirements) for your scenario.
 
 Note that the initial step might take some time (20-30min), as we need to pull all the TSB docker images
 and also load them into the 2 or 3 different minikube profiles accordingly.
