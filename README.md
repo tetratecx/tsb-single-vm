@@ -159,46 +159,46 @@ different clusters using kubectl.
 
 ```console
 $ minikube profile list
-|--------------------|-----------|---------|--------------|------|---------|---------|-------|--------|
-|      Profile       | VM Driver | Runtime |      IP      | Port | Version | Status  | Nodes | Active |
-|--------------------|-----------|---------|--------------|------|---------|---------|-------|--------|
-| active-cluster-m2  | docker    | docker  | 192.168.49.3 | 8443 | v1.24.9 | Running |     1 |        |
-| mgmt-cluster-m1    | docker    | docker  | 192.168.49.2 | 8443 | v1.24.9 | Running |     1 |        |
-| standby-cluster-m3 | docker    | docker  | 192.168.49.4 | 8443 | v1.24.9 | Running |     1 |        |
-|--------------------|-----------|---------|--------------|------|---------|---------|-------|--------|
+|-----------------|------------|---------|----------------|------|---------|---------|-------|--------|
+|    Profile      | VM Driver  | Runtime |      IP        | Port | Version | Status  | Nodes | Active |
+|-----------------|------------|---------|----------------|------|---------|---------|-------|--------|
+| active-cluster  | virtualbox | docker  | 192.168.59.100 | 8443 | v1.24.9 | Running |     1 |        |
+| mgmt-cluster    | virtualbox | docker  | 192.168.59.101 | 8443 | v1.24.9 | Running |     1 |        |
+| standby-cluster | virtualbox | docker  | 192.168.59.102 | 8443 | v1.24.9 | Running |     1 |        |
+|-----------------|------------|---------|----------------|------|---------|---------|-------|--------|
 
-$ kubectl --context mgmt-cluster-m1 get pods -A
+$ kubectl --context mgmt-cluster get pods -A
 NAMESPACE        NAME                                      READY   STATUS    RESTARTS   AGE
 kube-system      coredns-57575c5f89-lgn6q                  1/1     Running   0          19m
-kube-system      etcd-mgmt-cluster-m1                      1/1     Running   0          20m
-kube-system      kube-apiserver-mgmt-cluster-m1            1/1     Running   0          20m
-kube-system      kube-controller-manager-mgmt-cluster-m1   1/1     Running   0          20m
+kube-system      etcd-mgmt-cluster                         1/1     Running   0          20m
+kube-system      kube-apiserver-mgmt-cluster               1/1     Running   0          20m
+kube-system      kube-controller-manager-mgmt-cluster      1/1     Running   0          20m
 kube-system      kube-proxy-nmtsg                          1/1     Running   0          19m
-kube-system      kube-scheduler-mgmt-cluster-m1            1/1     Running   0          20m
+kube-system      kube-scheduler-mgmt-cluster               1/1     Running   0          20m
 kube-system      storage-provisioner                       1/1     Running   0          20m
 metallb-system   controller-6747c7bbcb-g9sbs               1/1     Running   0          18m
 metallb-system   speaker-njl6k                             1/1     Running   0          18m
 
-$ kubectl --context active-cluster-m2 get pods -A
+$ kubectl --context active-cluster get pods -A
 NAMESPACE        NAME                                        READY   STATUS    RESTARTS      AGE
 kube-system      coredns-57575c5f89-6c9d8                    1/1     Running   0             19m
-kube-system      etcd-active-cluster-m2                      1/1     Running   0             19m
-kube-system      kube-apiserver-active-cluster-m2            1/1     Running   0             19m
-kube-system      kube-controller-manager-active-cluster-m2   1/1     Running   0             19m
+kube-system      etcd-active-cluster                         1/1     Running   0             19m
+kube-system      kube-apiserver-active-cluster               1/1     Running   0             19m
+kube-system      kube-controller-manager-active-cluster      1/1     Running   0             19m
 kube-system      kube-proxy-gh9gt                            1/1     Running   0             19m
-kube-system      kube-scheduler-active-cluster-m2            1/1     Running   0             19m
+kube-system      kube-scheduler-active-cluster               1/1     Running   0             19m
 kube-system      storage-provisioner                         1/1     Running   1 (18m ago)   19m
 metallb-system   controller-6747c7bbcb-gw4jc                 1/1     Running   0             18m
 metallb-system   speaker-qnz78                               1/1     Running   0             18m
 
-$ kubectl --context standby-cluster-m3 get pods -A
+$ kubectl --context standby-cluster get pods -A
 NAMESPACE        NAME                                         READY   STATUS    RESTARTS      AGE
 kube-system      coredns-57575c5f89-2mm5t                     1/1     Running   0             18m
-kube-system      etcd-standby-cluster-m3                      1/1     Running   0             19m
-kube-system      kube-apiserver-standby-cluster-m3            1/1     Running   0             19m
-kube-system      kube-controller-manager-standby-cluster-m3   1/1     Running   0             19m
+kube-system      etcd-standby-cluster                         1/1     Running   0             19m
+kube-system      kube-apiserver-standby-cluster               1/1     Running   0             19m
+kube-system      kube-controller-manager-standby-cluster      1/1     Running   0             19m
 kube-system      kube-proxy-4g6mz                             1/1     Running   0             18m
-kube-system      kube-scheduler-standby-cluster-m3            1/1     Running   0             19m
+kube-system      kube-scheduler-standby-cluster               1/1     Running   0             19m
 kube-system      storage-provisioner                          1/1     Running   1 (18m ago)   19m
 metallb-system   controller-6747c7bbcb-gddkj                  1/1     Running   0             18m
 metallb-system   speaker-xvxvk                                1/1     Running   0             18m
@@ -217,7 +217,7 @@ Tier1 Gateways, which will be the entrypoints for external traffic destined for 
 ```
 $ make install-mgmt-plane
 
-Switched to context "mgmt-cluster-m1".
+Switched to context "mgmt-cluster".
 namespace/istio-system created
 secret/cacerts created
  ✓ Installing operators... 
@@ -231,8 +231,8 @@ secret/cacerts created
 Configuring bridge address: 192.168.49.100:8443
 
 Login Successful!
-  Configured user: mgmt-cluster-m1-admin
-  User "mgmt-cluster-m1-admin" enabled in profile: mgmt-cluster-m1
+  Configured user: mgmt-cluster-admin
+  User "mgmt-cluster-admin" enabled in profile: mgmt-cluster
  ✓ Regenerating TSB certs with hosts [demo.tsb.tetrate.io 192.168.49.100] 
  ✓ Reloading Front Envoy...
  ✓ Fetching XCP central CA...
@@ -241,7 +241,7 @@ Login Successful!
 Management Plane UI accessible at: https://192.168.49.100:8443
 Admin credentials: username: admin, password: admin
 
-$ kubectl --context mgmt-cluster-m1 get pods -A
+$ kubectl --context mgmt-cluster get pods -A
 NAMESPACE        NAME                                                    READY   STATUS      RESTARTS       AGE
 cert-manager     cert-manager-656c56ff7c-6cmz5                           1/1     Running     0              3m28s
 cert-manager     cert-manager-cainjector-5d4c4cd64c-mwd7r                1/1     Running     0              3m28s
@@ -260,11 +260,11 @@ istio-system     ratelimit-server-7548fddb7d-zbzgc                       1/1    
 istio-system     tsb-operator-control-plane-9848bdf58-z866p              1/1     Running     0              4m28s
 istio-system     xcp-operator-edge-7bc85897df-wntpx                      1/1     Running     0              2m3s
 kube-system      coredns-57575c5f89-lgn6q                                1/1     Running     0              28m
-kube-system      etcd-mgmt-cluster-m1                                    1/1     Running     0              28m
-kube-system      kube-apiserver-mgmt-cluster-m1                          1/1     Running     0              28m
-kube-system      kube-controller-manager-mgmt-cluster-m1                 1/1     Running     0              28m
+kube-system      etcd-mgmt-cluster                                       1/1     Running     0              28m
+kube-system      kube-apiserver-mgmt-cluster                             1/1     Running     0              28m
+kube-system      kube-controller-manager-mgmt-cluster                    1/1     Running     0              28m
 kube-system      kube-proxy-nmtsg                                        1/1     Running     0              28m
-kube-system      kube-scheduler-mgmt-cluster-m1                          1/1     Running     0              28m
+kube-system      kube-scheduler-mgmt-cluster                             1/1     Running     0              28m
 kube-system      storage-provisioner                                     1/1     Running     0              28m
 metallb-system   controller-6747c7bbcb-g9sbs                             1/1     Running     0              27m
 metallb-system   speaker-njl6k                                           1/1     Running     0              27m
@@ -302,10 +302,10 @@ spawn tctl login --username admin --password admin --org tetrate
 Tenant: 
 
 Login Successful!
-  Configured user: mgmt-cluster-m1-admin
-  User "mgmt-cluster-m1-admin" enabled in profile: mgmt-cluster-m1
-Switched to context "mgmt-cluster-m1".
-Switched to context "active-cluster-m2".
+  Configured user: mgmt-cluster-admin
+  User "mgmt-cluster-admin" enabled in profile: mgmt-cluster
+Switched to context "mgmt-cluster".
+Switched to context "active-cluster".
 namespace/istio-system created
 secret/cacerts created
 Warning: resource namespaces/istio-system is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
@@ -328,7 +328,7 @@ secret/mp-certs created
 secret/cluster-service-account created
 No resources found in default namespace.
 controlplane.install.tetrate.io/controlplane created
-Switched to context "standby-cluster-m3".
+Switched to context "standby-cluster".
 namespace/istio-system created
 secret/cacerts created
 Warning: resource namespaces/istio-system is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
@@ -351,13 +351,13 @@ secret/mp-certs created
 secret/cluster-service-account created
 No resources found in default namespace.
 controlplane.install.tetrate.io/controlplane created
-Switched to context "mgmt-cluster-m1".
+Switched to context "mgmt-cluster".
 controlplane.install.tetrate.io/controlplane patched
-Switched to context "active-cluster-m2".
+Switched to context "active-cluster".
 controlplane.install.tetrate.io/controlplane patched
-Switched to context "standby-cluster-m3".
+Switched to context "standby-cluster".
 controlplane.install.tetrate.io/controlplane patched
-Switched to context "active-cluster-m2".
+Switched to context "active-cluster".
 deployment.apps/tsb-operator-control-plane condition met
 deployment.apps/tsb-operator-data-plane condition met
 
@@ -365,7 +365,7 @@ NAME   READY   UP-TO-DATE   AVAILABLE   AGE
 edge   0/1     0            0           0s
 deployment.apps/edge condition met
 
-$ kubectl --context active-cluster-m2 get pods -A
+$ kubectl --context active-cluster get pods -A
 NAMESPACE        NAME                                                    READY   STATUS      RESTARTS      AGE
 cert-manager     cert-manager-656c56ff7c-b5lfv                           1/1     Running     0             4m53s
 cert-manager     cert-manager-cainjector-5d4c4cd64c-ghh6t                1/1     Running     0             4m53s
@@ -383,11 +383,11 @@ istio-system     otel-collector-58b8b7c5bf-96gtg                         2/2    
 istio-system     tsb-operator-control-plane-9848bdf58-c45ct              1/1     Running     0             5m17s
 istio-system     xcp-operator-edge-7bc85897df-f29nt                      1/1     Running     0             4m53s
 kube-system      coredns-57575c5f89-6c9d8                                1/1     Running     0             35m
-kube-system      etcd-active-cluster-m2                                  1/1     Running     0             35m
-kube-system      kube-apiserver-active-cluster-m2                        1/1     Running     0             35m
-kube-system      kube-controller-manager-active-cluster-m2               1/1     Running     0             35m
+kube-system      etcd-active-cluster                                     1/1     Running     0             35m
+kube-system      kube-apiserver-active-cluster                           1/1     Running     0             35m
+kube-system      kube-controller-manager-active-cluster                  1/1     Running     0             35m
 kube-system      kube-proxy-gh9gt                                        1/1     Running     0             35m
-kube-system      kube-scheduler-active-cluster-m2                        1/1     Running     0             35m
+kube-system      kube-scheduler-active-cluster                           1/1     Running     0             35m
 kube-system      storage-provisioner                                     1/1     Running     1 (34m ago)   35m
 metallb-system   controller-6747c7bbcb-gw4jc                             1/1     Running     0             34m
 metallb-system   speaker-qnz78                                           1/1     Running     0             34m
@@ -405,9 +405,9 @@ spawn tctl login --username admin --password admin --org tetrate
 Tenant: 
 
 Login Successful!
-  Configured user: mgmt-cluster-m1-admin
-  User "mgmt-cluster-m1-admin" enabled in profile: mgmt-cluster-m1
-Switched to context "mgmt-cluster-m1".
+  Configured user: mgmt-cluster-admin
+  User "mgmt-cluster-admin" enabled in profile: mgmt-cluster
+Switched to context "mgmt-cluster".
 organizations/tetrate/clusters/demo updated
 organizations/tetrate/clusters/active-cluster updated
 organizations/tetrate/clusters/standby-cluster updated
@@ -436,13 +436,13 @@ spawn tctl login --username admin --password admin --org tetrate
 Tenant: 
 
 Login Successful!
-  Configured user: mgmt-cluster-m1-admin
-  User "mgmt-cluster-m1-admin" enabled in profile: mgmt-cluster-m1
+  Configured user: mgmt-cluster-admin
+  User "mgmt-cluster-admin" enabled in profile: mgmt-cluster
 1.0: Pulling from nacx/obs-tester-server
 Digest: sha256:f68ff75f6895061a63c77e8ce44e44551b761591eb9dfc562e1aac848a0c36d3
 Status: Image is up to date for nacx/obs-tester-server:1.0
 docker.io/nacx/obs-tester-server:1.0
-Switched to context "mgmt-cluster-m1".
+Switched to context "mgmt-cluster".
 tier1gateway.install.tetrate.io/gw-tier1-abc created
 organizations/tetrate/tenants/prod/workspaces/abc created
 organizations/tetrate/tenants/prod/workspaces/tier1 created
@@ -453,7 +453,7 @@ organizations/tetrate/tenants/prod/workspaces/abc/securitygroups/abc-security cr
 organizations/tetrate/tenants/prod/workspaces/tier1/gatewaygroups/tier1-gateway created
 organizations/tetrate/tenants/prod/workspaces/tier1/gatewaygroups/tier1-gateway/tier1gateways/gw-tier1-abc created
 organizations/tetrate/tenants/prod/workspaces/abc/gatewaygroups/abc-gateway/ingressgateways/gw-ingress-abc created
-Switched to context "active-cluster-m2".
+Switched to context "active-cluster".
 namespace/gateway-abc created
 namespace/ns-a created
 namespace/ns-b created
@@ -469,7 +469,7 @@ serviceaccount/sa-app-c created
 deployment.apps/app-c-v1 created
 ingressgateway.install.tetrate.io/gw-ingress-abc created
 ingressgateway.install.tetrate.io/gw-eastwest-abc created
-Switched to context "standby-cluster-m3".
+Switched to context "standby-cluster".
 namespace/gateway-abc created
 namespace/ns-a created
 namespace/ns-b created
@@ -496,9 +496,9 @@ We have provided a helper makefile target to give you an idea on how to use this
 ```console
 $ make test-app-abc 
 
-Switched to context "mgmt-cluster-m1".
-Switched to context "active-cluster-m2".
-Switched to context "standby-cluster-m3".
+Switched to context "mgmt-cluster".
+Switched to context "active-cluster".
+Switched to context "standby-cluster".
 ****************************
 *** ABC Traffic Commands ***
 ****************************
@@ -626,7 +626,7 @@ fs.inotify.max_user_instances = 512
 With the whole demo running, including the 2 demo applications ABC and DEF, the following resource consumption per cluster is observer:
 
 ```console
-# kubectl --context mgmt-cluster-m1 describe nodes | grep  "Allocated resources:" -A 8
+# kubectl --context mgmt-cluster describe nodes | grep  "Allocated resources:" -A 8
 Allocated resources:
   (Total limits may be over 100 percent, i.e., overcommitted.)
   Resource           Requests      Limits
@@ -637,7 +637,7 @@ Allocated resources:
   hugepages-1Gi      0 (0%)        0 (0%)
   hugepages-2Mi      0 (0%)        0 (0%)
 
-# kubectl --context active-cluster-m2 describe nodes | grep  "Allocated resources:" -A 8
+# kubectl --context active-cluster describe nodes | grep  "Allocated resources:" -A 8
 Allocated resources:
   (Total limits may be over 100 percent, i.e., overcommitted.)
   Resource           Requests      Limits
@@ -648,7 +648,7 @@ Allocated resources:
   hugepages-1Gi      0 (0%)        0 (0%)
   hugepages-2Mi      0 (0%)        0 (0%)
 
-# kubectl --context standby-cluster-m3 describe nodes | grep  "Allocated resources:" -A 8
+# kubectl --context standby-cluster describe nodes | grep  "Allocated resources:" -A 8
 Allocated resources:
   (Total limits may be over 100 percent, i.e., overcommitted.)
   Resource           Requests      Limits
@@ -666,11 +666,11 @@ In order to debug issues, you can use the `netshoot` container with debug tools 
 
 ```console
 # Netshoot in mgmt-cluster and default namespace
-kubectl --context mgmt-cluster-m1 -n default run tmp-shell --rm --image-pull-policy IfNotPresent -i --tty --image containers.dl.tetrate.io/netshoot -- /bin/bash
+kubectl --context mgmt-cluster -n default run tmp-shell --rm --image-pull-policy IfNotPresent -i --tty --image containers.dl.tetrate.io/netshoot -- /bin/bash
 
 # Netshoot in active-cluster and ns-a namespace
-kubectl --context active-cluster-m2 -n ns-a run tmp-shell --rm --image-pull-policy IfNotPresent -i --tty --image containers.dl.tetrate.io/netshoot -- /bin/bash
+kubectl --context active-cluster -n ns-a run tmp-shell --rm --image-pull-policy IfNotPresent -i --tty --image containers.dl.tetrate.io/netshoot -- /bin/bash
 
 # Netshoot in standby-cluster and ns-b namespace
-kubectl --context standby-cluster-m3 -n ns-b run tmp-shell --rm --image-pull-policy IfNotPresent -i --tty --image containers.dl.tetrate.io/netshoot -- /bin/bash
+kubectl --context standby-cluster -n ns-b run tmp-shell --rm --image-pull-policy IfNotPresent -i --tty --image containers.dl.tetrate.io/netshoot -- /bin/bash
 ```
