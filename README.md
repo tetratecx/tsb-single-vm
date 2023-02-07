@@ -107,8 +107,11 @@ vms for a k8s/vm scenario.
   <img src="./imgs/POC-VM.drawio.png">
 </p>
 
-Every application can be deployed as pod, as vm or both. In case the full application is deployed
+Every micro-service can be deployed as pod, as vm or both. In case the full application is deployed
 as both pods and vm, full redudancy is provided (equal load balancing).
+
+Note that this capability allows for a gradual vm to pod migration, but also allows integration
+of vm workloads that are for some reasons not able/desired to run as pod.
 
 **DOC REF** More information our different vm onboarding options can be found
 [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/workload_onboarding)
