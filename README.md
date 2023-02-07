@@ -75,6 +75,10 @@ The following diagram shows the overal architecture of the demo in terms of how 
 components are deployed throughout the 3 clusters.
 
 <p align="center">
+  <img src="./imgs/POC-TSB-Clusters.drawio.png">
+</p>
+
+<p align="center">
 ![TSB Clusters](./imgs/POC-TSB-Clusters.drawio.png "TSB Clusters")
 
 
