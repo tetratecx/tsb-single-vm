@@ -104,7 +104,7 @@ The following diagram shows to application deployments and its corresponding tie
 east-west gateways for a k8s/vm scenario.
 
 <p align="center">
-  <img src="./imgs/POC-Kubernetes.drawio.png">
+  <img src="./imgs/POC-VM.drawio.png">
 </p>
 
 Although ingress and eastwest gateways can be combined into one single gateway, we have chosen
