@@ -83,7 +83,7 @@ be found [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/concepts/arch
 
 ### Kubernetes deployment design
 
-#### Active/Standby
+#### Active/Standby Scenario
 
 The following diagram shows to application deployments and its corresponding tier1, ingress and
 east-west gateways for an active/standby scenario.
@@ -98,7 +98,7 @@ to deploy seperate instances for the sake of clarity, seperation of concerns and
 **DOC REF** More information on the different gateway types supported by TSB can be found
 [here](https://docs.tetrate.io/service-bridge/1.6.x/en-us/howto/gateway)
 
-#### Active/VMs
+#### Active/VMs Scenario
 
 The following diagram shows to application deployments and its corresponding tier1, ingress and
 east-west gateways for a k8s/vm scenario.
