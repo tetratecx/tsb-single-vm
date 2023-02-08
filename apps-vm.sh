@@ -213,6 +213,7 @@ if [[ ${ACTION} = "deploy-app" ]]; then
   scp -i ${VM_CONFDIR}/tsbadmin -o StrictHostKeyChecking=no ${VM_CONFDIR}/install-onboarding.sh tsbadmin@${VM_IP}:/tmp/install-onboarding.sh
   ${VM_SSH_EXEC} chmod +x /tmp/install-onboarding.sh
   ${VM_SSH_EXEC} sudo /tmp/install-onboarding.sh
+  ${VM_SSH_EXEC} sudo chown onboarding-agent: -R /var/run/secrets/onboarding-agent-sample-jwt-credential-plugin/
 
   # Configure OnboardingConfiguration
   # REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/workload_onboarding/quickstart/on-premise/onboard-vm
