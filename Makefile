@@ -22,12 +22,12 @@ TIER2_MODE := http
 # TIER2_MODE := https
 APP_ABC_MODE := active
 # APP_ABC_MODE := active-standby
-VM_APP_A := enabled
-# VM_APP_A := disable	d
+# VM_APP_A := enabled
+VM_APP_A := disabled
 VM_APP_B := enabled
 # VM_APP_B := disabled
-VM_APP_C := enabled
-# VM_APP_C := disabled
+# VM_APP_C := enabled
+VM_APP_C := disabled
 ### Scenario configuration ###
 
 
