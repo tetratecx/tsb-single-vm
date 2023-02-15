@@ -39,11 +39,11 @@ ifeq ($(TSB_DOCKER_PASSWORD),)
 	$(error environment variable TSB_DOCKER_PASSWORD is undefined)
 endif
 
-prereqs-check: ## Check if prerequisites are installed
-	@/bin/sh -c './prereqs.sh check ${K8S_VERSION} ${TSB_VERSION} ${ISTIO_VERSION}'
+prereq-check: ## Check if prerequisites are installed
+	@/bin/sh -c './prereq.sh check ${K8S_VERSION} ${TSB_VERSION} ${ISTIO_VERSION}'
 
-prereqs-install: ## Install prerequisites
-	@/bin/sh -c './prereqs.sh install ${K8S_VERSION} ${TSB_VERSION} ${ISTIO_VERSION}'
+prereq-install: ## Install prerequisites
+	@/bin/sh -c './prereq.sh install ${K8S_VERSION} ${TSB_VERSION} ${ISTIO_VERSION}'
 
 ###########################
 infra-mgmt-up: prereqs-check check-credentials ## Bring up and configure mgmt minikube cluster
