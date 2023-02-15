@@ -4,23 +4,19 @@ ACTION=${1}
 CLUSTER=${2}
 K8S_VERSION=${3}
 
-VBOX_BRIDGE_NETWORK=HostInterfaceNetworking-vboxnet0
-
-# Minikube always re-configures virtualbox DHCP pool of the bridged network to x.x.x.100-x.x.x.254
-# So we are left with the rest of the subnet space to avoid conflict between metallb and vbox dhcp
-# https://github.com/kubernetes/minikube/issues/4210
+DOCKER_NET=tsb-demo
 
 MGMT_CLUSTER_PROFILE=mgmt-cluster
-MGMT_CLUSTER_METALLB_STARTIP=40
-MGMT_CLUSTER_METALLB_ENDIP=59
+MGMT_CLUSTER_METALLB_STARTIP=100
+MGMT_CLUSTER_METALLB_ENDIP=119
 
 ACTIVE_CLUSTER_PROFILE=active-cluster
-ACTIVE_CLUSTER_METALLB_STARTIP=60
-ACTIVE_CLUSTER_METALLB_ENDIP=79
+ACTIVE_CLUSTER_METALLB_STARTIP=120
+ACTIVE_CLUSTER_METALLB_ENDIP=139
 
 STANDBY_CLUSTER_PROFILE=standby-cluster
-STANDBY_CLUSTER_METALLB_STARTIP=80
-STANDBY_CLUSTER_METALLB_ENDIP=99
+STANDBY_CLUSTER_METALLB_STARTIP=140
+STANDBY_CLUSTER_METALLB_ENDIP=159
 
 # Get virtualbox IP subnet 
 #   args:
@@ -113,21 +109,21 @@ function load_images {
 if [[ ${ACTION} = "cluster-up" ]]; then
 
   if [[ ${CLUSTER} = "mgmt-cluster" ]]; then
-    MINIKUBE_CLUSTER_OPTS="--driver virtualbox --cpus=6 --memory=12g"
+    MINIKUBE_CLUSTER_OPTS="--driver docker --network=${DOCKER_NET} --cpus=6"
     CLUSTER_PROFILE=${MGMT_CLUSTER_PROFILE}
     CLUSTER_METALLB_STARTIP=${MGMT_CLUSTER_METALLB_STARTIP}
     CLUSTER_METALLB_ENDIP=${MGMT_CLUSTER_METALLB_ENDIP}
     CLUSTER_REGION=region1
     CLUSTER_ZONE=zone1a
   elif [[ ${CLUSTER} = "active-cluster" ]]; then
-    MINIKUBE_CLUSTER_OPTS="--driver virtualbox --cpus=6 --memory=9g"
+    MINIKUBE_CLUSTER_OPTS="--driver docker --network=${DOCKER_NET} --cpus=6"
     CLUSTER_PROFILE=${ACTIVE_CLUSTER_PROFILE}
     CLUSTER_METALLB_STARTIP=${ACTIVE_CLUSTER_METALLB_STARTIP}
     CLUSTER_METALLB_ENDIP=${ACTIVE_CLUSTER_METALLB_ENDIP}
     CLUSTER_REGION=region1
     CLUSTER_ZONE=zone1b
   elif [[ ${CLUSTER} = "standby-cluster" ]]; then
-    MINIKUBE_CLUSTER_OPTS="--driver virtualbox --cpus=6 --memory=9g"
+    MINIKUBE_CLUSTER_OPTS="--driver docker --network=${DOCKER_NET} --cpus=6"
     CLUSTER_PROFILE=${STANDBY_CLUSTER_PROFILE}
     CLUSTER_METALLB_STARTIP=${STANDBY_CLUSTER_METALLB_STARTIP}
     CLUSTER_METALLB_ENDIP=${STANDBY_CLUSTER_METALLB_ENDIP}
@@ -141,8 +137,8 @@ if [[ ${ACTION} = "cluster-up" ]]; then
     exit 1
   fi
 
-  # Extract the virtualbox network subnet (default 192.168.59.0/24)
-  VBOX_NETWORK_SUBNET=$(get_vbox_subnet ${VBOX_BRIDGE_NETWORK})
+  # Extract the docker network subnet (default 192.168.49.0/24)
+  DOCKER_NET_SUBNET=$(docker network inspect ${DOCKER_NET} --format '{{(index .IPAM.Config 0).Subnet}}' | awk -F '.' '{ print $1"."$2"."$3;}')
 
   # Start minikube profiles for the mgmt and active clusters
   if minikube profile list | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
@@ -155,13 +151,15 @@ if [[ ${ACTION} = "cluster-up" ]]; then
   if minikube --profile ${CLUSTER_PROFILE} addons list | grep "metallb" | grep "enabled" &>/dev/null ; then
     echo "Minikube cluster profile ${CLUSTER_PROFILE} metallb addon already enabled"
   else
-    configure_metallb ${CLUSTER_PROFILE} ${VBOX_NETWORK_SUBNET}${CLUSTER_METALLB_STARTIP} ${VBOX_NETWORK_SUBNET}${CLUSTER_METALLB_ENDIP} ;
+    configure_metallb ${CLUSTER_PROFILE} ${DOCKER_NET_SUBNET}${CLUSTER_METALLB_STARTIP} ${DOCKER_NET_SUBNET}${CLUSTER_METALLB_ENDIP} ;
     minikube --profile ${CLUSTER_PROFILE} addons enable metallb ;
   fi  
 
   # Pull images locally and sync them to minikube profiles of the mgmt and active clusters
-  sync_images ;
-  load_images ${CLUSTER_PROFILE} ;
+  # sync_images ;
+  # load_images ${CLUSTER_PROFILE} ;
+  # Make sure minikube has access to tsb private repo
+  minikube --profile ${CLUSTER_PROFILE} ssh docker login containers.dl.tetrate.io --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_PASSWORD}
 
   # Add nodes labels for locality based routing (region and zone)
   kubectl --context ${CLUSTER_PROFILE} label node ${CLUSTER_PROFILE} topology.kubernetes.io/region=${CLUSTER_REGION} --overwrite=true ;
