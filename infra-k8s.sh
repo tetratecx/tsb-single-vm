@@ -140,34 +140,38 @@ fi
 
 if [[ ${ACTION} = "cluster-down" ]]; then
 
-  if [[ ${CLUSTER} = "mgmt-cluster" ]]; then
-    CLUSTER_PROFILE=${MGMT_CLUSTER_PROFILE}
-  elif [[ ${CLUSTER} = "active-cluster" ]]; then
-    CLUSTER_PROFILE=${ACTIVE_CLUSTER_PROFILE}
-  elif [[ ${CLUSTER} = "standby-cluster" ]]; then
-    CLUSTER_PROFILE=${STANDBY_CLUSTER_PROFILE}
-  else
-    echo "Please specify one of the following cluster:"
-    echo "  - mgmt-cluster"
-    echo "  - active-cluster"
-    echo "  - standby-cluster"
-    exit 1
-  fi
-
   # Stop minikube profiles
   minikube stop --profile ${CLUSTER_PROFILE} ;
+
+  echo "Going to stop all minikube cluster profiles"
+  CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
+  minikube stop --profile ${CLUSTER_PROFILE} 2>/dev/null ;
+
+  for index in $(seq 0 ${CP_COUNT-1}) ; do
+    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index})
+    minikube stop --profile ${CLUSTER_PROFILE} 2>/dev/null ;
+  done
+
+  echo "All minikube stop profiles deleted"
+  exit 0
 
   exit 0
 fi
 
 if [[ ${ACTION} = "info" ]]; then
 
-  echo "kubectl --profile ${MGMT_CLUSTER_PROFILE} get pods -A"
-  echo "kubectl --profile ${ACTIVE_CLUSTER_PROFILE} get pods -A"
-  echo "kubectl --profile ${STANDBY_CLUSTER_PROFILE} get pods -A"
-
-  TSB_API_ENDPOINT=$(kubectl --context ${MGMT_CLUSTER_PROFILE} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
+  TSB_API_ENDPOINT=$(kubectl --context ${CLUSTER_PROFILE} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  echo "Management plane cluster:"
   echo "TSB GUI: https://${TSB_API_ENDPOINT}:8443 (admin/admin)"
+  echo "kubectl --profile ${CLUSTER_PROFILE} get pods -A"
+  echo ""
+
+  echo "Control plane cluster:"
+  for index in $(seq 0 ${CP_COUNT-1}) ; do
+    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index})
+    echo "kubectl --profile ${CLUSTER_PROFILE} get pods -A"
+  done
 
   exit 0
 fi
@@ -175,12 +179,16 @@ fi
 if [[ ${ACTION} = "clean" ]]; then
 
   # Delete minikube profiles
+  echo "Going to delete all minikube cluster profiles"
   CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
-
   minikube delete --profile ${CLUSTER_PROFILE} 2>/dev/null ;
-  # minikube delete --profile ${ACTIVE_CLUSTER_PROFILE} 2>/dev/null ;
-  # minikube delete --profile ${STANDBY_CLUSTER_PROFILE} 2>/dev/null ;
 
+  for index in $(seq 0 ${CP_COUNT-1}) ; do
+    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index})
+    minikube delete --profile ${CLUSTER_PROFILE} 2>/dev/null ;
+  done
+
+  echo "All minikube cluster profiles deleted"
   exit 0
 fi
 
