@@ -35,7 +35,7 @@ if [[ ${ACTION} = "install" ]]; then
 
   echo "Installing apt packages"
   sudo apt-get -y update ; sudo apt-get -y upgrade ;
-  sudo apt-get -y install curl docker.io jq expect ;
+  sudo apt-get -y install curl docker.io jq expect net-tools ;
   sudo systemctl enable docker ;
   sudo systemctl start docker ;
   sudo usermod -aG docker $USER ;
