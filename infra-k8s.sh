@@ -152,9 +152,7 @@ if [[ ${ACTION} = "cluster-down" ]]; then
     minikube stop --profile ${CLUSTER_PROFILE} 2>/dev/null ;
   done
 
-  echo "All minikube stop profiles deleted"
-  exit 0
-
+  echo "All minikube cluster profiles stopped"
   exit 0
 fi
 

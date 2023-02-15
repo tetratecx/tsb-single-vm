@@ -32,7 +32,7 @@ prereq-install: ## Install prerequisites
 	@/bin/sh -c './prereq.sh install'
 
 ###########################
-infra-up: prereq-check ## Bring up and configure minikube clusters
+infra-k8s-up: prereq-check ## Bring up and configure minikube clusters
 	@/bin/bash -c './infra-k8s.sh clusters-up'
 
 infra-vm-up: prereq-check ## Bring up and configure vms
@@ -41,14 +41,8 @@ infra-vm-up: prereq-check ## Bring up and configure vms
 	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-c ; fi'
 
 ###########################
-infra-mgmt-down: ## Bring down and delete mgmt minikube cluster
-	@/bin/bash -c './infra-k8s.sh cluster-down mgmt-cluster'
-
-infra-active-down: ## Bring down and delete active minikube cluster
-	@/bin/bash -c './infra-k8s.sh cluster-down active-cluster'
-
-infra-standby-down: ## Bring down and delete standby minikube cluster
-	@/bin/bash -c './infra-k8s.sh cluster-down standby-cluster'
+infra-k8s-down: ## Bring down and delete minikube clusters
+	@/bin/bash -c './infra-k8s.sh cluster-down'
 
 infra-vm-down: ## Bring down and delete vms
 	@/bin/bash -c './infra-vm.sh vm-down'
