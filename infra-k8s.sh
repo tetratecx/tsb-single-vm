@@ -46,8 +46,6 @@ DONE
 
 # Pull tsb docker images 
 function sync_images {
-  echo "${TSB_DOCKER_PASSWORD}" | docker login containers.dl.tetrate.io --username ${TSB_DOCKER_USERNAME} --password-stdin
-
   # Sync all tsb images locally (if not yet available)
   echo "Going to pull tsb container images"
   for image in `tctl install image-sync --just-print --raw --accept-eula 2>/dev/null` ; do
@@ -156,8 +154,8 @@ if [[ ${ACTION} = "cluster-up" ]]; then
   fi  
 
   # Pull images locally and sync them to minikube profiles of the mgmt and active clusters
-  sync_images ;
-  load_images ${CLUSTER_PROFILE} ;
+  # sync_images ;
+  # load_images ${CLUSTER_PROFILE} ;
   # Make sure minikube has access to tsb private repo
   minikube --profile ${CLUSTER_PROFILE} ssh docker login containers.dl.tetrate.io --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_PASSWORD} ;
 
