@@ -52,8 +52,8 @@ function sync_images {
   echo "Going to pull tsb container images"
   for image in `tctl install image-sync --just-print --raw --accept-eula 2>/dev/null` ; do
     if ! docker image inspect ${image} &>/dev/null ; then
-      echo -n "."
       docker pull ${image} ;
+      echo -n "."
     fi
   done
 
