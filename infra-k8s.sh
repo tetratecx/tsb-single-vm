@@ -137,15 +137,15 @@ if [[ ${ACTION} = "cluster-up" ]]; then
     exit 1
   fi
 
-  # Extract the docker network subnet (default 192.168.49.0/24)
-  DOCKER_NET_SUBNET=$(docker network inspect ${DOCKER_NET} --format '{{(index .IPAM.Config 0).Subnet}}' | awk -F '.' '{ print $1"."$2"."$3;}')
-
   # Start minikube profiles for the mgmt and active clusters
   if minikube profile list | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
     echo "Minikube cluster profile ${CLUSTER_PROFILE} already running"
   else
     minikube start --kubernetes-version=v${K8S_VERSION} --profile ${CLUSTER_PROFILE} ${MINIKUBE_CLUSTER_OPTS} ;
   fi
+
+  # Extract the docker network subnet (default 192.168.49.0/24)
+  DOCKER_NET_SUBNET=$(docker network inspect ${DOCKER_NET} --format '{{(index .IPAM.Config 0).Subnet}}' | awk -F '.' '{ print $1"."$2"."$3;}')
 
   # Configure and enable metallb in the mgmt and active clusters
   if minikube --profile ${CLUSTER_PROFILE} addons list | grep "metallb" | grep "enabled" &>/dev/null ; then
