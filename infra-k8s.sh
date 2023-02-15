@@ -103,7 +103,6 @@ if [[ ${ACTION} = "clusters-up" ]]; then
       CLUSTER_ZONE=$(get_cp_zone_by_index $(expr ${index} - 1)) ;
     fi 
     
-    continue
     # Start minikube profile for the cluster
     if minikube profile list 2>/dev/null | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
       echo "Minikube cluster profile ${CLUSTER_PROFILE} already running"
