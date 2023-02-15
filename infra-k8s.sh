@@ -159,8 +159,8 @@ if [[ ${ACTION} = "cluster-up" ]]; then
   # load_images ${CLUSTER_PROFILE} ;
   # Make sure minikube has access to tsb private repo
   minikube --profile ${CLUSTER_PROFILE} ssh -- docker login containers.dl.tetrate.io --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_PASSWORD} ;
-  minikube --profile ${CLUSTER_PROFILE} ssh -- sudo cp ~/.docker/config.json /var/lib/kubelet ;
-  minikube --profile ${CLUSTER_PROFILE} ssh -- sudo systemctl restart kubelet  ;
+  minikube --profile ${CLUSTER_PROFILE} ssh -- sudo cp /home/docker/.docker/config.json /var/lib/kubelet ;
+  minikube --profile ${CLUSTER_PROFILE} ssh -- sudo systemctl restart kubelet ;
 
   # Add nodes labels for locality based routing (region and zone)
   kubectl --context ${CLUSTER_PROFILE} label node ${CLUSTER_PROFILE} topology.kubernetes.io/region=${CLUSTER_REGION} --overwrite=true ;
