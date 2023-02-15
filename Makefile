@@ -10,8 +10,8 @@ help: ## This help
 .DEFAULT_GOAL := help
 
 
-TSB_VERSION := 1.6.0
 K8S_VERSION := 1.24.9
+TSB_VERSION := 1.6.0
 ISTIO_VERSION := 1.15.2
 
 ### Scenario configuration ###
