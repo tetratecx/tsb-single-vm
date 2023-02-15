@@ -46,16 +46,16 @@ prereq-install: ## Install prerequisites
 	@/bin/sh -c './prereq.sh install ${K8S_VERSION} ${TSB_VERSION} ${ISTIO_VERSION}'
 
 ###########################
-infra-mgmt-up: prereqs-check check-credentials ## Bring up and configure mgmt minikube cluster
+infra-mgmt-up: prereq-check check-credentials ## Bring up and configure mgmt minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-up mgmt-cluster ${K8S_VERSION}'
 
-infra-active-up: prereqs-check check-credentials ## Bring up and configure active minikube cluster
+infra-active-up: prereq-check check-credentials ## Bring up and configure active minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-up active-cluster ${K8S_VERSION}'
 
-infra-standby-up: prereqs-check check-credentials ## Bring up and configure standby minikube cluster
+infra-standby-up: prereq-check check-credentials ## Bring up and configure standby minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-up standby-cluster ${K8S_VERSION}'
 
-infra-vm-up: prereqs-check check-credentials ## Bring up and configure vms
+infra-vm-up: prereq-check check-credentials ## Bring up and configure vms
 	@/bin/bash -c 'if [[ ${VM_APP_A} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-a ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_B} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-b ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-c ; fi'
