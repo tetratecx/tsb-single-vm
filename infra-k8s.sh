@@ -54,21 +54,18 @@ function sync_images {
     if ! docker image inspect ${image} &>/dev/null ; then
       echo -n "."
       docker pull ${image} ;
-      minikube cache add ${image} ;
     fi
   done
 
   # Sync image for application deployment
   if ! docker image inspect containers.dl.tetrate.io/obs-tester-server:1.0 &>/dev/null ; then
     docker pull containers.dl.tetrate.io/obs-tester-server:1.0 ;
-    minikube cache add containers.dl.tetrate.io/obs-tester-server:1.0 ;
     echo -n "."
   fi
 
   # Sync image for debugging
   if ! docker image inspect containers.dl.tetrate.io/netshoot &>/dev/null ; then
     docker pull containers.dl.tetrate.io/netshoot ;
-    minikube cache add containers.dl.tetrate.io/netshoot ;
     echo -n "."
   fi
 
@@ -160,7 +157,7 @@ if [[ ${ACTION} = "cluster-up" ]]; then
 
   # Pull images locally and sync them to minikube profiles of the mgmt and active clusters
   sync_images ;
-  # load_images ${CLUSTER_PROFILE} ;
+  load_images ${CLUSTER_PROFILE} ;
   # Make sure minikube has access to tsb private repo
   minikube --profile ${CLUSTER_PROFILE} ssh docker login containers.dl.tetrate.io --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_PASSWORD} ;
 
