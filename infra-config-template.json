@@ -1,0 +1,28 @@
+{
+  "istioctl_version": "1.15.2",
+  "k8s_version": "1.24.9",
+  "tsb_cp": [
+    {
+      "name": "active",
+      "region": "region1",
+      "zone": "zone1b"
+    },
+    {
+      "name": "standby",
+      "region": "region2",
+      "zone": "zone2a"
+    }
+  ],
+  "tsb_image_sync_apikey": "<TSB_REPO_APIKEY>",
+  "tsb_image_sync_repo": "containers.dl.tetrate.io",
+  "tsb_image_sync_username": "<TSB_REPO_USERNAME>",
+  "tsb_mp": {
+    "demo_profile": true,
+    "name": "mgmt",
+    "region": "region1",
+    "zone": "zone1a"
+  },
+  "tsb_org": "tetrate",
+  "tsb_password": "Tetrate123",
+  "tsb_version": "1.6.0"
+}
