@@ -40,7 +40,7 @@ if [[ ${ACTION} = "install" ]]; then
   echo "Log out of this session and log back in to have docker access"
 
   echo "Installing kubectl"
-  curl -Lo /tmp/kubectl "https://dl.k8s.io/release/${K8S_VERSION}/bin/linux/amd64/kubectl" ;
+  curl -Lo /tmp/kubectl "https://dl.k8s.io/release/v${K8S_VERSION}/bin/linux/amd64/kubectl" ;
   chmod +x /tmp/kubectl ;
   sudo install /tmp/kubectl /usr/local/bin/kubectl ;
   rm -f /tmp/kubectl ;
