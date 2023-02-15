@@ -46,7 +46,7 @@ if [[ ${ACTION} = "install" ]]; then
   rm -f /tmp/kubectl ;
 
   echo "Installing k9s"
-  curl -Lo /tmp/k9s.tar.gz "https://github.com/derailed/k9s/releases/latest/k9s_Linux_amd64.tar.gz" ;
+  curl -Lo /tmp/k9s.tar.gz "https://github.com/derailed/k9s/releases/latest/download/k9s_Linux_amd64.tar.gz" ;
   tar xvfz /tmp/k9s.tar.gz -C /tmp ;
   chmod +x /tmp/k9s ;
   sudo install /tmp/k9s /usr/local/bin/k9s ;
