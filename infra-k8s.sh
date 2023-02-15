@@ -135,8 +135,6 @@ if [[ ${ACTION} = "cluster-up" ]]; then
     exit 1
   fi
 
-  echo "ok"
-
   # Start minikube profiles for the mgmt and active clusters
   if minikube profile list 2>/dev/null | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
     echo "Minikube cluster profile ${CLUSTER_PROFILE} already running"
