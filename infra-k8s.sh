@@ -164,13 +164,13 @@ if [[ ${ACTION} = "info" ]]; then
   TSB_API_ENDPOINT=$(kubectl --context ${CLUSTER_PROFILE} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
   echo "Management plane cluster:"
   echo "TSB GUI: https://${TSB_API_ENDPOINT}:8443 (admin/admin)"
-  echo "kubectl --profile ${CLUSTER_PROFILE} get pods -A"
+  echo "kubectl --context ${CLUSTER_PROFILE} get pods -A"
   echo ""
 
   echo "Control plane cluster:"
   for index in $(seq 0 ${CP_COUNT-1}) ; do
     CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index})
-    echo "kubectl --profile ${CLUSTER_PROFILE} get pods -A"
+    echo "kubectl --context ${CLUSTER_PROFILE} get pods -A"
   done
 
   exit 0
