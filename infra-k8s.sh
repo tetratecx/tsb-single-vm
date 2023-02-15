@@ -126,7 +126,7 @@ if [[ ${ACTION} = "clusters-up" ]]; then
     # sync_images ;
     # load_images ${CLUSTER_PROFILE} ;
     # Make sure minikube has access to tsb private repo
-    minikube --profile ${CLUSTER_PROFILE} ssh -- docker login ${TSB_DOCKER_REPO} --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_APIKEY} ;
+    minikube --profile ${CLUSTER_PROFILE} ssh -- docker login ${TSB_DOCKER_REPO} --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_APIKEY} &>/dev/null ;
     minikube --profile ${CLUSTER_PROFILE} ssh -- sudo cp /home/docker/.docker/config.json /var/lib/kubelet ;
     minikube --profile ${CLUSTER_PROFILE} ssh -- sudo systemctl restart kubelet ;
 
