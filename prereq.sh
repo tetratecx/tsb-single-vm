@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 ACTION=${1}
-K8S_VERSION=${3}
-TSB_VERSION=${2}
+K8S_VERSION=${2}
+TSB_VERSION=${3}
 ISTIO_VERSION=${4}
 
 if [[ ${ACTION} = "check" ]]; then
