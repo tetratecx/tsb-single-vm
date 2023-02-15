@@ -12,7 +12,7 @@ help: ## This help
 
 TSB_VERSION := 1.6.0
 K8S_VERSION := 1.24.9
-# K8S_VERSION := 1.23.15
+ISTIO_VERSION := 1.15.2
 
 ### Scenario configuration ###
 TIER1_MODE := http
@@ -39,20 +39,23 @@ ifeq ($(TSB_DOCKER_PASSWORD),)
 	$(error environment variable TSB_DOCKER_PASSWORD is undefined)
 endif
 
-prereqs: ## Make sure prerequisites are satisfied
-	@/bin/bash -c './init.sh ${TSB_VERSION}'
+prereqs-check: ## Check if prerequisites are installed
+	@/bin/sh -c './prereqs.sh check ${K8S_VERSION} ${TSB_VERSION} ${ISTIO_VERSION}'
+
+prereqs-install: ## Install prerequisites
+	@/bin/sh -c './prereqs.sh install ${K8S_VERSION} ${TSB_VERSION} ${ISTIO_VERSION}'
 
 ###########################
-infra-mgmt-up: check-credentials ## Bring up and configure mgmt minikube cluster
+infra-mgmt-up: prereqs-check check-credentials ## Bring up and configure mgmt minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-up mgmt-cluster ${K8S_VERSION}'
 
-infra-active-up: check-credentials ## Bring up and configure active minikube cluster
+infra-active-up: prereqs-check check-credentials ## Bring up and configure active minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-up active-cluster ${K8S_VERSION}'
 
-infra-standby-up: check-credentials ## Bring up and configure standby minikube cluster
+infra-standby-up: prereqs-check check-credentials ## Bring up and configure standby minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-up standby-cluster ${K8S_VERSION}'
 
-infra-vm-up: check-credentials ## Bring up and configure vms
+infra-vm-up: prereqs-check check-credentials ## Bring up and configure vms
 	@/bin/bash -c 'if [[ ${VM_APP_A} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-a ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_B} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-b ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-c ; fi'
