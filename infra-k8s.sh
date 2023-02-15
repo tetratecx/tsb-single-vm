@@ -90,42 +90,50 @@ function load_images {
 
 if [[ ${ACTION} = "clusters-up" ]]; then
 
-  CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
-  DOCKER_NET=$(get_mp_name) ;
-  CLUSTER_REGION=$(get_mp_region) ;
-  CLUSTER_ZONE=$(get_mp_zone) ;
+  MGMT_CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
+  MGMT_DOCKER_NET=$(get_mp_name) ;
+  MGMT_CLUSTER_REGION=$(get_mp_region) ;
+  MGMT_CLUSTER_ZONE=$(get_mp_zone) ;
+  CP_COUNT=$(get_cp_count)
 
-  # Start minikube profiles for the mgmt and active clusters
-  if minikube profile list 2>/dev/null | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
-    echo "Minikube cluster profile ${CLUSTER_PROFILE} already running"
-  else
-    echo "Starting minikube cluster profile ${CLUSTER_PROFILE}"
-    minikube start --kubernetes-version=v${K8S_VERSION} --profile ${CLUSTER_PROFILE} --network ${DOCKER_NET} ${MINIKUBE_OPTS} ;
-  fi
+  LOOP_ARRAY="${MGMT_CLUSTER_PROFILE} ${MGMT_DOCKER_NET} ${MGMT_CLUSTER_REGION} ${MGMT_CLUSTER_ZONE}"
+  for index in {0..$((CP_COUNT-1))} ; do
+    LOOP_ARRAY="${LOOP_ARRAY} $(get_cp_minikube_profile_by_index ${index}) $(get_cp_name_by_index ${index}) $(get_cp_region_by_index ${index}) $(get_cp_zone_by_index ${index})"
+  done
 
-  # Extract the docker network subnet (default 192.168.49.0/24)
-  DOCKER_NET_SUBNET=$(docker network inspect ${DOCKER_NET} --format '{{(index .IPAM.Config 0).Subnet}}' | awk -F '.' '{ print $1"."$2"."$3;}')
+  for CLUSTER_PROFILE DOCKER_NET CLUSTER_REGION CLUSTER_ZONE in ${LOOP_ARRAY} ; do
+    # Start minikube profile for the cluster
+    if minikube profile list 2>/dev/null | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
+      echo "Minikube cluster profile ${CLUSTER_PROFILE} already running"
+    else
+      echo "Starting minikube cluster profile ${CLUSTER_PROFILE}"
+      minikube start --kubernetes-version=v${K8S_VERSION} --profile ${CLUSTER_PROFILE} --network ${DOCKER_NET} ${MINIKUBE_OPTS} ;
+    fi
 
-  # Configure and enable metallb in the mgmt and active clusters
-  if minikube --profile ${CLUSTER_PROFILE} addons list | grep "metallb" | grep "enabled" &>/dev/null ; then
-    echo "Minikube cluster profile ${CLUSTER_PROFILE} metallb addon already enabled"
-  else
-    configure_metallb ${CLUSTER_PROFILE} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_STARTIP} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_ENDIP} ;
-    minikube --profile ${CLUSTER_PROFILE} addons enable metallb ;
-  fi  
+    # Extract the docker network subnet (default 192.168.49.0/24)
+    DOCKER_NET_SUBNET=$(docker network inspect ${DOCKER_NET} --format '{{(index .IPAM.Config 0).Subnet}}' | awk -F '.' '{ print $1"."$2"."$3;}')
 
-  # Pull images locally and sync them to minikube profiles of the mgmt and active clusters
-  # sync_images ;
-  # load_images ${CLUSTER_PROFILE} ;
-  # Make sure minikube has access to tsb private repo
-  minikube --profile ${CLUSTER_PROFILE} ssh -- docker login ${TSB_DOCKER_REPO} --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_APIKEY} ;
-  minikube --profile ${CLUSTER_PROFILE} ssh -- sudo cp /home/docker/.docker/config.json /var/lib/kubelet ;
-  minikube --profile ${CLUSTER_PROFILE} ssh -- sudo systemctl restart kubelet ;
+    # Configure and enable metallb in cluster
+    if minikube --profile ${CLUSTER_PROFILE} addons list | grep "metallb" | grep "enabled" &>/dev/null ; then
+      echo "Minikube cluster profile ${CLUSTER_PROFILE} metallb addon already enabled"
+    else
+      configure_metallb ${CLUSTER_PROFILE} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_STARTIP} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_ENDIP} ;
+      minikube --profile ${CLUSTER_PROFILE} addons enable metallb ;
+    fi  
 
-  # Add nodes labels for locality based routing (region and zone)
-  kubectl --context ${CLUSTER_PROFILE} label node ${CLUSTER_PROFILE} topology.kubernetes.io/region=${CLUSTER_REGION} --overwrite=true ;
-  kubectl --context ${CLUSTER_PROFILE} label node ${CLUSTER_PROFILE} topology.kubernetes.io/zone=${CLUSTER_ZONE} --overwrite=true ;
+    # Pull images locally and sync them to minikube profile of the cluster
+    # sync_images ;
+    # load_images ${CLUSTER_PROFILE} ;
+    # Make sure minikube has access to tsb private repo
+    minikube --profile ${CLUSTER_PROFILE} ssh -- docker login ${TSB_DOCKER_REPO} --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_APIKEY} ;
+    minikube --profile ${CLUSTER_PROFILE} ssh -- sudo cp /home/docker/.docker/config.json /var/lib/kubelet ;
+    minikube --profile ${CLUSTER_PROFILE} ssh -- sudo systemctl restart kubelet ;
 
+    # Add nodes labels for locality based routing (region and zone)
+    kubectl --context ${CLUSTER_PROFILE} label node ${CLUSTER_PROFILE} topology.kubernetes.io/region=${CLUSTER_REGION} --overwrite=true ;
+    kubectl --context ${CLUSTER_PROFILE} label node ${CLUSTER_PROFILE} topology.kubernetes.io/zone=${CLUSTER_ZONE} --overwrite=true ;
+  done
+  
   exit 0
 fi
 
