@@ -87,7 +87,7 @@ function load_images {
 
 if [[ ${ACTION} = "clusters-up" ]]; then
 
-  CLUSTER_PROFILE=$(get_mp_minikube_profil) ;
+  CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
   DOCKER_NET=$(get_mp_name) ;
   K8S_VERSION=$(get_k8s_version) ;
 
