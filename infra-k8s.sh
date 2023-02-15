@@ -159,7 +159,7 @@ if [[ ${ACTION} = "cluster-up" ]]; then
   # sync_images ;
   # load_images ${CLUSTER_PROFILE} ;
   # Make sure minikube has access to tsb private repo
-  minikube --profile ${CLUSTER_PROFILE} ssh docker login containers.dl.tetrate.io --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_PASSWORD}
+  minikube --profile ${CLUSTER_PROFILE} ssh docker login containers.dl.tetrate.io --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_PASSWORD} ;
 
   # Add nodes labels for locality based routing (region and zone)
   kubectl --context ${CLUSTER_PROFILE} label node ${CLUSTER_PROFILE} topology.kubernetes.io/region=${CLUSTER_REGION} --overwrite=true ;
