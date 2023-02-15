@@ -79,7 +79,7 @@ if [[ ${ACTION} = "install" ]]; then
 
 # Autocompletion for tsb-demo-minikube
 source <(kubectl completion bash)
-source <(istiocl completion bash)
+source <(istioctl completion bash)
 source <(minikube completion bash)
 complete -F __start_kubectl k
 alias k=kubectl
