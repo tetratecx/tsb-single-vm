@@ -87,16 +87,16 @@ function load_images {
 
 if [[ ${ACTION} = "clusters-up" ]]; then
 
-  CLUSTER_PROFILE=get_mp_minikube_profile ;
-  DOCKER_NET=get_mp_name ;
-  K8S_VERSION=get_k8s_version ;
+  CLUSTER_PROFILE=$(get_mp_minikube_profil) ;
+  DOCKER_NET=$(get_mp_name) ;
+  K8S_VERSION=$(get_k8s_version) ;
 
-  TSB_DOCKER_REPO=get_tsb_image_sync_repo ;
-  TSB_DOCKER_USERNAME=get_tsb_image_sync_username ;
-  TSB_DOCKER_APIKEY=get_tsb_image_sync_apikey ;
+  TSB_DOCKER_REPO=$(get_tsb_image_sync_repo) ;
+  TSB_DOCKER_USERNAME=$(get_tsb_image_sync_username) ;
+  TSB_DOCKER_APIKEY=$(get_tsb_image_sync_apikey) ;
 
-  CLUSTER_REGION=get_mp_region ;
-  CLUSTER_ZONE=get_mp_zone ;
+  CLUSTER_REGION=$(get_mp_region) ;
+  CLUSTER_ZONE=$(get_mp_zone) ;
 
   # Start minikube profiles for the mgmt and active clusters
   if minikube profile list 2>/dev/null | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
@@ -169,7 +169,7 @@ fi
 if [[ ${ACTION} = "clean" ]]; then
 
   # Delete minikube profiles
-  CLUSTER_PROFILE=get_mp_minikube_profile ;
+  CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
 
   minikube delete --profile ${CLUSTER_PROFILE} 2>/dev/null ;
   # minikube delete --profile ${ACTIVE_CLUSTER_PROFILE} 2>/dev/null ;
