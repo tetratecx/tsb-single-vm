@@ -73,8 +73,20 @@ if [[ ${ACTION} = "install" ]]; then
   sudo install /tmp/tctl /usr/local/bin/tctl ;
   rm -f /tmp/tctl ;
 
-  echo "All prerequisites have been installed"
+  if ! cat ~/.bashrc | grep "# Autocompletion for tsb-demo-minikube" &>/dev/null ; then
+    echo "Enabling bash completion and add some alias"
+    tee -a  ~/.bashrc << END
 
+# Autocompletion for tsb-demo-minikube
+source <(kubectl completion bash)
+source <(istiocl completion bash)
+source <(minikube completion bash)
+complete -F __start_kubectl k
+alias k=kubectl
+END
+  fi
+
+  echo "All prerequisites have been installed"
   exit 0
 fi
 
