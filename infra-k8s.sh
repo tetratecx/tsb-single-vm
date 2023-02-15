@@ -3,7 +3,6 @@ source config.sh
 
 ACTION=${1}
 
-DOCKER_NET=tsb-demo
 MINIKUBE_OPTS="--driver docker --cpus=6"
 CLUSTER_METALLB_STARTIP=100
 CLUSTER_METALLB_ENDIP=199
