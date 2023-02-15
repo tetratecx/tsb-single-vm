@@ -14,7 +14,7 @@ if [[ ${ACTION} = "check" ]]; then
   do
     if ! command -v ${dep} &> /dev/null
     then
-      echo "${dep} could not be found, please install this on your local system first" ;
+      echo "Dependency ${dep} could not be found, please install this on your local system first" ;
       exit 1
     fi
   done
@@ -25,6 +25,8 @@ if [[ ${ACTION} = "check" ]]; then
     echo "wrong version of tctl, please install version ${TSB_VERSION} first" ;
     exit 2
   fi
+
+  echo "All dependency installed : ok"
 
   exit 0
 fi
