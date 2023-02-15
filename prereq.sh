@@ -41,7 +41,8 @@ if [[ ${ACTION} = "check" ]]; then
   if ! nc -vz -w 3 ${TSB_DOCKER_REPO_HOST} ${TSB_DOCKER_REPO_PORT} 2>/dev/null ; then
     echo "Failed to connect to docker registry at ${TSB_DOCKER_REPO_HOST}:${TSB_DOCKER_REPO_PORT}. Check your network settings (DNS/Proxy)"
     exit 3
-  elif ! docker login ${TSB_DOCKER_REPO} --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_APIKEY} 2>/dev/null; then
+  fi
+  if ! docker login ${TSB_DOCKER_REPO} --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_APIKEY} 2>/dev/null; then
     echo "Failed to login to docker registry at ${TSB_DOCKER_REPO}. Check your credentials"
     exit 4
   fi
