@@ -1,4 +1,6 @@
 # Temporary setup resources
+infra-config.json
+
 config/01-mgmt-cluster/clusteroperators.yaml
 config/01-mgmt-cluster/*.pem
 

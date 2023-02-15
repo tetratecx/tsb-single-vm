@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
+source config.sh
 
 ACTION=${1}
-K8S_VERSION=${2}
-TSB_VERSION=${3}
-ISTIO_VERSION=${4}
+ISTIOCTL_VERSION=get_istioctl_version() ;
+TSB_VERSION=get_tsb_version() ;
+K8S_VERSION=get_k8s_version() ;
 
 if [[ ${ACTION} = "check" ]]; then
 
@@ -61,7 +62,7 @@ if [[ ${ACTION} = "install" ]]; then
   rm -f /tmp/minikube ;
 
   echo "Installing istioctl"
-  curl -Lo /tmp/istioctl.tar.gz "https://github.com/istio/istio/releases/download/${ISTIO_VERSION}/istioctl-${ISTIO_VERSION}-linux-amd64.tar.gz" ;
+  curl -Lo /tmp/istioctl.tar.gz "https://github.com/istio/istio/releases/download/${ISTIOCTL_VERSION}/istioctl-${ISTIOCTL_VERSION}-linux-amd64.tar.gz" ;
   tar xvfz /tmp/istioctl.tar.gz -C /tmp ;
   chmod +x /tmp/istioctl ;
   sudo install /tmp/istioctl /usr/local/bin/istioctl ;

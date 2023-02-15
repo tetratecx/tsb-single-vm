@@ -1,34 +1,15 @@
 #!/usr/bin/env bash
+source config.sh
 
 ACTION=${1}
 CLUSTER=${2}
 K8S_VERSION=${3}
 
 DOCKER_NET=tsb-demo
+MINIKUBE_OPTS="--driver docker --cpus=6"
+CLUSTER_METALLB_STARTIP=100
+CLUSTER_METALLB_ENDIP=199
 
-MGMT_CLUSTER_PROFILE=mgmt-cluster
-MGMT_CLUSTER_METALLB_STARTIP=100
-MGMT_CLUSTER_METALLB_ENDIP=119
-
-ACTIVE_CLUSTER_PROFILE=active-cluster
-ACTIVE_CLUSTER_METALLB_STARTIP=120
-ACTIVE_CLUSTER_METALLB_ENDIP=139
-
-STANDBY_CLUSTER_PROFILE=standby-cluster
-STANDBY_CLUSTER_METALLB_STARTIP=140
-STANDBY_CLUSTER_METALLB_ENDIP=159
-
-# Get virtualbox IP subnet 
-#   args:
-#     (1) virtualbox bridge network name
-function get_vbox_subnet {
-  if vboxmanage list dhcpservers | grep "NetworkName:" | grep "${1}" &>/dev/null ; then
-    echo $(vboxmanage list dhcpservers | grep "Dhcpd IP:" | awk '{ print $NF }' | awk -F '.' '{ print $1"."$2"."$3".";}')
-  else
-    echo "Cannot find a virtualbox network named ${1}. Quitting!"
-    exit 1
-  fi
-}
 
 # Configure metallb start and end IP
 #   args:
@@ -104,43 +85,25 @@ function load_images {
 
 ######################## START OF ACTIONS ########################
 
-if [[ ${ACTION} = "cluster-up" ]]; then
+if [[ ${ACTION} = "clusters-up" ]]; then
 
-  if [[ ${CLUSTER} = "mgmt-cluster" ]]; then
-    MINIKUBE_CLUSTER_OPTS="--driver docker --network=${DOCKER_NET} --cpus=6"
-    CLUSTER_PROFILE=${MGMT_CLUSTER_PROFILE}
-    CLUSTER_METALLB_STARTIP=${MGMT_CLUSTER_METALLB_STARTIP}
-    CLUSTER_METALLB_ENDIP=${MGMT_CLUSTER_METALLB_ENDIP}
-    CLUSTER_REGION=region1
-    CLUSTER_ZONE=zone1a
-  elif [[ ${CLUSTER} = "active-cluster" ]]; then
-    MINIKUBE_CLUSTER_OPTS="--driver docker --network=${DOCKER_NET} --cpus=6"
-    CLUSTER_PROFILE=${ACTIVE_CLUSTER_PROFILE}
-    CLUSTER_METALLB_STARTIP=${ACTIVE_CLUSTER_METALLB_STARTIP}
-    CLUSTER_METALLB_ENDIP=${ACTIVE_CLUSTER_METALLB_ENDIP}
-    CLUSTER_REGION=region1
-    CLUSTER_ZONE=zone1b
-  elif [[ ${CLUSTER} = "standby-cluster" ]]; then
-    MINIKUBE_CLUSTER_OPTS="--driver docker --network=${DOCKER_NET} --cpus=6"
-    CLUSTER_PROFILE=${STANDBY_CLUSTER_PROFILE}
-    CLUSTER_METALLB_STARTIP=${STANDBY_CLUSTER_METALLB_STARTIP}
-    CLUSTER_METALLB_ENDIP=${STANDBY_CLUSTER_METALLB_ENDIP}
-    CLUSTER_REGION=region2
-    CLUSTER_ZONE=zone2a
-  else
-    echo "Please specify one of the following cluster:"
-    echo "  - mgmt-cluster"
-    echo "  - active-cluster"
-    echo "  - standby-cluster"
-    exit 1
-  fi
+  CLUSTER_PROFILE=get_mp_minikube_profile() ;
+  DOCKER_NET=get_mp_name() ;
+  K8S_VERSION=get_k8s_version() ;
+
+  TSB_DOCKER_REPO=get_tsb_image_sync_repo() ;
+  TSB_DOCKER_USERNAME=get_tsb_image_sync_username() ;
+  TSB_DOCKER_APIKEY=get_tsb_image_sync_apikey() ;
+
+  CLUSTER_REGION=get_mp_region() ;
+  CLUSTER_ZONE=get_mp_zone() ;
 
   # Start minikube profiles for the mgmt and active clusters
   if minikube profile list 2>/dev/null | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
     echo "Minikube cluster profile ${CLUSTER_PROFILE} already running"
   else
     echo "Starting minikube cluster profile ${CLUSTER_PROFILE}"
-    minikube start --kubernetes-version=v${K8S_VERSION} --profile ${CLUSTER_PROFILE} ${MINIKUBE_CLUSTER_OPTS} ;
+    minikube start --kubernetes-version=v${K8S_VERSION} --profile ${CLUSTER_PROFILE} --network ${DOCKER_NET} ${MINIKUBE_OPTS} ;
   fi
 
   # Extract the docker network subnet (default 192.168.49.0/24)
@@ -158,7 +121,7 @@ if [[ ${ACTION} = "cluster-up" ]]; then
   # sync_images ;
   # load_images ${CLUSTER_PROFILE} ;
   # Make sure minikube has access to tsb private repo
-  minikube --profile ${CLUSTER_PROFILE} ssh -- docker login containers.dl.tetrate.io --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_PASSWORD} ;
+  minikube --profile ${CLUSTER_PROFILE} ssh -- docker login ${TSB_DOCKER_REPO} --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_APIKEY} ;
   minikube --profile ${CLUSTER_PROFILE} ssh -- sudo cp /home/docker/.docker/config.json /var/lib/kubelet ;
   minikube --profile ${CLUSTER_PROFILE} ssh -- sudo systemctl restart kubelet ;
 
@@ -206,16 +169,18 @@ fi
 if [[ ${ACTION} = "clean" ]]; then
 
   # Delete minikube profiles
-  minikube delete --profile ${MGMT_CLUSTER_PROFILE} 2>/dev/null ;
-  minikube delete --profile ${ACTIVE_CLUSTER_PROFILE} 2>/dev/null ;
-  minikube delete --profile ${STANDBY_CLUSTER_PROFILE} 2>/dev/null ;
+  CLUSTER_PROFILE=get_mp_minikube_profile() ;
+
+  minikube delete --profile ${CLUSTER_PROFILE} 2>/dev/null ;
+  # minikube delete --profile ${ACTIVE_CLUSTER_PROFILE} 2>/dev/null ;
+  # minikube delete --profile ${STANDBY_CLUSTER_PROFILE} 2>/dev/null ;
 
   exit 0
 fi
 
 echo "Please specify one of the following action:"
-echo "  - cluster-up"
-echo "  - cluster-down"
+echo "  - clusters-up"
+echo "  - clusters-down"
 echo "  - info"
 echo "  - clean"
 exit 1
