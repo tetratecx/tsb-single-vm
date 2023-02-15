@@ -100,7 +100,7 @@ if [[ ${ACTION} = "clusters-up" ]]; then
     LOOP_ARRAY="${LOOP_ARRAY} $(get_cp_minikube_profile_by_index ${index}) $(get_cp_name_by_index ${index}) $(get_cp_region_by_index ${index}) $(get_cp_zone_by_index ${index})"
   done
 
-  for CLUSTER_PROFILE in $(echo ${LOOP_ARRAY} | tr " " "\n") ; do
+  for CLUSTER_PROFILE DOCKER_NET CLUSTER_REGION CLUSTER_ZONE in $(echo ${LOOP_ARRAY} | tr " " "\n") ; do
     # Start minikube profile for the cluster
     if minikube profile list 2>/dev/null | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
       echo "Minikube cluster profile ${CLUSTER_PROFILE} already running"
