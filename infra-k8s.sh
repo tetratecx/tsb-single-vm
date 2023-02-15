@@ -150,7 +150,7 @@ if [[ ${ACTION} = "cluster-up" ]]; then
   if minikube --profile ${CLUSTER_PROFILE} addons list | grep "metallb" | grep "enabled" &>/dev/null ; then
     echo "Minikube cluster profile ${CLUSTER_PROFILE} metallb addon already enabled"
   else
-    configure_metallb ${CLUSTER_PROFILE} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_STARTIP} ${DOCKER_NET_SUBNET}${CLUSTER_METALLB_ENDIP} ;
+    configure_metallb ${CLUSTER_PROFILE} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_STARTIP} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_ENDIP} ;
     minikube --profile ${CLUSTER_PROFILE} addons enable metallb ;
   fi  
 
