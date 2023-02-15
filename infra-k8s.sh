@@ -135,10 +135,13 @@ if [[ ${ACTION} = "cluster-up" ]]; then
     exit 1
   fi
 
+  echo "ok"
+
   # Start minikube profiles for the mgmt and active clusters
   if minikube profile list | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
     echo "Minikube cluster profile ${CLUSTER_PROFILE} already running"
   else
+    echo "Starting minikube cluster profile ${CLUSTER_PROFILE}"
     minikube start --kubernetes-version=v${K8S_VERSION} --profile ${CLUSTER_PROFILE} ${MINIKUBE_CLUSTER_OPTS} ;
   fi
 
