@@ -131,10 +131,10 @@ if [[ ${ACTION} = "clusters-up" ]]; then
     minikube --profile ${CLUSTER_PROFILE} ssh -- sudo systemctl restart kubelet ;
 
     # Add nodes labels for locality based routing (region and zone)
-    if kubectl --context ${CLUSTER_PROFILE} get nodes ${CLUSTER_PROFILE} --show-labels | grep "topology.kubernetes.io/region=${CLUSTER_REGION}" &>/dev/null ; then
+    if ! kubectl --context ${CLUSTER_PROFILE} get nodes ${CLUSTER_PROFILE} --show-labels | grep "topology.kubernetes.io/region=${CLUSTER_REGION}" &>/dev/null ; then
       kubectl --context ${CLUSTER_PROFILE} label node ${CLUSTER_PROFILE} topology.kubernetes.io/region=${CLUSTER_REGION} --overwrite=true ;
     fi
-    if kubectl --context ${CLUSTER_PROFILE} get nodes ${CLUSTER_PROFILE} --show-labels | grep "topology.kubernetes.io/zone=${CLUSTER_ZONE}" &>/dev/null ; then
+    if ! kubectl --context ${CLUSTER_PROFILE} get nodes ${CLUSTER_PROFILE} --show-labels | grep "topology.kubernetes.io/zone=${CLUSTER_ZONE}" &>/dev/null ; then
       kubectl --context ${CLUSTER_PROFILE} label node ${CLUSTER_PROFILE} topology.kubernetes.io/zone=${CLUSTER_ZONE} --overwrite=true ;
     fi
   done
