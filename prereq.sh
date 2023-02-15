@@ -6,29 +6,47 @@ ISTIOCTL_VERSION=$(get_istioctl_version) ;
 TSB_VERSION=$(get_tsb_version) ;
 K8S_VERSION=$(get_k8s_version) ;
 
+TSB_DOCKER_REPO=$(get_tsb_image_sync_repo) ;
+TSB_DOCKER_USERNAME=$(get_tsb_image_sync_username) ;
+TSB_DOCKER_APIKEY=$(get_tsb_image_sync_apikey) ;
+
 if [[ ${ACTION} = "check" ]]; then
 
-  DEPENDENCIES=( tctl minikube expect docker kubectl jq awk curl )
+  DEPENDENCIES=( tctl minikube expect docker kubectl jq awk curl nc )
 
   # check necessary dependencies are installed
-  for dep in "${DEPENDENCIES[@]}"
-  do
-    if ! command -v ${dep} &> /dev/null
-    then
+  echo "Checking if all software dependencies installed : ok"
+  for dep in "${DEPENDENCIES[@]}" ; do
+    if ! command -v ${dep} &> /dev/null ; then
       echo "Dependency ${dep} could not be found, please install this on your local system first" ;
       exit 1
     fi
   done
-
   # check if the expected tctl version is installed
-  if ! [[ "$(tctl version --local-only)" =~ "${TSB_VERSION}" ]]
-  then
+  if ! [[ "$(tctl version --local-only)" =~ "${TSB_VERSION}" ]] ; then
     echo "wrong version of tctl, please install version ${TSB_VERSION} first" ;
     exit 2
   fi
+  echo "All software dependencies installed : ok"
 
-  echo "All dependency installed : ok"
-
+  # check if docker registry is available and credentials valid
+  echo "Checking if docker repo is reachable and credentials valid"
+  if echo ${TSB_DOCKER_REPO} | grep ":" &>/dev/null ; then
+    TSB_DOCKER_REPO_HOST=$(echo $TSB_DOCKER_REPO_BIS | tr ":" "\n" | head -1)
+    TSB_DOCKER_REPO_PORT=$(echo $TSB_DOCKER_REPO_BIS | tr ":" "\n" | tail -1)
+  else
+    TSB_DOCKER_REPO_HOST=${TSB_DOCKER_REPO}
+    TSB_DOCKER_REPO_PORT=443
+  fi
+  if ! nc -vz -w 3 ${TSB_DOCKER_REPO_HOST} ${TSB_DOCKER_REPO_PORT} 2>/dev/null ; then
+    echo "Failed to connect to docker registry. Check your network settings (DNS/Proxy)"
+    exit 3
+  elif ! docker login ${TSB_DOCKER_REPO} --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_APIKEY} 2>/dev/null; then
+    echo "Failed to login to docker registry. Check your credentials"
+    exit 4
+  fi
+  echo "Docker repo is reachable and credentials valid: ok"
+  
   exit 0
 fi
 

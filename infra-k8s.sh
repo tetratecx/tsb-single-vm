@@ -2,13 +2,16 @@
 source config.sh
 
 ACTION=${1}
-CLUSTER=${2}
-K8S_VERSION=${3}
 
 DOCKER_NET=tsb-demo
 MINIKUBE_OPTS="--driver docker --cpus=6"
 CLUSTER_METALLB_STARTIP=100
 CLUSTER_METALLB_ENDIP=199
+
+K8S_VERSION=$(get_k8s_version) ;
+TSB_DOCKER_REPO=$(get_tsb_image_sync_repo) ;
+TSB_DOCKER_USERNAME=$(get_tsb_image_sync_username) ;
+TSB_DOCKER_APIKEY=$(get_tsb_image_sync_apikey) ;
 
 
 # Configure metallb start and end IP
@@ -89,12 +92,6 @@ if [[ ${ACTION} = "clusters-up" ]]; then
 
   CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
   DOCKER_NET=$(get_mp_name) ;
-  K8S_VERSION=$(get_k8s_version) ;
-
-  TSB_DOCKER_REPO=$(get_tsb_image_sync_repo) ;
-  TSB_DOCKER_USERNAME=$(get_tsb_image_sync_username) ;
-  TSB_DOCKER_APIKEY=$(get_tsb_image_sync_apikey) ;
-
   CLUSTER_REGION=$(get_mp_region) ;
   CLUSTER_ZONE=$(get_mp_zone) ;
 
