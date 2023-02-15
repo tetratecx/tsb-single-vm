@@ -25,15 +25,6 @@ VM_APP_B := enabled
 VM_APP_C := disabled
 ### Scenario configuration ###
 
-
-check-credentials:
-ifeq ($(TSB_DOCKER_USERNAME),)
-	$(error environment variable TSB_DOCKER_USERNAME is undefined)
-endif
-ifeq ($(TSB_DOCKER_PASSWORD),)
-	$(error environment variable TSB_DOCKER_PASSWORD is undefined)
-endif
-
 prereq-check: ## Check if prerequisites are installed
 	@/bin/sh -c './prereq.sh check'
 
@@ -41,25 +32,25 @@ prereq-install: ## Install prerequisites
 	@/bin/sh -c './prereq.sh install'
 
 ###########################
-infra-up: prereq-check check-credentials ## Bring up and configure minikube clusters
+infra-up: prereq-check ## Bring up and configure minikube clusters
 	@/bin/bash -c './infra-k8s.sh clusters-up'
 
-infra-vm-up: prereq-check check-credentials ## Bring up and configure vms
+infra-vm-up: prereq-check ## Bring up and configure vms
 	@/bin/bash -c 'if [[ ${VM_APP_A} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-a ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_B} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-b ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-c ; fi'
 
 ###########################
-infra-mgmt-down: check-credentials ## Bring down and delete mgmt minikube cluster
+infra-mgmt-down: ## Bring down and delete mgmt minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-down mgmt-cluster'
 
-infra-active-down: check-credentials ## Bring down and delete active minikube cluster
+infra-active-down: ## Bring down and delete active minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-down active-cluster'
 
-infra-standby-down: check-credentials ## Bring down and delete standby minikube cluster
+infra-standby-down: ## Bring down and delete standby minikube cluster
 	@/bin/bash -c './infra-k8s.sh cluster-down standby-cluster'
 
-infra-vm-down: check-credentials ## Bring down and delete vms
+infra-vm-down: ## Bring down and delete vms
 	@/bin/bash -c './infra-vm.sh vm-down'
 
 
@@ -76,10 +67,10 @@ tsb-standby-install: ## Install TSB control/data plane in stanby cluster
 reset-tsb: ## Reset all TSB configuration
 	@/bin/bash -c './tsb.sh reset-tsb'
 
-deploy-app-abc-k8s: check-credentials ## Deploy abc application on kubernetes
+deploy-app-abc-k8s: ## Deploy abc application on kubernetes
 	@/bin/bash -c './apps-k8s.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE}'
 
-deploy-app-abc-vm: check-credentials ## Deploy abc application on vms
+deploy-app-abc-vm: ## Deploy abc application on vms
 	@/bin/bash -c 'if [[ ${VM_APP_A} = "enabled" ]] ; then ./apps-vm.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-a ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_B} = "enabled" ]] ; then ./apps-vm.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-b ; fi'
 	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./apps-vm.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-c ; fi'
