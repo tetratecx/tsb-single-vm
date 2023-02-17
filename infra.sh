@@ -198,6 +198,7 @@ if [[ ${ACTION} = "info" ]]; then
         echo "${VM_NAME} has ip address ${VM_IP}"
       done
     fi
+  done
 
   exit 0
 fi
