@@ -81,7 +81,7 @@ if [[ ${ACTION} = "up" ]]; then
         echo "Do nothing, vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} is already running"
       elif docker ps --filter "status=exited" | grep ${VM_NAME} &>/dev/null ; then
         echo "Going to start vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} again"
-        docker start --name ${VM_NAME} ;
+        docker start ${VM_NAME} ;
       else
         echo "Going to start vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} for the first time"
         docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE} ;
@@ -141,7 +141,7 @@ if [[ ${ACTION} = "up" ]]; then
           echo "Do nothing, vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} is already running"
         elif docker ps --filter "status=exited" | grep ${VM_NAME} &>/dev/null ; then
           echo "Going to start vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} again"
-          docker start --name ${VM_NAME} ;
+          docker start ${VM_NAME} ;
         else
           echo "Going to start vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} for the first time"
           docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE} ;
