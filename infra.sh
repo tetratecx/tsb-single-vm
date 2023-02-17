@@ -148,12 +148,39 @@ if [[ ${ACTION} = "down" ]]; then
 
   CP_COUNT=$(get_cp_count)
   for index in $(seq 0 $((${CP_COUNT} - 1))) ; do
-    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index})
+    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index}) ;
     echo "Going to stop minikube application cluster profile ${CLUSTER_PROFILE}"
     minikube stop --profile ${CLUSTER_PROFILE} 2>/dev/null ;
   done
 
-  echo "All minikube cluster profiles stopped"
+  # Management plane VMs
+  VM_COUNT=$(get_mp_vm_count) ;
+  if ! [[ ${VM_COUNT} -eq 0 ]] ; then
+    CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
+    for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
+      DOCKER_NET=$(get_mp_name) ;
+      VM_NAME=$(get_mp_vm_name_by_index ${index_vm}) ;
+      echo "Going to stop vm ${VM_NAME} attached to management cluster ${CLUSTER_PROFILE}"
+      docker stop ${VM_NAME} ;
+    done
+  fi
+
+  # Control plane VMs
+  CP_COUNT=$(get_cp_count)
+  for index in $(seq 0 $((${CP_COUNT} - 1))) ; do
+    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index}) ;
+    DOCKER_NET=$(get_cp_name_by_index ${index}) ;
+    VM_COUNT=$(get_cp_vm_count_by_index ${index}) ;
+    if ! [[ ${VM_COUNT} -eq 0 ]] ; then
+      for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
+        VM_NAME=$(get_cp_vm_name_by_index ${index} ${index_vm}) ;
+        echo "Going to stop vm ${VM_NAME} attached to application cluster ${CLUSTER_PROFILE}"
+        docker stop ${VM_NAME} ;
+      done
+    fi
+  done
+
+  echo "All minikube cluster profiles and vms stopped"
   exit 0
 fi
 
@@ -174,10 +201,11 @@ if [[ ${ACTION} = "info" ]]; then
   echo "Control plane cluster:"
   CP_COUNT=$(get_cp_count)
   for index in $(seq 0 $((${CP_COUNT} - 1))) ; do
-    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index})
+    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index}) ;
     echo "kubectl --context ${CLUSTER_PROFILE} get pods -A"
   done
 
+  # Management plane VMs
   VM_COUNT=$(get_mp_vm_count) ;
   if ! [[ ${VM_COUNT} -eq 0 ]] ; then
     CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
@@ -186,14 +214,15 @@ if [[ ${ACTION} = "info" ]]; then
     for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
       DOCKER_NET=$(get_mp_name) ;
       VM_NAME=$(get_mp_vm_name_by_index ${index_vm}) ;
-      VM_IP=$(docker container inspect ${VM_NAME} --format "{{.NetworkSettings.Networks.${DOCKER_NET}.IPAddress}}")
+      VM_IP=$(docker container inspect ${VM_NAME} --format "{{.NetworkSettings.Networks.${DOCKER_NET}.IPAddress}}") ;
       echo "${VM_NAME} has ip address ${VM_IP}"
     done
   fi
 
+  # Control plane VMs
   CP_COUNT=$(get_cp_count)
   for index in $(seq 0 $((${CP_COUNT} - 1))) ; do
-    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index})
+    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index}) ;
     DOCKER_NET=$(get_cp_name_by_index ${index}) ;
     VM_COUNT=$(get_cp_vm_count_by_index ${index}) ;
     if ! [[ ${VM_COUNT} -eq 0 ]] ; then
@@ -201,7 +230,7 @@ if [[ ${ACTION} = "info" ]]; then
       echo "VMs attached to application cluster ${CLUSTER_PROFILE}:"
       for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
         VM_NAME=$(get_cp_vm_name_by_index ${index} ${index_vm}) ;
-        VM_IP=$(docker container inspect ${VM_NAME} --format "{{.NetworkSettings.Networks.${DOCKER_NET}.IPAddress}}")
+        VM_IP=$(docker container inspect ${VM_NAME} --format "{{.NetworkSettings.Networks.${DOCKER_NET}.IPAddress}}") ;
         echo "${VM_NAME} has ip address ${VM_IP}"
       done
     fi
@@ -219,12 +248,39 @@ if [[ ${ACTION} = "clean" ]]; then
 
   CP_COUNT=$(get_cp_count)
   for index in $(seq 0 $((${CP_COUNT} - 1))) ; do
-    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index})
+    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index}) ;
     echo "Going to delete minikube application cluster profile ${CLUSTER_PROFILE}"
     minikube delete --profile ${CLUSTER_PROFILE} 2>/dev/null ;
   done
 
-  echo "All minikube cluster profiles deleted"
+  # Management plane VMs
+  VM_COUNT=$(get_mp_vm_count) ;
+  if ! [[ ${VM_COUNT} -eq 0 ]] ; then
+    CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
+    for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
+      DOCKER_NET=$(get_mp_name) ;
+      VM_NAME=$(get_mp_vm_name_by_index ${index_vm}) ;
+      echo "Going to delete vm ${VM_NAME} attached to management cluster ${CLUSTER_PROFILE}"
+      docker delete ${VM_NAME} ;
+    done
+  fi
+
+  # Control plane VMs
+  CP_COUNT=$(get_cp_count)
+  for index in $(seq 0 $((${CP_COUNT} - 1))) ; do
+    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index}) ;
+    DOCKER_NET=$(get_cp_name_by_index ${index}) ;
+    VM_COUNT=$(get_cp_vm_count_by_index ${index}) ;
+    if ! [[ ${VM_COUNT} -eq 0 ]] ; then
+      for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
+        VM_NAME=$(get_cp_vm_name_by_index ${index} ${index_vm}) ;
+        echo "Going to delete vm ${VM_NAME} attached to application cluster ${CLUSTER_PROFILE}"
+        docker delete ${VM_NAME} ;
+      done
+    fi
+  done
+
+  echo "All minikube cluster profiles and vms deleted"
   exit 0
 fi
 
