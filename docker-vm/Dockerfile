@@ -25,6 +25,7 @@ RUN apt-get update -y && apt-get install --no-install-recommends -y \
     iproute2 \
     iputils-ping \
     net-tools \
+    openssh-server \
     sudo \
     systemd \
     systemd-sysv \
@@ -37,6 +38,7 @@ RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
     /lib/systemd/system/sockets.target.wants/*initctl* \
     /lib/systemd/system/sysinit.target.wants/systemd-tmpfiles-setup* \
     /lib/systemd/system/systemd-update-utmp*
+RUN systemctl systemctl enable ssh
 VOLUME [ "/sys/fs/cgroup" ]
 WORKDIR /
 ENTRYPOINT ["/sbin/init"]
