@@ -192,11 +192,11 @@ if [[ ${ACTION} = "info" ]]; then
   CP_COUNT=$(get_cp_count)
   for index in $(seq 0 $((${CP_COUNT} - 1))) ; do
     CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index})
+    DOCKER_NET=$(get_cp_name_by_index ${index}) ;
     VM_COUNT=$(get_cp_vm_count_by_index ${index}) ;
     if ! [[ ${VM_COUNT} -eq 0 ]] ; then
       echo "VMs attached to application cluster ${CLUSTER_PROFILE}:"
       for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
-        DOCKER_NET=$(get_cp_name_by_index ${index}) ;
         VM_NAME=$(get_mp_vm_name_by_index ${index_vm}) ;
         VM_IP=$(docker container inspect ${VM_NAME} --format "{{.NetworkSettings.Networks.${DOCKER_NET}.IPAddress}}")
         echo "${VM_NAME} has ip address ${VM_IP}"
