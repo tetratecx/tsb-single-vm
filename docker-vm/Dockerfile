@@ -39,7 +39,4 @@ RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
     /lib/systemd/system/systemd-update-utmp*
 VOLUME [ "/sys/fs/cgroup" ]
 WORKDIR /
-ADD /entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-# ENTRYPOINT ["/sbin/init"]
-ENTRYPOINT ["/bin/sh", "-c", "/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/sbin/init"]
