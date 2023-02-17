@@ -29,6 +29,7 @@ RUN apt-get update -y && apt-get install --no-install-recommends -y \
     sudo \
     systemd \
     systemd-sysv \
+    vim \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
