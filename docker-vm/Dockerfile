@@ -10,8 +10,26 @@ RUN git clone -c "core.sshCommand=ssh -i /id_rsa -o StrictHostKeyChecking=no -F 
     cd /tmp/tetrate/test/services/obs-tester && \
     make && cp /tmp/tetrate/test/services/obs-tester/build/bin/linux/*/obs-tester-server /obs-tester-server
 
+
+
+
 FROM ubuntu:jammy
+ARG BUILD_DATE
+ARG BUILD_VERSION
+ARG DOCKER_ACCOUNT
+ARG IMAGE_DESCRIPTION
+ARG IMAGE_NAME
+ARG REPO_URL
+ARG URL
 LABEL org.opencontainers.image.authors="bart@tetrate.io"
+LABEL org.label-schema.build-date=$BUILD_DATE
+LABEL org.label-schema.description=$IMAGE_DESCRIPTION
+LABEL org.label-schema.name=$DOCKER_ACCOUNT/$IMAGE_NAME
+LABEL org.label-schema.schema-version="1.0"
+LABEL org.label-schema.url=$URL
+LABEL org.label-schema.vcs-url=$REPO_URL
+LABEL org.label-schema.vendor="Tetrate"
+LABEL org.label-schema.version=$BUILD_VERSION
 ENV TZ=Europe/Brussels
 ENV LC_ALL C
 ENV DEBIAN_FRONTEND noninteractive
