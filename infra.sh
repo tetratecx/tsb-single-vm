@@ -177,6 +177,28 @@ if [[ ${ACTION} = "info" ]]; then
     echo "kubectl --context ${CLUSTER_PROFILE} get pods -A"
   done
 
+  VM_COUNT=$(get_mp_vm_count) ;
+  if ! [[ ${VM_COUNT} -eq 0 ]] ; then
+    echo "VMs attached to management cluster ${CLUSTER_PROFILE}:"
+    for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
+      VM_NAME=$(get_mp_vm_name_by_index ${index_vm}) ;
+      VM_IP=$(docker container inspect ${VM_NAME} --format '{{.NetworkSettings.Networks.active.IPAddress}}')
+      echo "${VM_NAME} has ip address ${VM_IP}"
+    done
+  fi
+
+  CP_COUNT=$(get_cp_count)
+  for index in $(seq 0 $((${CP_COUNT} - 1))) ; do
+    VM_COUNT=$(get_cp_vm_count_by_index ${index}) ;
+    if ! [[ ${VM_COUNT} -eq 0 ]] ; then
+      echo "VMs attached to application cluster cluster:"
+      for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
+        VM_NAME=$(get_mp_vm_name_by_index ${index_vm}) ;
+        VM_IP=$(docker container inspect ${VM_NAME} --format '{{.NetworkSettings.Networks.active.IPAddress}}')
+        echo "${VM_NAME} has ip address ${VM_IP}"
+      done
+    fi
+
   exit 0
 fi
 
