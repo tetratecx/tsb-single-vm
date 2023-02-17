@@ -38,7 +38,7 @@ RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
     /lib/systemd/system/sockets.target.wants/*initctl* \
     /lib/systemd/system/sysinit.target.wants/systemd-tmpfiles-setup* \
     /lib/systemd/system/systemd-update-utmp*
-RUN systemctl enable ssh
+RUN systemctl enable ssh && echo -e "root\nroot" | passwd root
 VOLUME [ "/sys/fs/cgroup" ]
 WORKDIR /
 ENTRYPOINT ["/sbin/init"]
