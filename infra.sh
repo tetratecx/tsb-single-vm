@@ -77,8 +77,15 @@ if [[ ${ACTION} = "up" ]]; then
     for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
       VM_IMAGE=$(get_mp_vm_image_by_index ${index_vm}) ;
       VM_NAME=$(get_mp_vm_name_by_index ${index_vm}) ;
-      echo "Going to spin vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE}"
-      docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE} ;
+      if docker ps --filter "status=running" | grep ${VM_NAME} &>/dev/null ; then
+        echo "Do nothing, vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} is already running"
+      elif docker ps --filter "status=exited" | grep ${VM_NAME} &>/dev/null ; then
+        echo "Going to start vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} again"
+        docker start --name ${VM_NAME} ;
+      else
+        echo "Going to start vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} for the first time"
+        docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE} ;
+      fi
     done
   fi
 
@@ -130,8 +137,15 @@ if [[ ${ACTION} = "up" ]]; then
       for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
         VM_IMAGE=$(get_cp_vm_image_by_index ${index} ${index_vm}) ;
         VM_NAME=$(get_cp_vm_name_by_index ${index} ${index_vm}) ;
-        echo "Going to spin vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE}"
-        docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE} ;
+        if docker ps --filter "status=running" | grep ${VM_NAME} &>/dev/null ; then
+          echo "Do nothing, vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} is already running"
+        elif docker ps --filter "status=exited" | grep ${VM_NAME} &>/dev/null ; then
+          echo "Going to start vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} again"
+          docker start --name ${VM_NAME} ;
+        else
+          echo "Going to start vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} for the first time"
+          docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE} ;
+        fi
       done
     fi
   done
