@@ -184,7 +184,7 @@ if [[ ${ACTION} = "info" ]]; then
     for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
       DOCKER_NET=$(get_mp_name) ;
       VM_NAME=$(get_mp_vm_name_by_index ${index_vm}) ;
-      VM_IP=$(docker container inspect ${VM_NAME} --format '{{.NetworkSettings.Networks.${DOCKER_NET}.IPAddress}}')
+      VM_IP=$(docker container inspect ${VM_NAME} --format "{{.NetworkSettings.Networks.${DOCKER_NET}.IPAddress}}")
       echo "${VM_NAME} has ip address ${VM_IP}"
     done
   fi
@@ -198,7 +198,7 @@ if [[ ${ACTION} = "info" ]]; then
       for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
         DOCKER_NET=$(get_cp_name_by_index ${index}) ;
         VM_NAME=$(get_mp_vm_name_by_index ${index_vm}) ;
-        VM_IP=$(docker container inspect ${VM_NAME} --format '{{.NetworkSettings.Networks.${DOCKER_NET}.IPAddress}}')
+        VM_IP=$(docker container inspect ${VM_NAME} --format "{{.NetworkSettings.Networks.${DOCKER_NET}.IPAddress}}")
         echo "${VM_NAME} has ip address ${VM_IP}"
       done
     fi
