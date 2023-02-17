@@ -42,4 +42,4 @@ WORKDIR /
 ADD /entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 # ENTRYPOINT ["/sbin/init"]
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "-c", "/usr/local/bin/entrypoint.sh"]
