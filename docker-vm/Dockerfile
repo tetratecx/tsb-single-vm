@@ -44,7 +44,7 @@ RUN /bin/bash -c 'echo -e "root\nroot" | passwd root'
 RUN /bin/bash -c 'echo -e "\n\nPermitRootLogin yes" | tee -a /etc/ssh/sshd_config'
 RUN /bin/bash -c 'useradd -p $(openssl passwd -1 ubuntu) ubuntu'
 RUN /bin/bash -c 'usermod -aG sudo ubuntu'
-RUN /bin/bash -c 'echo -e "\n\nubuntu ALL=(ALL:ALL) ALL" | tee -a /etc/sudoers'
+RUN /bin/bash -c 'echo -e "\n\nubuntu ALL=(ALL:ALL) NOPASSWD:ALL" | tee -a /etc/sudoers'
 VOLUME [ "/sys/fs/cgroup" ]
 WORKDIR /
 ENTRYPOINT ["/sbin/init"]
