@@ -180,7 +180,7 @@ if [[ ${ACTION} = "info" ]]; then
   VM_COUNT=$(get_mp_vm_count) ;
   if ! [[ ${VM_COUNT} -eq 0 ]] ; then
     CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
-    echo "\nVMs attached to management cluster ${CLUSTER_PROFILE}:"
+    echo -e "\nVMs attached to management cluster ${CLUSTER_PROFILE}:"
     for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
       DOCKER_NET=$(get_mp_name) ;
       VM_NAME=$(get_mp_vm_name_by_index ${index_vm}) ;
@@ -195,7 +195,7 @@ if [[ ${ACTION} = "info" ]]; then
     DOCKER_NET=$(get_cp_name_by_index ${index}) ;
     VM_COUNT=$(get_cp_vm_count_by_index ${index}) ;
     if ! [[ ${VM_COUNT} -eq 0 ]] ; then
-      echo "\nVMs attached to application cluster ${CLUSTER_PROFILE}:"
+      echo -e "\nVMs attached to application cluster ${CLUSTER_PROFILE}:"
       for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
         VM_NAME=$(get_cp_vm_name_by_index ${index} ${index_vm}) ;
         VM_IP=$(docker container inspect ${VM_NAME} --format "{{.NetworkSettings.Networks.${DOCKER_NET}.IPAddress}}")
