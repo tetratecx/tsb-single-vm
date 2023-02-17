@@ -74,8 +74,7 @@ test-app-abc: ## Generate curl commands to test ABC traffic
 
 
 info: ## Get infra environment info
-	@/bin/bash -c './infra-k8s.sh info'
-	@/bin/bash -c './infra-vm.sh info'
+	@/bin/bash -c './infra.sh info'
 
 clean: ## Clean up all resources
 	@/bin/bash -c './infra-k8s.sh clean'

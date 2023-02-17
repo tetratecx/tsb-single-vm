@@ -78,7 +78,7 @@ if [[ ${ACTION} = "up" ]]; then
       VM_IMAGE=$(get_mp_vm_image_by_index ${index_vm}) ;
       VM_NAME=$(get_mp_vm_name_by_index ${index_vm}) ;
       echo "Going to spin vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE}"
-      docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE}
+      docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE} ;
     done
   fi
 
@@ -131,7 +131,7 @@ if [[ ${ACTION} = "up" ]]; then
         VM_IMAGE=$(get_cp_vm_image_by_index ${index} ${index_vm}) ;
         VM_NAME=$(get_cp_vm_name_by_index ${index} ${index_vm}) ;
         echo "Going to spin vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE}"
-        docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE}
+        docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE} ;
       done
     fi
   done
@@ -142,14 +142,14 @@ fi
 if [[ ${ACTION} = "down" ]]; then
 
   # Stop minikube profiles
-  minikube stop --profile ${CLUSTER_PROFILE} ;
-
-  echo "Going to stop all minikube cluster profiles"
   CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
+  echo "Going to stop minikube management cluster profile ${CLUSTER_PROFILE}"
   minikube stop --profile ${CLUSTER_PROFILE} 2>/dev/null ;
 
-  for index in $(seq 0 ${CP_COUNT-1}) ; do
+  CP_COUNT=$(get_cp_count)
+  for index in $(seq 0 $((${CP_COUNT} - 1))) ; do
     CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index})
+    echo "Going to stop minikube application cluster profile ${CLUSTER_PROFILE}"
     minikube stop --profile ${CLUSTER_PROFILE} 2>/dev/null ;
   done
 
@@ -161,13 +161,18 @@ if [[ ${ACTION} = "info" ]]; then
 
   CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
   TSB_API_ENDPOINT=$(kubectl --context ${CLUSTER_PROFILE} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+
+  echo "Minikube profiles"
+  minikube profile list ;
+
   echo "Management plane cluster:"
   echo "TSB GUI: https://${TSB_API_ENDPOINT}:8443 (admin/admin)"
   echo "kubectl --context ${CLUSTER_PROFILE} get pods -A"
   echo ""
 
   echo "Control plane cluster:"
-  for index in $(seq 0 ${CP_COUNT-1}) ; do
+  CP_COUNT=$(get_cp_count)
+  for index in $(seq 0 $((${CP_COUNT} - 1))) ; do
     CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index})
     echo "kubectl --context ${CLUSTER_PROFILE} get pods -A"
   done
@@ -178,12 +183,14 @@ fi
 if [[ ${ACTION} = "clean" ]]; then
 
   # Delete minikube profiles
-  echo "Going to delete all minikube cluster profiles"
   CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
+  echo "Going to delete minikube management cluster profile ${CLUSTER_PROFILE}"
   minikube delete --profile ${CLUSTER_PROFILE} 2>/dev/null ;
 
-  for index in $(seq 0 ${CP_COUNT-1}) ; do
+  CP_COUNT=$(get_cp_count)
+  for index in $(seq 0 $((${CP_COUNT} - 1))) ; do
     CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index})
+    echo "Going to delete minikube application cluster profile ${CLUSTER_PROFILE}"
     minikube delete --profile ${CLUSTER_PROFILE} 2>/dev/null ;
   done
 
