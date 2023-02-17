@@ -41,7 +41,7 @@ RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
     /lib/systemd/system/systemd-update-utmp*
 RUN systemctl enable ssh 
 RUN /bin/bash -c 'echo -e "root\nroot" | passwd root'
-RUN echo -e "\nPermitRootLogin yes" | tee -a /etc/ssh/sshd_config
+RUN /bin/bash -c 'echo -e "\nPermitRootLogin yes" | tee -a /etc/ssh/sshd_config'
 VOLUME [ "/sys/fs/cgroup" ]
 WORKDIR /
 ENTRYPOINT ["/sbin/init"]
