@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 /sbin/init
 
 echo "hello entrypoint"
