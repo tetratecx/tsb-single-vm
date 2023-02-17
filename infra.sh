@@ -164,6 +164,7 @@ if [[ ${ACTION} = "info" ]]; then
 
   echo "Minikube profiles"
   minikube profile list ;
+  echo ""
 
   echo "Management plane cluster:"
   echo "TSB GUI: https://${TSB_API_ENDPOINT}:8443 (admin/admin)"
