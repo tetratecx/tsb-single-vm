@@ -197,7 +197,7 @@ if [[ ${ACTION} = "info" ]]; then
     if ! [[ ${VM_COUNT} -eq 0 ]] ; then
       echo "VMs attached to application cluster ${CLUSTER_PROFILE}:"
       for index_vm in $(seq 0 $((${VM_COUNT} - 1))) ; do
-        VM_NAME=$(get_cp_vm_name_by_index ${index_vm}) ;
+        VM_NAME=$(get_cp_vm_name_by_index ${index} ${index_vm}) ;
         VM_IP=$(docker container inspect ${VM_NAME} --format "{{.NetworkSettings.Networks.${DOCKER_NET}.IPAddress}}")
         echo "${VM_NAME} has ip address ${VM_IP}"
       done
