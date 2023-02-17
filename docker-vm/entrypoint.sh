@@ -1,5 +1,6 @@
 /sbin/init
 systemctl restart autofs
+ps -ef
 
 echo "hello entrypoint"
 
