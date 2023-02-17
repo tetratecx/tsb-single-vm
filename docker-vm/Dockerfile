@@ -41,7 +41,10 @@ RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
     /lib/systemd/system/systemd-update-utmp*
 RUN systemctl enable ssh 
 RUN /bin/bash -c 'echo -e "root\nroot" | passwd root'
-RUN /bin/bash -c 'echo -e "\nPermitRootLogin yes" | tee -a /etc/ssh/sshd_config'
+RUN /bin/bash -c 'echo -e "\n\nPermitRootLogin yes" | tee -a /etc/ssh/sshd_config'
+RUN /bin/bash -c 'useradd -p $(openssl passwd -1 ubuntu) ubuntu'
+RUN /bin/bash -c 'usermod -aG sudo ubuntu'
+RUN /bin/bash -c 'echo -e "\n\nubuntu ALL=(ALL:ALL) ALL" | tee -a /etc/sudoers'
 VOLUME [ "/sys/fs/cgroup" ]
 WORKDIR /
 ENTRYPOINT ["/sbin/init"]
