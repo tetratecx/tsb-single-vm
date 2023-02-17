@@ -5,7 +5,7 @@
 This containers provides the tools that would be available on a VM as well.
   - systemd is installed (init process PID=0)
   - ssh systemd service is enabled
-  - root/root and ubuntu/ubuntu credentials get access
+  - root/root and ubuntu/ubuntu credentials to get ssh access
   - obs-tester-server in /usr/local/bin (part of $PATH)
   - installed apt packages: curl git iproute2 iputils-ping net-tools openssh-server sudo
 
