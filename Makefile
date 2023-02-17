@@ -32,21 +32,12 @@ prereq-install: ## Install prerequisites
 	@/bin/sh -c './prereq.sh install'
 
 ###########################
-infra-k8s-up: prereq-check ## Bring up and configure minikube clusters
-	@/bin/bash -c './infra-k8s.sh clusters-up'
-
-infra-vm-up: prereq-check ## Bring up and configure vms
-	@/bin/bash -c 'if [[ ${VM_APP_A} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-a ; fi'
-	@/bin/bash -c 'if [[ ${VM_APP_B} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-b ; fi'
-	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./infra-vm.sh vm-up ubuntu-vm-c ; fi'
+infra-up: prereq-check ## Bring up and configure minikube clusters and vms
+	@/bin/bash -c './infra.sh up'
 
 ###########################
-infra-k8s-down: ## Bring down and delete minikube clusters
-	@/bin/bash -c './infra-k8s.sh cluster-down'
-
-infra-vm-down: ## Bring down and delete vms
-	@/bin/bash -c './infra-vm.sh vm-down'
-
+infra-down: ## Bring down minikube clusters and vms
+	@/bin/bash -c './infra.sh down'
 
 ###########################
 tsb-mgmt-install: ## Install TSB management/control/data plane in mgmt cluster (demo profile)

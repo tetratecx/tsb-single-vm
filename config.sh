@@ -50,6 +50,20 @@ function get_mp_region {
   cat ${INFRA_CONF} | jq -r ".tsb_mp.region"
 }
 
+function get_mp_vm_count {
+  cat ${INFRA_CONF} | jq -r ".tsb_mp.vms[].name" | wc -l | tr -d ' '
+}
+
+function get_mp_vm_image_by_index {
+  i=${1}
+  cat ${INFRA_CONF} | jq -r ".tsb_mp.vms[${i}].image"
+}
+
+function get_mp_vm_name_by_index {
+  i=${1}
+  cat ${INFRA_CONF} | jq -r ".tsb_mp.vms[${i}].name"
+}
+
 function get_mp_zone {
   cat ${INFRA_CONF} | jq -r ".tsb_mp.zone"
 }
@@ -68,6 +82,24 @@ function get_cp_minikube_profile_by_index {
 function get_cp_name_by_index {
   i=${1}
   cat ${INFRA_CONF} | jq -r ".tsb_cp[${i}].name"
+}
+
+function get_cp_vm_count_by_index {
+  i=${1}
+  j=${2}
+  cat ${INFRA_CONF} | jq -r ".tsb_cp[${i}].vms[].name" | wc -l | tr -d ' '
+}
+
+function get_cp_vm_image_by_index {
+  i=${1}
+  j=${2}
+  cat ${INFRA_CONF} | jq -r ".tsb_cp[${i}].vms[${j}].image"
+}
+
+function get_cp_vm_name_by_index {
+  i=${1}
+  j=${2}
+  cat ${INFRA_CONF} | jq -r ".tsb_cp[${i}].vms[${j}].name"
 }
 
 function get_cp_region_by_index {
@@ -93,12 +125,23 @@ function get_cp_zone_by_index {
 # get_mp_minikube_profile;
 # get_mp_name;
 # get_mp_region;
+# get_mp_vm_count;
+# get_mp_vm_image_by_index 0;
+# get_mp_vm_image_by_index 1;
+# get_mp_vm_name_by_index 0;
+# get_mp_vm_name_by_index 1;
 # get_mp_zone;
 # get_cp_count;
 # get_cp_name_by_index 0;
 # get_cp_region_by_index 0;
 # get_cp_zone_by_index 0;
 # get_cp_name_by_index 1;
+# get_cp_vm_count_by_index 0;
+# get_cp_vm_name_by_index 0 0;
+# get_cp_vm_name_by_index 0 1;
+# get_cp_vm_image_by_index 0 0;
+# get_cp_vm_image_by_index 0 1;
+# get_cp_vm_count_by_index 1;
 # get_cp_region_by_index 1;
 # get_cp_zone_by_index 1;
 # get_cp_minikube_profile_by_index 0;

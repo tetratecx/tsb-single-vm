@@ -5,11 +5,21 @@
     {
       "name": "active",
       "region": "region1",
+      "vms": [
+        {
+          "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+          "name": "ubuntu-vm-active-1"
+        },{
+          "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+          "name": "ubuntu-vm-active-2"
+        }
+      ],
       "zone": "zone1b"
     },
     {
       "name": "standby",
       "region": "region2",
+      "vms": [],
       "zone": "zone2a"
     }
   ],
@@ -20,6 +30,16 @@
     "demo_profile": true,
     "name": "mgmt",
     "region": "region1",
+    "vms": [
+      {
+        "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+        "name": "ubuntu-vm-mgmt-1"
+      },
+      {
+        "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+        "name": "ubuntu-vm-mgmt-2"
+      }
+    ],
     "zone": "zone1a"
   },
   "tsb_org": "tetrate",
