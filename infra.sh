@@ -8,9 +8,9 @@ CLUSTER_METALLB_STARTIP=100
 CLUSTER_METALLB_ENDIP=199
 
 K8S_VERSION=$(get_k8s_version) ;
-TSB_DOCKER_REPO=$(get_tsb_image_sync_repo) ;
-TSB_DOCKER_USERNAME=$(get_tsb_image_sync_username) ;
-TSB_DOCKER_APIKEY=$(get_tsb_image_sync_apikey) ;
+TSB_DOCKER_REPO=$(get_tsb_repo) ;
+TSB_DOCKER_USERNAME=$(get_tsb_username) ;
+TSB_DOCKER_APIKEY=$(get_tsb_apikey) ;
 
 
 # Configure metallb start and end IP
