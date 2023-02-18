@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ENV_CONF=environment.json
+ENV_CONF=env.json
 if ! [[ -f "${ENV_CONF}" ]] ; then
   echo "Cannot find ${ENV_CONF}, aborting..."
   exit 1
