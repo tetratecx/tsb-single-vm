@@ -1,0 +1,24 @@
+{
+  "istioctl_version": "1.15.2",
+  "k8s_version": "1.24.9",
+  "cp_clusters": [
+    {
+      "name": "app",
+      "region": "region1",
+      "vms": [
+        {
+          "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+          "name": "ubuntu-vm-app-1"
+        }
+      ],
+      "zone": "zone1a"
+    }
+  ],
+  "mp_cluster": {
+    "demo_profile": true,
+    "name": "mgmt",
+    "region": "region1",
+    "vms": [],
+    "zone": "zone1a"
+  }
+}

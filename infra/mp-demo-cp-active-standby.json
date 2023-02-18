@@ -1,0 +1,25 @@
+{
+  "istioctl_version": "1.15.2",
+  "k8s_version": "1.24.9",
+  "cp_clusters": [
+    {
+      "name": "active",
+      "region": "region1",
+      "vms": [],
+      "zone": "zone1a"
+    },
+    {
+      "name": "standby",
+      "region": "region2",
+      "vms": [],
+      "zone": "zone2a"
+    }
+  ],
+  "mp_cluster": {
+    "demo_profile": true,
+    "name": "mgmt",
+    "region": "region1",
+    "vms": [],
+    "zone": "zone1a"
+  }
+}

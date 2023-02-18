@@ -77,8 +77,7 @@ info: ## Get infra environment info
 	@/bin/bash -c './infra.sh info'
 
 clean: ## Clean up all resources
-	@/bin/bash -c './infra-k8s.sh clean'
-	@/bin/bash -c './infra-vm.sh clean'
+	@/bin/bash -c './infra.sh clean'
 	@/bin/bash -c 'rm -f \
 		./config/01-mgmt-cluster/clusteroperators.yaml \
 		./config/01-mgmt-cluster/*.pem \

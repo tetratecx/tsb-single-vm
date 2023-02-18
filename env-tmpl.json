@@ -1,0 +1,8 @@
+{
+  "infra_json": "./infra/infra-template.json",
+  "tsb": {
+    "apikey": "<TSB_REPO_APIKEY>",
+    "repo": "containers.dl.tetrate.io",
+    "username": "<TSB_REPO_USERNAME>"
+  }
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-source config.sh
+source env.sh
 
 ACTION=${1}
 
