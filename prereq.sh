@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-source config.sh
+source env.sh
 
 ACTION=${1}
 ISTIOCTL_VERSION=$(get_istioctl_version) ;

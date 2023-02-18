@@ -103,6 +103,25 @@ function get_cp_zone_by_index {
   cat ${INFRA_CONF} | jq -r ".cp_clusters[${i}].zone"
 }
 
+
+### TSB Configuration ###
+
+function get_tsb_apikey {
+  cat ${ENV_CONF} | jq -r ".tsb.apikey"
+}
+
+function get_tsb_repo {
+  cat ${ENV_CONF} | jq -r ".tsb.repo"
+}
+
+function get_tsb_username {
+  cat ${ENV_CONF} | jq -r ".tsb.username"
+}
+
+function get_tsb_version {
+  cat ${ENV_CONF} | jq -r ".tsb.version"
+}
+
 ### Parsing Tests
 
 # get_istioctl_version;
