@@ -8,9 +8,9 @@ CLUSTER_METALLB_STARTIP=100
 CLUSTER_METALLB_ENDIP=199
 
 K8S_VERSION=$(get_k8s_version) ;
-TSB_DOCKER_REPO=$(get_tsb_repo) ;
-TSB_DOCKER_USERNAME=$(get_tsb_username) ;
-TSB_DOCKER_APIKEY=$(get_tsb_apikey) ;
+TSB_REPO_PW=$(get_tsb_repo_password) ;
+TSB_REPO_URL=$(get_tsb_repo_url) ;
+TSB_REPO_USER=$(get_tsb_repo_user) ;
 
 
 # Configure metallb start and end IP
@@ -58,7 +58,7 @@ if [[ ${ACTION} = "up" ]]; then
   fi  
 
   # Make sure minikube has access to tsb private repo
-  minikube --profile ${CLUSTER_PROFILE} ssh -- docker login ${TSB_DOCKER_REPO} --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_APIKEY} &>/dev/null ;
+  minikube --profile ${CLUSTER_PROFILE} ssh -- docker login ${TSB_REPO_URL} --username ${TSB_REPO_USER} --password ${TSB_REPO_PW} &>/dev/null ;
   minikube --profile ${CLUSTER_PROFILE} ssh -- sudo cp /home/docker/.docker/config.json /var/lib/kubelet ;
   minikube --profile ${CLUSTER_PROFILE} ssh -- sudo systemctl restart kubelet ;
 
@@ -118,7 +118,7 @@ if [[ ${ACTION} = "up" ]]; then
     fi  
 
     # Make sure minikube has access to tsb private repo
-    minikube --profile ${CLUSTER_PROFILE} ssh -- docker login ${TSB_DOCKER_REPO} --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_APIKEY} &>/dev/null ;
+    minikube --profile ${CLUSTER_PROFILE} ssh -- docker login ${TSB_REPO_URL} --username ${TSB_REPO_USER} --password ${TSB_REPO_PW} &>/dev/null ;
     minikube --profile ${CLUSTER_PROFILE} ssh -- sudo cp /home/docker/.docker/config.json /var/lib/kubelet ;
     minikube --profile ${CLUSTER_PROFILE} ssh -- sudo systemctl restart kubelet ;
 

@@ -106,16 +106,16 @@ function get_cp_zone_by_index {
 
 ### TSB Configuration ###
 
-function get_tsb_apikey {
-  cat ${ENV_CONF} | jq -r ".tsb.apikey"
+
+function get_tsb_repo_password {
+  cat ${ENV_CONF} | jq -r ".tsb.repo.password"
+}
+function get_tsb_repo_url {
+  cat ${ENV_CONF} | jq -r ".tsb.repo.url"
 }
 
-function get_tsb_repo {
-  cat ${ENV_CONF} | jq -r ".tsb.repo"
-}
-
-function get_tsb_username {
-  cat ${ENV_CONF} | jq -r ".tsb.username"
+function get_tsb_repo_user {
+  cat ${ENV_CONF} | jq -r ".tsb.repo.user"
 }
 
 function get_tsb_version {
@@ -154,3 +154,8 @@ function get_tsb_version {
 # get_cp_zone_by_index 1;
 # get_cp_minikube_profile_by_index 0;
 # get_cp_minikube_profile_by_index 1;
+
+# get_tsb_repo_password;
+# get_tsb_repo_url;
+# get_tsb_repo_user;
+# get_tsb_version;

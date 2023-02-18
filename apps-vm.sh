@@ -148,7 +148,7 @@ if [[ ${ACTION} = "deploy-app" ]]; then
   VM_SSH_EXEC="ssh -i ${VM_CONFDIR}/tsbadmin -o StrictHostKeyChecking=no tsbadmin@${VM_IP} -- " ;
 
   # Login to TSB private docker registry and pull demo container
-  ${VM_SSH_EXEC} docker login -u ${TSB_DOCKER_USERNAME} -p ${TSB_DOCKER_PASSWORD} containers.dl.tetrate.io ;
+  ${VM_SSH_EXEC} docker login -u ${TSB_REPO_USER} -p ${TSB_REPO_PW} containers.dl.tetrate.io ;
   ${VM_SSH_EXEC} docker pull containers.dl.tetrate.io/obs-tester-server:1.0 ;
 
   # Start app in a container (listen on 127.0.0.1)

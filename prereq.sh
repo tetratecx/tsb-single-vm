@@ -6,9 +6,9 @@ ISTIOCTL_VERSION=$(get_istioctl_version) ;
 TSB_VERSION=$(get_tsb_version) ;
 K8S_VERSION=$(get_k8s_version) ;
 
-TSB_DOCKER_REPO=$(get_tsb_repo) ;
-TSB_DOCKER_USERNAME=$(get_tsb_username) ;
-TSB_DOCKER_APIKEY=$(get_tsb_apikey) ;
+TSB_REPO_URL=$(get_tsb_repo_url) ;
+TSB_REPO_USER=$(get_tsb_repo_user) ;
+TSB_REPO_PW=$(get_tsb_repo_password) ;
 
 if [[ ${ACTION} = "check" ]]; then
 
@@ -31,19 +31,19 @@ if [[ ${ACTION} = "check" ]]; then
 
   # check if docker registry is available and credentials valid
   echo "Checking if docker repo is reachable and credentials valid"
-  if echo ${TSB_DOCKER_REPO} | grep ":" &>/dev/null ; then
-    TSB_DOCKER_REPO_HOST=$(echo $TSB_DOCKER_REPO_BIS | tr ":" "\n" | head -1)
-    TSB_DOCKER_REPO_PORT=$(echo $TSB_DOCKER_REPO_BIS | tr ":" "\n" | tail -1)
+  if echo ${TSB_REPO_URL} | grep ":" &>/dev/null ; then
+    TSB_REPO_URL_HOST=$(echo $TSB_REPO_URL_BIS | tr ":" "\n" | head -1)
+    TSB_REPO_URL_PORT=$(echo $TSB_REPO_URL_BIS | tr ":" "\n" | tail -1)
   else
-    TSB_DOCKER_REPO_HOST=${TSB_DOCKER_REPO}
-    TSB_DOCKER_REPO_PORT=443
+    TSB_REPO_URL_HOST=${TSB_REPO_URL}
+    TSB_REPO_URL_PORT=443
   fi
-  if ! nc -vz -w 3 ${TSB_DOCKER_REPO_HOST} ${TSB_DOCKER_REPO_PORT} 2>/dev/null ; then
-    echo "Failed to connect to docker registry at ${TSB_DOCKER_REPO_HOST}:${TSB_DOCKER_REPO_PORT}. Check your network settings (DNS/Proxy)"
+  if ! nc -vz -w 3 ${TSB_REPO_URL_HOST} ${TSB_REPO_URL_PORT} 2>/dev/null ; then
+    echo "Failed to connect to docker registry at ${TSB_REPO_URL_HOST}:${TSB_REPO_URL_PORT}. Check your network settings (DNS/Proxy)"
     exit 3
   fi
-  if ! docker login ${TSB_DOCKER_REPO} --username ${TSB_DOCKER_USERNAME} --password ${TSB_DOCKER_APIKEY} 2>/dev/null; then
-    echo "Failed to login to docker registry at ${TSB_DOCKER_REPO}. Check your credentials"
+  if ! docker login ${TSB_REPO_URL} --username ${TSB_REPO_USER} --password ${TSB_REPO_PW} 2>/dev/null; then
+    echo "Failed to login to docker registry at ${TSB_REPO_URL}. Check your credentials"
     exit 4
   fi
   echo "Docker repo is reachable and credentials valid: ok"

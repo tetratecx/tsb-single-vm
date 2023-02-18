@@ -50,8 +50,8 @@ In order to be able to sync the TSB docker images, you will need to set the foll
 environment variables before running the scripts.
 
 ```console
-export TSB_DOCKER_USERNAME=<username>
-export TSB_DOCKER_PASSWORD=<password>
+export TSB_REPO_USER=<username>
+export TSB_REPO_PW=<password>
 ```
 
 Note that the following binaries needs to be installed and runnable on the system:
@@ -148,8 +148,8 @@ In order to be able to sync the TSB docker images, you will need to set the foll
 environment variables before preparing the minikube ENV.
 
 ```console
-$ export TSB_DOCKER_USERNAME=<username>
-$ export TSB_DOCKER_PASSWORD=<password>
+$ export TSB_REPO_USER=<username>
+$ export TSB_REPO_PW=<password>
 ```
 
 In order to provide full demo flexibily, several scenario based [makefile](./Makefile) variables are available
@@ -171,8 +171,8 @@ with your chosen target.
 
 The following sequence will deploy the full demo ENV, including standby cluster and vms.
 ```console
-$ export TSB_DOCKER_USERNAME=<username>
-$ export TSB_DOCKER_PASSWORD=<password>
+$ export TSB_REPO_USER=<username>
+$ export TSB_REPO_PW=<password>
 
 $ make APP_ABC_MODE=active-standby infra-mgmt-up infra-active-up infra-standby-up
 $ make APP_ABC_MODE=active-standby infra-vm-up 
@@ -189,8 +189,8 @@ After this step has successfully completed, you should be able to interact with 
 different clusters using kubectl.
 
 ```console
-$ export TSB_DOCKER_USERNAME=<username>
-$ export TSB_DOCKER_PASSWORD=<password>
+$ export TSB_REPO_USER=<username>
+$ export TSB_REPO_PW=<password>
 
 $ make APP_ABC_MODE=active-standby infra-mgmt-up infra-active-up infra-standby-up
 $ make APP_ABC_MODE=active-standby infra-vm-up
