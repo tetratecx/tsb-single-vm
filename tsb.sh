@@ -104,11 +104,6 @@ if [[ ${ACTION} = "mgmt-cluster-install" ]]; then
   kubectl wait deployment -n istio-system edge --for condition=Available=True --timeout=600s
   kubectl get pods -A
 
-  # Deploy operators
-  #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#deploy-operators
-  login_tsb_admin tetrate ;
-  tctl install manifest cluster-operators --registry containers.dl.tetrate.io > ${MGMT_CLUSTER_CONFDIR}/clusteroperators.yaml ;
-
   # Demo mgmt plane secret extraction (need to connect application clusters to mgmt cluster)
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets (demo install)
   kubectl get -n istio-system secret mp-certs -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MGMT_CLUSTER_CONFDIR}/mp-certs.pem ;
@@ -168,8 +163,13 @@ if [[ ${ACTION} = "app-cluster-install" ]]; then
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#intermediate-istio-ca-certificates
   create_cert_secret ${CLUSTER_PROFILE} ${CLUSTER_CERTDIR};
 
+  # Deploy operators
+  #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#deploy-operators
+  login_tsb_admin tetrate ;
+  tctl install manifest cluster-operators --registry containers.dl.tetrate.io > ${CLUSTER_CONFDIR}/clusteroperators.yaml ;
+
   # Applying operator, secrets and control plane configuration
-  kubectl apply -f ${MGMT_CLUSTER_CONFDIR}/clusteroperators.yaml 
+  kubectl apply -f ${CLUSTER_CONFDIR}/clusteroperators.yaml ;
   kubectl apply -f ${CLUSTER_CONFDIR}/controlplane-secrets.yaml ;
   while ! kubectl get controlplanes.install.tetrate.io &>/dev/null; do sleep 1; done ;
   kubectl apply -f ${CLUSTER_CONFDIR}/controlplane.yaml ;
