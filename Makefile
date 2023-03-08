@@ -41,7 +41,7 @@ infra-down: ## Bring down minikube clusters and vms
 
 ###########################
 tsb-mgmt-install: ## Install TSB management/control/data plane in mgmt cluster (demo profile)
-	@/bin/bash -c './tsb.sh mgmt-cluster-install'
+	@/bin/bash -c './mp.sh install'
 
 tsb-active-install: ## Install TSB control/data plane in active cluster
 	@/bin/bash -c './tsb.sh app-cluster-install active-cluster'

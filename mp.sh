@@ -92,7 +92,7 @@ function patch_oap_refresh_rate_cp {
   kubectl --context ${1} -n istio-system patch controlplanes controlplane --type merge --patch ${OAP_PATCH}
 }
 
-if [[ ${ACTION} = "mp-demo-install" ]]; then
+if [[ ${ACTION} = "install" ]]; then
 
   MP_CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
   echo ${MP_CLUSTER_PROFILE}
@@ -132,76 +132,6 @@ if [[ ${ACTION} = "mp-demo-install" ]]; then
 fi
 
 
-if [[ ${ACTION} = "app-cluster-install" ]]; then
-
-  if [[ ${CLUSTER} = "active-cluster" ]]; then
-    CLUSTER_PROFILE=${ACTIVE_CLUSTER_PROFILE}
-    CLUSTER_CONFDIR=${ACTIVE_CLUSTER_CONFDIR}
-    CLUSTER_CERTDIR=${ACTIVE_CLUSTER_CERTDIR}
-  elif [[ ${CLUSTER} = "standby-cluster" ]]; then
-    CLUSTER_PROFILE=${STANDBY_CLUSTER_PROFILE}
-    CLUSTER_CONFDIR=${STANDBY_CLUSTER_CONFDIR}
-    CLUSTER_CERTDIR=${STANDBY_CLUSTER_CERTDIR}
-  else
-    echo "Please specify one of the following cluster:"
-    echo "  - active-cluster"
-    echo "  - standby-cluster"
-    exit 1
-  fi
-
-  # Login again as tsb admin in case of a session time-out
-  login_tsb_admin tetrate ;
-
-  TSB_API_ENDPOINT=$(kubectl --context ${MGMT_CLUSTER_PROFILE} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
-  kubectl config use-context ${CLUSTER_PROFILE} ;
-
-  # Generate a service account private key for the active cluster
-  #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets
-  tctl install cluster-service-account --cluster ${CLUSTER_PROFILE} > ${CLUSTER_CONFDIR}/cluster-service-account.jwk ;
-
-  # Create control plane secrets
-  #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets
-  tctl install manifest control-plane-secrets \
-    --cluster ${CLUSTER_PROFILE} \
-    --cluster-service-account="$(cat ${CLUSTER_CONFDIR}/cluster-service-account.jwk)" \
-    --elastic-ca-certificate="$(cat ${MGMT_CLUSTER_CONFDIR}/es-certs.pem)" \
-    --management-plane-ca-certificate="$(cat ${MGMT_CLUSTER_CONFDIR}/mp-certs.pem)" \
-    --xcp-central-ca-bundle="$(cat ${MGMT_CLUSTER_CONFDIR}/xcp-central-ca-certs.pem)" \
-    > ${CLUSTER_CONFDIR}/controlplane-secrets.yaml ;
-
-  # Generate controlplane.yaml by inserting the correct mgmt plane API endpoint IP address
-  cat ${CLUSTER_CONFDIR}/controlplane-template.yaml | sed s/__TSB_API_ENDPOINT__/${TSB_API_ENDPOINT}/g \
-    > ${CLUSTER_CONFDIR}/controlplane.yaml ;
-
-  # bootstrap cluster with self signed certificate that share a common root certificate
-  #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#intermediate-istio-ca-certificates
-  create_cert_secret ${CLUSTER_PROFILE} ${CLUSTER_CERTDIR};
-
-  # Deploy operators
-  #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#deploy-operators
-  login_tsb_admin tetrate ;
-  tctl install manifest cluster-operators --registry containers.dl.tetrate.io > ${CLUSTER_CONFDIR}/clusteroperators.yaml ;
-
-  # Applying operator, secrets and control plane configuration
-  kubectl apply -f ${CLUSTER_CONFDIR}/clusteroperators.yaml ;
-  kubectl apply -f ${CLUSTER_CONFDIR}/controlplane-secrets.yaml ;
-  while ! kubectl get controlplanes.install.tetrate.io &>/dev/null; do sleep 1; done ;
-  kubectl apply -f ${CLUSTER_CONFDIR}/controlplane.yaml ;
-
-  # Apply AOP patch for more real time update in the UI (Apache SkyWalking demo tweak)
-  kubectl -n istio-system patch controlplanes controlplane --patch-file ${CLUSTER_CONFDIR}/oap-deploy-patch.yaml --type merge
-
-  # Wait for the control and data plane to become available
-  kubectl wait deployment -n istio-system tsb-operator-control-plane --for condition=Available=True --timeout=600s
-  kubectl wait deployment -n istio-gateway tsb-operator-data-plane --for condition=Available=True --timeout=600s
-  while ! kubectl get deployment -n istio-system edge &>/dev/null; do sleep 5; done ;
-  kubectl wait deployment -n istio-system edge --for condition=Available=True --timeout=600s
-  kubectl get pods -A
-
-  exit 0
-fi
-
-
 if [[ ${ACTION} = "reset-tsb" ]]; then
 
   # Login again as tsb admin in case of a session time-out
@@ -221,7 +151,7 @@ fi
 
 
 echo "Please specify one of the following action:"
-echo "  - mgmt-cluster-install"
-echo "  - app-cluster-install"
-echo "  - reset-tsb"
+echo "  - install"
+echo "  - uninstall"
+echo "  - reset"
 exit 1

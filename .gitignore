@@ -1,6 +1,8 @@
 # Temporary setup resources
 env.json
 
+output/certs
+
 config/01-mgmt-cluster/*.pem
 
 config/02-active-cluster/clusteroperators.yaml

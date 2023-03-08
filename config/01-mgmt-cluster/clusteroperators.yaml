@@ -1,0 +1,743 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "istio-system"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    platform.tsb.tetrate.io/application: tsb-operator-controlplane
+    platform.tsb.tetrate.io/component: tsb-operator
+    platform.tsb.tetrate.io/plane: control
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "tctl-controlplane"
+    app.kubernetes.io/version: "1.6.0-dev-7dc235940"
+    helm.sh/chart: "controlplane-1.6.0-dev-7dc235940"
+  name: tsb-operator-control-plane
+  namespace: "istio-system"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    platform.tsb.tetrate.io/application: tsb-operator-controlplane
+    platform.tsb.tetrate.io/component: tsb-operator
+    platform.tsb.tetrate.io/plane: control
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "tctl-controlplane"
+    app.kubernetes.io/version: "1.6.0-dev-7dc235940"
+    helm.sh/chart: "controlplane-1.6.0-dev-7dc235940"
+  name: tsb-operator-control-plane-istio-system
+rules:
+
+# tsb groups
+- apiGroups:
+  - install.xcp.tetrate.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - install.tetrate.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - install.onboarding.tetrate.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+
+# istio groups
+- apiGroups:
+  - authentication.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - config.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - install.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - networking.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - rbac.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - security.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+
+# k8s groups
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - mutatingwebhookconfigurations
+  - validatingwebhookconfigurations
+  verbs:
+  - '*'
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions.apiextensions.k8s.io
+  - customresourcedefinitions
+  verbs:
+  - '*'
+- apiGroups:
+  - apps
+  - extensions
+  - batch
+  resources:
+  - daemonsets
+  - deployments
+  - deployments/finalizers
+  - ingresses
+  - replicasets
+  - statefulsets
+  - cronjobs
+  - jobs
+  verbs:
+  - '*'
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  verbs:
+  - '*'
+- apiGroups:
+  - certificates.k8s.io
+  resources:
+  - certificatesigningrequests
+  - certificatesigningrequests/approval
+  verbs:
+  - '*'
+- apiGroups:
+    - certificates.k8s.io
+  resourceNames:
+    - kubernetes.io/legacy-unknown
+  resources:
+    - signers
+  verbs:
+    - approve
+    - sign
+- apiGroups:
+  - policy
+  resources:
+  - poddisruptionbudgets
+  verbs:
+  - '*'
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterrolebindings
+  - clusterroles
+  - roles
+  - rolebindings
+  verbs:
+  - '*'
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - endpoints
+  - events
+  - namespaces
+  - pods
+  - pods/log
+  - persistentvolumeclaims
+  - secrets
+  - secrets/finalizers
+  - services
+  - serviceaccounts
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+- apiGroups:
+  - apiregistration.k8s.io
+  resources:
+  - apiservices
+  verbs:
+  - '*'
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - create
+  - update
+
+# cert-manager groups
+- apiGroups:
+  - cert-manager.io
+  resources:
+  - issuers
+  - certificates
+  - clusterissuers
+  verbs:
+  - '*'
+
+## Needed in order to create the SCC in OpenShift
+- apiGroups:
+  - security.openshift.io
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+
+- apiGroups:
+  - security.openshift.io
+  resources:
+  - securitycontextconstraints
+  resourceNames:
+  - tsb-controlplane
+  - tsb-managementplane
+  verbs:
+  - update
+  - patch
+  - delete
+
+## Needed in order to create the network-attachment-definitions in OpenShift
+- apiGroups:
+  - k8s.cni.cncf.io
+  resources:
+  - network-attachment-definitions
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+
+- apiGroups:
+  - k8s.cni.cncf.io
+  resources:
+  - network-attachment-definitions
+  resourceNames:
+  - istio-cni
+  verbs:
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - telemetry.istio.io
+  resources:
+  - telemetries
+  verbs:
+  - get
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    platform.tsb.tetrate.io/application: tsb-operator-controlplane
+    platform.tsb.tetrate.io/component: tsb-operator
+    platform.tsb.tetrate.io/plane: control
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "tctl-controlplane"
+    app.kubernetes.io/version: "1.6.0-dev-7dc235940"
+    helm.sh/chart: "controlplane-1.6.0-dev-7dc235940"
+  name: tsb-operator-control-plane-istio-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tsb-operator-control-plane-istio-system
+subjects:
+- kind: ServiceAccount
+  name: tsb-operator-control-plane
+  namespace: 'istio-system'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: tsb-operator
+    platform.tsb.tetrate.io/application: tsb-operator-controlplane
+    platform.tsb.tetrate.io/component: tsb-operator
+    platform.tsb.tetrate.io/plane: control
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "tctl-controlplane"
+    app.kubernetes.io/version: "1.6.0-dev-7dc235940"
+    helm.sh/chart: "controlplane-1.6.0-dev-7dc235940"
+  name: tsb-operator-control-plane
+  namespace: "istio-system"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http-metrics
+      port: 8383
+      targetPort: 8383
+    - name: webhook
+      port: 443
+      targetPort: 9443
+  selector:
+    name: tsb-operator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    platform.tsb.tetrate.io/application: tsb-operator-controlplane
+    platform.tsb.tetrate.io/component: tsb-operator
+    platform.tsb.tetrate.io/plane: control
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "tctl-controlplane"
+    app.kubernetes.io/version: "1.6.0-dev-7dc235940"
+    helm.sh/chart: "controlplane-1.6.0-dev-7dc235940"
+  name: tsb-operator-control-plane
+  namespace: "istio-system"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: tsb-operator
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels:
+        name: tsb-operator
+    spec:
+      containers:
+        - args:
+            - control-plane
+            - --deployment-name
+            - tsb-operator-control-plane
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OPERATOR_NAME
+              value: tsb-operator
+          image: 'containers.dl.tetrate.io/tsboperator-server:1.6.0'
+          imagePullPolicy: IfNotPresent
+          name: tsb-operator
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1024Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+      serviceAccountName: tsb-operator-control-plane
+      volumes:
+        - emptyDir: {}
+          name: tmp
+---
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "istio-gateway"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    platform.tsb.tetrate.io/application: tsb-operator-dataplane
+    platform.tsb.tetrate.io/component: tsb-operator
+    platform.tsb.tetrate.io/plane: data
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "tctl-dataplane"
+    app.kubernetes.io/version: "1.6.0-dev-7dc235940"
+    helm.sh/chart: "dataplane-1.6.0-dev-7dc235940"
+  name: tsb-operator-data-plane
+  namespace: "istio-gateway"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    platform.tsb.tetrate.io/application: tsb-operator-dataplane
+    platform.tsb.tetrate.io/component: tsb-operator
+    platform.tsb.tetrate.io/plane: data
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "tctl-dataplane"
+    app.kubernetes.io/version: "1.6.0-dev-7dc235940"
+    helm.sh/chart: "dataplane-1.6.0-dev-7dc235940"
+  name: tsb-operator-data-plane-istio-gateway
+rules:
+
+# tsb groups
+- apiGroups:
+  - install.xcp.tetrate.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - install.tetrate.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+
+# istio groups
+- apiGroups:
+  - authentication.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - config.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - install.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - networking.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - rbac.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - security.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+
+# k8s groups
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - mutatingwebhookconfigurations
+  - validatingwebhookconfigurations
+  verbs:
+  - '*'
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions.apiextensions.k8s.io
+  - customresourcedefinitions
+  verbs:
+  - '*'
+- apiGroups:
+  - apps
+  - extensions
+  - batch
+  resources:
+  - daemonsets
+  - deployments
+  - deployments/finalizers
+  - ingresses
+  - replicasets
+  - statefulsets
+  - cronjobs
+  - jobs
+  verbs:
+  - '*'
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  verbs:
+  - '*'
+- apiGroups:
+  - certificates.k8s.io
+  resources:
+  - certificatesigningrequests
+  - certificatesigningrequests/approval
+  verbs:
+  - '*'
+- apiGroups:
+    - certificates.k8s.io
+  resourceNames:
+    - kubernetes.io/legacy-unknown
+  resources:
+    - signers
+  verbs:
+    - approve
+    - sign
+- apiGroups:
+  - policy
+  resources:
+  - poddisruptionbudgets
+  verbs:
+  - '*'
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterrolebindings
+  - clusterroles
+  - roles
+  - rolebindings
+  verbs:
+  - '*'
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - endpoints
+  - events
+  - namespaces
+  - pods
+  - pods/log
+  - persistentvolumeclaims
+  - secrets
+  - secrets/finalizers
+  - services
+  - serviceaccounts
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+- apiGroups:
+  - apiregistration.k8s.io
+  resources:
+  - apiservices
+  verbs:
+  - '*'
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - create
+  - update
+
+# cert-manager groups
+- apiGroups:
+  - cert-manager.io
+  resources:
+  - issuers
+  - certificates
+  - clusterissuers
+  verbs:
+  - '*'
+
+## Needed in order to create the SCC in OpenShift
+- apiGroups:
+  - security.openshift.io
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+
+- apiGroups:
+  - security.openshift.io
+  resources:
+  - securitycontextconstraints
+  resourceNames:
+  - tsb-controlplane
+  - tsb-managementplane
+  verbs:
+  - update
+  - patch
+  - delete
+
+## Needed in order to create the network-attachment-definitions in OpenShift
+- apiGroups:
+  - k8s.cni.cncf.io
+  resources:
+  - network-attachment-definitions
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+
+- apiGroups:
+  - k8s.cni.cncf.io
+  resources:
+  - network-attachment-definitions
+  resourceNames:
+  - istio-cni
+  verbs:
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    platform.tsb.tetrate.io/application: tsb-operator-dataplane
+    platform.tsb.tetrate.io/component: tsb-operator
+    platform.tsb.tetrate.io/plane: data
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "tctl-dataplane"
+    app.kubernetes.io/version: "1.6.0-dev-7dc235940"
+    helm.sh/chart: "dataplane-1.6.0-dev-7dc235940"
+  name: tsb-operator-data-plane-istio-gateway
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tsb-operator-data-plane-istio-gateway
+subjects:
+- kind: ServiceAccount
+  name: tsb-operator-data-plane
+  namespace: 'istio-gateway'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: tsb-operator
+    platform.tsb.tetrate.io/application: tsb-operator-dataplane
+    platform.tsb.tetrate.io/component: tsb-operator
+    platform.tsb.tetrate.io/plane: data
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "tctl-dataplane"
+    app.kubernetes.io/version: "1.6.0-dev-7dc235940"
+    helm.sh/chart: "dataplane-1.6.0-dev-7dc235940"
+  name: tsb-operator-data-plane
+  namespace: "istio-gateway"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http-metrics
+      port: 8383
+      targetPort: 8383
+    - name: webhook
+      port: 443
+      targetPort: 9443
+  selector:
+    name: tsb-operator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    platform.tsb.tetrate.io/application: tsb-operator-dataplane
+    platform.tsb.tetrate.io/component: tsb-operator
+    platform.tsb.tetrate.io/plane: data
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "tctl-dataplane"
+    app.kubernetes.io/version: "1.6.0-dev-7dc235940"
+    helm.sh/chart: "dataplane-1.6.0-dev-7dc235940"
+  name: tsb-operator-data-plane
+  namespace: "istio-gateway"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: tsb-operator
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels:
+        name: tsb-operator
+    spec:
+      containers:
+        - args:
+            - data-plane
+            - --deployment-name
+            - tsb-operator-data-plane
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: OPERATOR_NAME
+              value: tsb-operator
+          image: 'containers.dl.tetrate.io/tsboperator-server:1.6.0'
+          imagePullPolicy: IfNotPresent
+          name: tsb-operator
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 2048Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+      serviceAccountName: tsb-operator-data-plane
+      volumes:
+        - emptyDir: {}
+          name: tmp
+---
