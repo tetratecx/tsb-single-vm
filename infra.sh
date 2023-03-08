@@ -4,7 +4,8 @@ source ${ROOT_DIR}/env.sh
 
 ACTION=${1}
 
-MINIKUBE_OPTS="--driver docker --cpus=6"
+# MINIKUBE_OPTS="--driver docker --cpus=6"
+MINIKUBE_OPTS="--driver docker"
 CLUSTER_METALLB_STARTIP=100
 CLUSTER_METALLB_ENDIP=199
 
@@ -92,12 +93,13 @@ if [[ ${ACTION} = "up" ]]; then
 
   ######################## cp clusters ########################
   CP_COUNT=$(get_cp_count)
-  for index in $(seq 0 $((${CP_COUNT} - 1))) ; do
-    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${index}) ;
-    DOCKER_NET=$(get_cp_name_by_index ${index}) ;
-    CLUSTER_REGION=$(get_cp_region_by_index ${index}) ;
-    CLUSTER_ZONE=$(get_cp_zone_by_index ${index}) ;
-    VM_COUNT=$(get_cp_vm_count_by_index ${index}) ;
+  CP_INDEX=0
+  while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
+    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
+    DOCKER_NET=$(get_cp_name_by_index ${CP_INDEX}) ;
+    CLUSTER_REGION=$(get_cp_region_by_index ${CP_INDEX}) ;
+    CLUSTER_ZONE=$(get_cp_zone_by_index ${CP_INDEX}) ;
+    VM_COUNT=$(get_cp_vm_count_by_index ${CP_INDEX}) ;
   
     # Start minikube profile for this application cluster
     if minikube profile list 2>/dev/null | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
@@ -149,6 +151,8 @@ if [[ ${ACTION} = "up" ]]; then
         fi
       done
     fi
+
+    CP_INDEX=$((CP_INDEX+1))
   done
   
   exit 0

@@ -48,6 +48,10 @@ if [[ ${ACTION} = "check" ]]; then
     exit 4
   fi
   echo "Docker repo is reachable and credentials valid: ok"
+  if ! docker ps 1>/dev/null; then
+    echo "Failed to list docker containers, check if you have proper docker permissions and docker daemon is running"
+    exit 5
+  fi
   
   exit 0
 fi
