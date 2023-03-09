@@ -58,22 +58,69 @@ function login_tsb_admin {
 DONE
 }
 
-# Force delete a namespace
+# Uninstall tsb installation
 #   args:
-#     (1) namespace
-function force_delete_namespace {
-  kubectl proxy &>/dev/null &
-  PROXY_PID=$!
-  killproxy () {
-    kill $PROXY_PID
-  }
-  trap killproxy EXIT
+#     (1) cluster profile/name
+function uninstall_tsb {
+  kubectl config use-context ${1} ;
 
-  sleep 1 # give the proxy a second
-  kubectl get namespace ${1} -o json | \
-    jq 'del(.spec.finalizers[] | select("kubernetes"))' | \
-    curl -s -k -H "Content-Type: application/json" -X PUT -o /dev/null --data-binary @- http://localhost:8001/api/v1/namespaces/${1}/finalize && \
-    echo "Killed namespace: ${1}"
+  # Put operators to sleep
+  for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
+    kubectl get deployments -n ${NS} -o custom-columns=:metadata.name \
+      | grep operator | xargs -I {} kubectl scale deployment {} -n ${NS} --replicas=0 ; 
+  done
+
+  sleep 5 ;
+
+  # Clean up namespace specific resources
+  for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
+    kubectl get deployments -n ${NS} -o custom-columns=:metadata.name \
+      | grep operator | xargs -I {} kubectl delete deployment {} -n ${NS} --timeout=10s --wait=false ;
+    sleep 5 ;
+    kubectl delete --all deployments -n ${NS} --timeout=10s --wait=false ;
+    kubectl delete --all jobs -n ${NS} --timeout=10s --wait=false ;
+    kubectl delete --all statefulset -n ${NS} --timeout=10s --wait=false ;
+    kubectl get deployments -n ${NS} -o custom-columns=:metadata.name \
+      | grep operator | xargs -I {} kubectl patch deployment {} -n ${NS} --type json \
+      --patch='[ { "op": "remove", "path": "/metadata/finalizers" } ]' ;
+    kubectl delete --all deployments -n ${NS} --timeout=10s --wait=false ;
+    sleep 5 ;
+    kubectl delete namespace ${NS} --timeout=10s --wait=false ;
+  done 
+
+  # Clean up cluster wide resources
+  kubectl get mutatingwebhookconfigurations -o custom-columns=:metadata.name \
+    | xargs -I {} kubectl delete mutatingwebhookconfigurations {}  --timeout=10s --wait=false ;
+  kubectl get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+    | xargs -I {} kubectl delete crd {} --timeout=10s --wait=false ;
+  kubectl get validatingwebhookconfigurations -o custom-columns=:metadata.name \
+    | xargs -I {} kubectl delete validatingwebhookconfigurations {} --timeout=10s --wait=false ;
+  kubectl get clusterrole -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tsb\|xcp" \
+    | xargs -I {} kubectl delete clusterrole {} --timeout=10s --wait=false ;
+  kubectl get clusterrolebinding -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tsb\|xcp" \
+    | xargs -I {} kubectl delete clusterrolebinding {} --timeout=10s --wait=false ;
+
+  # Cleanup custom resource definitions
+  kubectl get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+    | xargs -I {} kubectl delete crd {} --timeout=10s --wait=false ;
+  sleep 5 ;
+  kubectl get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+    | xargs -I {} kubectl patch crd {} --type json --patch='[ { "op": "remove", "path": "/metadata/finalizers" } ]' ;
+  sleep 5 ;
+  kubectl get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+    | xargs -I {} kubectl delete crd {} --timeout=10s --wait=false ;
+
+  # Clean up pending finalizer namespaces
+  kubectl proxy &
+  PID_KP=$!
+  sleep 5
+  for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
+    curl -k -H "Content-Type: application/json" -X PUT \
+      -d "{ \"apiVersion\": \"v1\", \"kind\": \"Namespace\", \"metadata\": { \"name\": \"${NS}\" }, \"spec\": { \"finalizers\": [] } }" \
+      http://127.0.0.1:8001/api/v1/namespaces/${NS}/finalize 2>/dev/null;
+  done
+  kill ${PID_KP} ;
+
 }
 
 # Patch OAP refresh rate of management plane
@@ -95,7 +142,6 @@ function patch_oap_refresh_rate_cp {
 if [[ ${ACTION} = "install" ]]; then
 
   MP_CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
-  echo ${MP_CLUSTER_PROFILE}
 
   # bootstrap cluster with self signed certificate that share a common root certificate
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#intermediate-istio-ca-certificates
@@ -118,15 +164,20 @@ if [[ ${ACTION} = "install" ]]; then
   kubectl wait deployment -n istio-system edge --for condition=Available=True --timeout=600s
   kubectl get pods -A
 
-  # Demo mgmt plane secret extraction (need to connect application clusters to mgmt cluster)
-  #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets (demo install)
-  # kubectl get -n istio-system secret mp-certs -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MGMT_CLUSTER_CONFDIR}/mp-certs.pem ;
-  # kubectl get -n istio-system secret es-certs -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MGMT_CLUSTER_CONFDIR}/es-certs.pem ;
-  # kubectl get -n istio-system secret xcp-central-ca-bundle -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MGMT_CLUSTER_CONFDIR}/xcp-central-ca-certs.pem ;
-
   # Apply OAP patch for more real time update in the UI (Apache SkyWalking demo tweak)
   patch_oap_refresh_rate_mp ${MP_CLUSTER_PROFILE} ;
   patch_oap_refresh_rate_cp ${MP_CLUSTER_PROFILE} ;
+
+  exit 0
+fi
+
+if [[ ${ACTION} = "uninstall" ]]; then
+
+  MP_CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
+
+  # Remove tsb completely mp cluster
+  remove_tsb ${MP_CLUSTER_PROFILE} ;
+  sleep 10 ;
 
   exit 0
 fi
