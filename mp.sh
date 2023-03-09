@@ -74,10 +74,10 @@ if [[ ${ACTION} = "install" ]]; then
   fi
   if ! kubectl --context ${MP_CLUSTER_CONTEXT} -n istio-system get secret cacerts &>/dev/null; then
     kubectl --context ${MP_CLUSTER_CONTEXT} create secret generic cacerts -n istio-system \
-    --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/ca-cert.pem \
-    --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/ca-key.pem \
-    --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/root-cert.pem \
-    --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/cert-chain.pem ;
+      --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/ca-cert.pem \
+      --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/ca-key.pem \
+      --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/root-cert.pem \
+      --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/cert-chain.pem ;
   fi
   
   # start patching deployments that depend on dockerhub asynchronously
