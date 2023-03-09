@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
-CONF_BASE_DIR=${ROOT_DIR}/output/config
 
 source ${ROOT_DIR}/env.sh
 source ${ROOT_DIR}/certs.sh
@@ -78,7 +77,7 @@ if [[ ${ACTION} = "install" ]]; then
     --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/ca-cert.pem \
     --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/ca-key.pem \
     --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/root-cert.pem \
-    --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/cert-chain.pem
+    --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/cert-chain.pem ;
   fi
   
   # start patching deployments that depend on dockerhub asynchronously
@@ -92,12 +91,12 @@ if [[ ${ACTION} = "install" ]]; then
   tctl install demo --registry containers.dl.tetrate.io --admin-password admin ;
 
   # Wait for the management, control and data plane to become available
-  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n tsb tsb-operator-management-plane --for condition=Available=True --timeout=600s
-  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n istio-system tsb-operator-control-plane --for condition=Available=True --timeout=600s
-  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n istio-gateway tsb-operator-data-plane --for condition=Available=True --timeout=600s
+  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n tsb tsb-operator-management-plane --for condition=Available=True --timeout=600s ;
+  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n istio-system tsb-operator-control-plane --for condition=Available=True --timeout=600s ;
+  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n istio-gateway tsb-operator-data-plane --for condition=Available=True --timeout=600s ;
   while ! kubectl --context ${MP_CLUSTER_CONTEXT} get deployment -n istio-system edge &>/dev/null; do sleep 1; done ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n istio-system edge --for condition=Available=True --timeout=600s
-  kubectl --context ${MP_CLUSTER_CONTEXT} get pods -A
+  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n istio-system edge --for condition=Available=True --timeout=600s ;
+  kubectl --context ${MP_CLUSTER_CONTEXT} get pods -A ;
 
   # Apply OAP patch for more real time update in the UI (Apache SkyWalking demo tweak)
   patch_oap_refresh_rate_mp ${MP_CLUSTER_CONTEXT} ;
@@ -105,11 +104,10 @@ if [[ ${ACTION} = "install" ]]; then
 
   # Demo mgmt plane secret extraction (need to connect application clusters to mgmt cluster)
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets (demo install)
-  MP_OUTPUT_DIR=$(get_mp_output_dir)
+  MP_OUTPUT_DIR=$(get_mp_output_dir) ;
   kubectl --context ${MP_CLUSTER_CONTEXT} get -n istio-system secret mp-certs -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/mp-certs.pem ;
   kubectl --context ${MP_CLUSTER_CONTEXT} get -n istio-system secret es-certs -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/es-certs.pem ;
   kubectl --context ${MP_CLUSTER_CONTEXT} get -n istio-system secret xcp-central-ca-bundle -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/xcp-central-ca-certs.pem ;
-
 
   exit 0
 fi
