@@ -130,8 +130,8 @@ if [[ ${ACTION} = "install" ]]; then
   if ! kubectl --context ${MP_CLUSTER_CONTEXT} get ns istio-system &>/dev/null; then
     kubectl --context ${MP_CLUSTER_CONTEXT} create ns istio-system ; 
   fi
-  if ! kubectl --context ${CLUSTER_PROFILE} -n istio-system get secret cacerts &>/dev/null; then
-    kubectl --context ${CLUSTER_PROFILE} create secret generic cacerts -n istio-system \
+  if ! kubectl --context ${MP_CLUSTER_CONTEXT} -n istio-system get secret cacerts &>/dev/null; then
+    kubectl --context ${MP_CLUSTER_CONTEXT} create secret generic cacerts -n istio-system \
     --from-file=${CERT_BASE_DIR}/${MP_CLUSTER_NAME}/ca-cert.pem \
     --from-file=${CERT_BASE_DIR}/${MP_CLUSTER_NAME}/ca-key.pem \
     --from-file=${CERT_BASE_DIR}/${MP_CLUSTER_NAME}/root-cert.pem \
