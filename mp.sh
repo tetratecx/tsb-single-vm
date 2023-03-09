@@ -111,15 +111,21 @@ function uninstall_tsb {
     | xargs -I {} kubectl delete crd {} --timeout=10s --wait=false ;
 
   # Clean up pending finalizer namespaces
-  kubectl proxy &
-  PID_KP=$!
-  sleep 5
   for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
-    curl -k -H "Content-Type: application/json" -X PUT \
-      -d "{ \"apiVersion\": \"v1\", \"kind\": \"Namespace\", \"metadata\": { \"name\": \"${NS}\" }, \"spec\": { \"finalizers\": [] } }" \
-      http://127.0.0.1:8001/api/v1/namespaces/${NS}/finalize 2>/dev/null;
+    kubectl get namespace ${NS} -o json \
+      | tr -d "\n" | sed "s/\"finalizers\": \[[^]]\+\]/\"finalizers\": []/" \
+      | kubectl replace --raw /api/v1/namespaces/stucked-namespace/finalize -f - ;
   done
-  kill ${PID_KP} ;
+
+  # kubectl proxy &
+  # PID_KP=$!
+  # sleep 5
+  # for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
+  #   curl -k -H "Content-Type: application/json" -X PUT \
+  #     -d "{ \"apiVersion\": \"v1\", \"kind\": \"Namespace\", \"metadata\": { \"name\": \"${NS}\" }, \"spec\": { \"finalizers\": [] } }" \
+  #     http://127.0.0.1:8001/api/v1/namespaces/${NS}/finalize 2>/dev/null;
+  # done
+  # kill ${PID_KP} ;
 
 }
 
