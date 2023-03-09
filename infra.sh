@@ -332,12 +332,12 @@ if [[ ${ACTION} = "clean" ]]; then
 
   # Docker networks
   MP_DOCKER_NET=$(get_mp_name) ;
-  docker network rm ${MP_DOCKER_NET}  
+  docker network rm ${MP_DOCKER_NET} 2>/dev/null ;
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
     CP_DOCKER_NET=$(get_cp_name_by_index ${CP_INDEX}) ;
-    docker network rm ${CP_DOCKER_NET} ;
+    docker network rm ${CP_DOCKER_NET} 2>/dev/null ;
     CP_INDEX=$((CP_INDEX+1))
   done
   echo "All docker networks deleted"
