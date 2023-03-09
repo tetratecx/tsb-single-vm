@@ -58,6 +58,22 @@ function login_tsb_admin {
 DONE
 }
 
+# Patch OAP refresh rate of management plane
+#   args:
+#     (1) cluster profile/name
+function patch_oap_refresh_rate_mp {
+  OAP_PATCH='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}'
+  kubectl --context ${1} -n tsb patch managementplanes managementplane --type merge --patch ${OAP_PATCH}
+}
+
+# Patch OAP refresh rate of control plane
+#   args:
+#     (1) cluster profile/name
+function patch_oap_refresh_rate_cp {
+  OAP_PATCH='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}'
+  kubectl --context ${1} -n istio-system patch controlplanes controlplane --type merge --patch ${OAP_PATCH}
+}
+
 # Uninstall tsb installation
 #   args:
 #     (1) cluster profile/name
@@ -116,22 +132,6 @@ function uninstall_tsb {
       | tr -d "\n" | sed "s/\"finalizers\": \[[^]]\+\]/\"finalizers\": []/" \
       | kubectl replace --raw /api/v1/namespaces/${NS}/finalize -f - ;
   done
-}
-
-# Patch OAP refresh rate of management plane
-#   args:
-#     (1) cluster profile/name
-function patch_oap_refresh_rate_mp {
-  OAP_PATCH='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}'
-  kubectl --context ${1} -n tsb patch managementplanes managementplane --type merge --patch ${OAP_PATCH}
-}
-
-# Patch OAP refresh rate of control plane
-#   args:
-#     (1) cluster profile/name
-function patch_oap_refresh_rate_cp {
-  OAP_PATCH='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}'
-  kubectl --context ${1} -n istio-system patch controlplanes controlplane --type merge --patch ${OAP_PATCH}
 }
 
 if [[ ${ACTION} = "install" ]]; then
