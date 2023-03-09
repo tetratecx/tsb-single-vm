@@ -157,6 +157,11 @@ if [[ ${ACTION} = "up" ]]; then
     fi
     CP_INDEX=$((CP_INDEX+1))
   done
+
+  # https://serverfault.com/questions/1102209/how-to-disable-docker-network-isolation
+  # https://serverfault.com/questions/830135/routing-among-different-docker-networks-on-the-same-host-machine 
+  echo "Flushing docker isolation iptable rules to allow cross network communication"
+  sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2
   
   exit 0
 fi
