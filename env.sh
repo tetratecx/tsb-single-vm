@@ -189,11 +189,10 @@ function get_cp_output_dir {
 # get_tsb_repo_user;
 # get_tsb_version;
 
-
-get_certs_base_dir;
-get_mp_config_dir;
-get_mp_output_dir;
-get_cp_config_dir 0;
-get_cp_output_dir 0;
-get_cp_config_dir 1;
-get_cp_output_dir 1;
+# get_certs_base_dir;
+# get_mp_config_dir;
+# get_mp_output_dir;
+# get_cp_config_dir 0;
+# get_cp_output_dir 0;
+# get_cp_config_dir 1;
+# get_cp_output_dir 1;
