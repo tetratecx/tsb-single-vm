@@ -230,6 +230,7 @@ if [[ ${ACTION} = "info" ]]; then
 
   echo "Management plane cluster:"
   echo "TSB GUI: https://${TSB_API_ENDPOINT}:8443 (admin/admin)"
+  echo "TSB GUI (port-fowarded): https://$(curl -s ifconfig.me):8443 (admin/admin)"
   echo "kubectl --context ${CLUSTER_PROFILE} get pods -A"
   echo ""
 
