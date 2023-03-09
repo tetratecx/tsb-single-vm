@@ -114,7 +114,7 @@ function uninstall_tsb {
   for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
     kubectl get namespace ${NS} -o json \
       | tr -d "\n" | sed "s/\"finalizers\": \[[^]]\+\]/\"finalizers\": []/" \
-      | kubectl replace --raw /api/v1/namespaces/stucked-namespace/finalize -f - ;
+      | kubectl replace --raw /api/v1/namespaces/${NS}/finalize -f - ;
   done
 
   # kubectl proxy &
