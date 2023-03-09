@@ -58,15 +58,6 @@ function patch_oap_refresh_rate_cp {
   kubectl --context ${1} -n istio-system patch controlplanes controlplane --type merge --patch ${OAP_PATCH}
 }
 
-# Patch demo cluster name
-#   args:
-#     (1) cluster kubeconfig context
-#     (2) cluster name
-function patch_cp_demo_cluster_name {
-  CP_DEMO_NAME_PATCH="{\"spec\":{\"managementPlane\":{\"clusterName\":\"${2}\"}}}"
-  kubectl --context ${1} -n istio-system patch controlplanes controlplane --type merge --patch ${CP_DEMO_NAME_PATCH}
-}
-
 # Expose tsb gui with kubectl port-forward
 #   args:
 #     (1) cluster kubeconfig context
@@ -133,9 +124,6 @@ if [[ ${ACTION} = "install" ]]; then
   # Apply OAP patch for more real time update in the UI (Apache SkyWalking demo tweak)
   patch_oap_refresh_rate_mp ${MP_CLUSTER_CONTEXT} ;
   patch_oap_refresh_rate_cp ${MP_CLUSTER_CONTEXT} ;
-
-  # Apply demo cp cluster name patch
-  patch_cp_demo_cluster_name ${MP_CLUSTER_CONTEXT} ${MP_CLUSTER_NAME} ;
 
   # Demo mgmt plane secret extraction (need to connect application clusters to mgmt cluster)
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets (demo install)
