@@ -4,7 +4,7 @@
   "cp_clusters": [],
   "mp_cluster": {
     "demo_profile": true,
-    "name": "mgmt",
+    "name": "mgmt-cluster",
     "region": "region1",
     "vms": [],
     "zone": "zone1a"

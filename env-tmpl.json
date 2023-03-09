@@ -1,5 +1,5 @@
 {
-  "infra_json": "./infra/infra-template.json",
+  "infra_json": "./infra/demo-profile/infra.json",
   "tsb": {
     "repo": {
       "password": "<TSB_REPO_APIKEY>",

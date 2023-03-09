@@ -3,30 +3,30 @@
   "k8s_version": "1.24.9",
   "cp_clusters": [
     {
-      "name": "active",
+      "name": "active-cluster",
       "region": "region1",
       "vms": [
         {
           "image": "boeboe/tsb-ubuntu-vm:1.0.0",
-          "name": "ubuntu-vm-active-1"
+          "name": "active-vm1"
         },{
           "image": "boeboe/tsb-ubuntu-vm:1.0.0",
-          "name": "ubuntu-vm-active-2"
+          "name": "active-vm2"
         }
       ],
       "zone": "zone1b"
     },
     {
-      "name": "standby",
+      "name": "standby-cluster",
       "region": "region2",
       "vms": [
         {
           "image": "boeboe/tsb-ubuntu-vm:1.0.0",
-          "name": "ubuntu-vm-standby-1"
+          "name": "standby-vm1"
         },
         {
           "image": "boeboe/tsb-ubuntu-vm:1.0.0",
-          "name": "ubuntu-vm-standby-2"
+          "name": "standby-vm2"
         }
       ],
       "zone": "zone2a"
@@ -34,16 +34,16 @@
   ],
   "mp_cluster": {
     "demo_profile": true,
-    "name": "mgmt",
+    "name": "mgmt-cluster",
     "region": "region1",
     "vms": [
       {
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",
-        "name": "ubuntu-vm-mgmt-1"
+        "name": "mgmt-vm1"
       },
       {
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",
-        "name": "ubuntu-vm-mgmt-2"
+        "name": "mgmt-vm2"
       }
     ],
     "zone": "zone1a"

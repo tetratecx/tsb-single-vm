@@ -3,9 +3,14 @@
   "k8s_version": "1.24.9",
   "cp_clusters": [
     {
-      "name": "app",
+      "name": "app-cluster",
       "region": "region1",
-      "vms": [],
+      "vms": [
+        {
+          "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+          "name": "app-vm"
+        }
+      ],
       "zone": "zone1a"
     }
   ],
@@ -13,7 +18,7 @@
     "demo_profile": true,
     "name": "mgmt",
     "region": "region1",
-    "vms": [ ],
+    "vms": [],
     "zone": "zone1a"
   }
 }

@@ -4,18 +4,18 @@
   "cp_clusters": [],
   "mp_cluster": {
     "demo_profile": true,
-    "name": "mgmt",
+    "name": "mgmt-cluster",
     "region": "region1",
     "vms": [
       {
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",
-        "name": "ubuntu-vm-1"
+        "name": "app1-vm"
       },{
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",
-        "name": "ubuntu-vm-2"
+        "name": "app2-vm"
       },{
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",
-        "name": "ubuntu-vm-3"
+        "name": "app3-vm"
       }
     ],
     "zone": "zone1a"
