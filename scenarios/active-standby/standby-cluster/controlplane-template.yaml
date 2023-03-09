@@ -9,7 +9,7 @@ spec:
   managementPlane:
     host: $TSB_API_ENDPOINT
     port: 8443
-    clusterName: active-cluster
+    clusterName: standby-cluster
     selfSigned: true
   telemetryStore:
     elastic:
