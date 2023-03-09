@@ -151,6 +151,7 @@ if [[ ${ACTION} = "install" ]]; then
   # install tsb management plane using the demo profile
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/demo-installation
   #   NOTE: the demo profile deploys both the mgmt plane AND the ctrl plane in a demo cluster!
+  echo "tctl --profile ${MP_CLUSTER_PROFILE} install demo --registry containers.dl.tetrate.io --admin-password admin"
   tctl --profile ${MP_CLUSTER_PROFILE} install demo --registry containers.dl.tetrate.io --admin-password admin ;
 
   # Wait for the management, control and data plane to become available
