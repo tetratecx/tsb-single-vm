@@ -49,6 +49,9 @@ tsb-mp-uninstall: ## Uninstall TSB management cluster
 tsb-cp-install: ## Install TSB control/data plane(s)
 	@/bin/bash -c './cp.sh install'
 
+tsb-cp-uninstall: ## Install TSB control/data plane(s)
+	@/bin/bash -c './cp.sh uninstall'
+
 reset-tsb: ## Reset all TSB configuration
 	@/bin/bash -c './tsb.sh reset-tsb'
 
