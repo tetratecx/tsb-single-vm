@@ -33,6 +33,7 @@ if [[ ${ACTION} = "install" ]]; then
   MP_OUTPUT_DIR=$(get_mp_output_dir) ;
 
   # Login again as tsb admin in case of a session time-out
+  kubectl config use-context ${MP_CLUSTER_CONTEXT} ;
   login_tsb_admin tetrate ;
 
   export TSB_API_ENDPOINT=$(kubectl --context ${MP_CLUSTER_CONTEXT} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
@@ -48,10 +49,12 @@ if [[ ${ACTION} = "install" ]]; then
 
     # Generate a service account private key for the active cluster
     #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets
+    kubectl config use-context ${MP_CLUSTER_CONTEXT} ;
     tctl install cluster-service-account --cluster ${CP_CLUSTER_NAME} > ${CP_OUTPUT_DIR}/cluster-service-account.jwk ;
 
     # Create control plane secrets
     #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets
+    kubectl config use-context ${MP_CLUSTER_CONTEXT} ;
     tctl install manifest control-plane-secrets \
       --cluster ${CP_CLUSTER_NAME} \
       --cluster-service-account="$(cat ${CP_OUTPUT_DIR}/cluster-service-account.jwk)" \
@@ -81,6 +84,7 @@ if [[ ${ACTION} = "install" ]]; then
 
     # Deploy operators
     #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#deploy-operators
+    kubectl config use-context ${MP_CLUSTER_CONTEXT} ;
     login_tsb_admin tetrate ;
     tctl install manifest cluster-operators --registry containers.dl.tetrate.io > ${CP_OUTPUT_DIR}/clusteroperators.yaml ;
 
