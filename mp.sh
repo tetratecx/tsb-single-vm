@@ -126,16 +126,17 @@ if [[ ${ACTION} = "install" ]]; then
   # bootstrap cluster with self signed certificate that share a common root certificate
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#intermediate-istio-ca-certificates
   generate_istio_cert ${MP_CLUSTER_NAME} ;
+  CERTS_BASE_DIR=$(get_certs_base_dir) ;
 
   if ! kubectl --context ${MP_CLUSTER_CONTEXT} get ns istio-system &>/dev/null; then
     kubectl --context ${MP_CLUSTER_CONTEXT} create ns istio-system ; 
   fi
   if ! kubectl --context ${MP_CLUSTER_CONTEXT} -n istio-system get secret cacerts &>/dev/null; then
     kubectl --context ${MP_CLUSTER_CONTEXT} create secret generic cacerts -n istio-system \
-    --from-file=${CERT_BASE_DIR}/${MP_CLUSTER_NAME}/ca-cert.pem \
-    --from-file=${CERT_BASE_DIR}/${MP_CLUSTER_NAME}/ca-key.pem \
-    --from-file=${CERT_BASE_DIR}/${MP_CLUSTER_NAME}/root-cert.pem \
-    --from-file=${CERT_BASE_DIR}/${MP_CLUSTER_NAME}/cert-chain.pem
+    --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/ca-cert.pem \
+    --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/ca-key.pem \
+    --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/root-cert.pem \
+    --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/cert-chain.pem
   fi
   
   # start patching deployments that depend on dockerhub asynchronously
