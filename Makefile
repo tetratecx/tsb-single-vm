@@ -40,14 +40,11 @@ infra-down: ## Bring down minikube clusters and vms
 	@/bin/bash -c './infra.sh down'
 
 ###########################
-tsb-mgmt-install: ## Install TSB management/control/data plane in mgmt cluster (demo profile)
+tsb-mp-install: ## Install TSB management/control/data plane
 	@/bin/bash -c './mp.sh install'
 
-tsb-active-install: ## Install TSB control/data plane in active cluster
-	@/bin/bash -c './tsb.sh app-cluster-install active-cluster'
-
-tsb-standby-install: ## Install TSB control/data plane in stanby cluster
-	@/bin/bash -c './tsb.sh app-cluster-install standby-cluster'
+tsb-cp-install: ## Install TSB control/data plane(s)
+	@/bin/bash -c './cp.sh install'
 
 reset-tsb: ## Reset all TSB configuration
 	@/bin/bash -c './tsb.sh reset-tsb'
