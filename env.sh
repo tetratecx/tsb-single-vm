@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
+OUTPUT_DIR=${ROOT_DIR}/output
 
 ENV_CONF=env.json
 if ! [[ -f "${ENV_CONF}" ]] ; then
@@ -6,16 +8,18 @@ if ! [[ -f "${ENV_CONF}" ]] ; then
   exit 1
 fi
 
-if ! cat ${ENV_CONF} | jq -r ".infra_json" &>/dev/null ; then
-  echo "Unable to parse infra_json from ${ENV_CONF}, aborting..."
+if ! cat ${ENV_CONF} | jq -r ".scenario" &>/dev/null ; then
+  echo "Unable to parse scenario from ${ENV_CONF}, aborting..."
   exit 2
 fi
 
-INFRA_CONF=$(cat ${ENV_CONF} | jq -r ".infra_json")
+SCENARIO_DIR=${ROOT_DIR}/scenarios/$(cat ${ENV_CONF} | jq -r ".scenario")
+INFRA_CONF=${SCENARIO_DIR}/infra.json
 if ! [[ -f "${INFRA_CONF}" ]] ; then
   echo "Cannot find ${INFRA_CONF}, aborting..."
   exit 3
 fi
+
 
 ### Infra Configuration ###
 
@@ -106,7 +110,6 @@ function get_cp_zone_by_index {
 
 ### TSB Configuration ###
 
-
 function get_tsb_repo_password {
   cat ${ENV_CONF} | jq -r ".tsb.repo.password"
 }
@@ -120,6 +123,32 @@ function get_tsb_repo_user {
 
 function get_tsb_version {
   cat ${ENV_CONF} | jq -r ".tsb.version"
+}
+
+
+### Configuration and output directories ###
+function get_certs_base_dir {
+  echo ${OUTPUT_DIR}/certs
+}
+
+function get_mp_config_dir {
+  echo ${SCENARIO_DIR}/$(get_mp_name)
+}
+
+function get_mp_output_dir {
+  mkdir -p ${OUTPUT_DIR}/$(get_mp_name)
+  echo ${OUTPUT_DIR}/$(get_mp_name)
+}
+
+function get_cp_config_dir {
+  i=${1}
+  echo ${SCENARIO_DIR}/$(get_cp_name_by_index ${i})
+}
+
+function get_cp_output_dir {
+  i=${1}
+  mkdir -p ${OUTPUT_DIR}/$(get_cp_name_by_index ${i})
+  echo ${OUTPUT_DIR}/$(get_cp_name_by_index ${i})
 }
 
 ### Parsing Tests
@@ -159,3 +188,12 @@ function get_tsb_version {
 # get_tsb_repo_url;
 # get_tsb_repo_user;
 # get_tsb_version;
+
+
+get_certs_base_dir;
+get_mp_config_dir;
+get_mp_output_dir;
+get_cp_config_dir 0;
+get_cp_output_dir 0;
+get_cp_config_dir 1;
+get_cp_output_dir 1;

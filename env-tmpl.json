@@ -1,5 +1,5 @@
 {
-  "infra_json": "./scenarios/demo-profile/infra.json",
+  "scenario": "demo-profile",
   "tsb": {
     "repo": {
       "password": "<TSB_REPO_APIKEY>",

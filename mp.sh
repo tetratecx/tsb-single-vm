@@ -10,7 +10,7 @@ ACTION=${1}
 
 # Patch deployment still using dockerhub: tsb/ratelimit-redis
 #   args:
-#     (1) cluster profile/name
+#     (1) cluster kubeconfig context
 function patch_dockerhub_dep_redis {
   while ! kubectl --context ${1} -n tsb set image deployment/ratelimit-redis redis=containers.dl.tetrate.io/redis:7.0.5-alpine &>/dev/null;
   do
@@ -21,7 +21,7 @@ function patch_dockerhub_dep_redis {
 
 # Patch deployment still using dockerhub: istio-system/ratelimit-server
 #   args:
-#     (1) cluster profile/name
+#     (1) cluster kubeconfig context
 function patch_dockerhub_dep_ratelimit {
   while ! kubectl --context ${1} -n istio-system set image deployment/ratelimit-server ratelimit=containers.dl.tetrate.io/ratelimit:5e9a43f9 &>/dev/null;
   do
@@ -30,28 +30,9 @@ function patch_dockerhub_dep_ratelimit {
   echo "Deployment istio-system/ratelimit-server sucessfully patched"
 }
 
-# Create cacert secret in istio-system namespace
-#   args:
-#     (1) cluster profile/name
-function create_cert_secret {
-  CLUSTER_PROFILE=${1}
-  generate_istio_cert ${CLUSTER_PROFILE} ;
-
-  if ! kubectl --context ${CLUSTER_PROFILE} get ns istio-system &>/dev/null; then
-    kubectl --context ${CLUSTER_PROFILE} create ns istio-system ; 
-  fi
-  if ! kubectl --context ${CLUSTER_PROFILE} -n istio-system get secret cacerts &>/dev/null; then
-    kubectl --context ${CLUSTER_PROFILE} create secret generic cacerts -n istio-system \
-    --from-file=${CERT_BASE_DIR}/${CLUSTER_PROFILE}/ca-cert.pem \
-    --from-file=${CERT_BASE_DIR}/${CLUSTER_PROFILE}/ca-key.pem \
-    --from-file=${CERT_BASE_DIR}/${CLUSTER_PROFILE}/root-cert.pem \
-    --from-file=${CERT_BASE_DIR}/${CLUSTER_PROFILE}/cert-chain.pem
-  fi
-}
-
 # Login as admin into tsb
 #   args:
-#     (1) cluster profile/name
+#     (1) cluster kubeconfig context
 #     (2) organization
 function login_tsb_admin {
   kubectl config use-context ${1} ;
@@ -64,7 +45,7 @@ DONE
 
 # Patch OAP refresh rate of management plane
 #   args:
-#     (1) cluster profile/name
+#     (1) cluster kubeconfig context
 function patch_oap_refresh_rate_mp {
   OAP_PATCH='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}'
   kubectl --context ${1} -n tsb patch managementplanes managementplane --type merge --patch ${OAP_PATCH}
@@ -72,7 +53,7 @@ function patch_oap_refresh_rate_mp {
 
 # Patch OAP refresh rate of control plane
 #   args:
-#     (1) cluster profile/name
+#     (1) cluster kubeconfig context
 function patch_oap_refresh_rate_cp {
   OAP_PATCH='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}'
   kubectl --context ${1} -n istio-system patch controlplanes controlplane --type merge --patch ${OAP_PATCH}
@@ -80,7 +61,7 @@ function patch_oap_refresh_rate_cp {
 
 # Uninstall tsb installation
 #   args:
-#     (1) cluster profile/name
+#     (1) cluster kubeconfig context
 function uninstall_tsb {
 
   # Put operators to sleep
@@ -139,43 +120,63 @@ function uninstall_tsb {
 
 if [[ ${ACTION} = "install" ]]; then
 
-  MP_CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
+  MP_CLUSTER_CONTEXT=$(get_mp_minikube_profile) ;
+  MP_CLUSTER_NAME=$(get_mp_name) ;
 
   # bootstrap cluster with self signed certificate that share a common root certificate
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#intermediate-istio-ca-certificates
-  create_cert_secret ${MP_CLUSTER_PROFILE} ;
+  generate_istio_cert ${MP_CLUSTER_NAME} ;
+
+  if ! kubectl --context ${MP_CLUSTER_CONTEXT} get ns istio-system &>/dev/null; then
+    kubectl --context ${MP_CLUSTER_CONTEXT} create ns istio-system ; 
+  fi
+  if ! kubectl --context ${CLUSTER_PROFILE} -n istio-system get secret cacerts &>/dev/null; then
+    kubectl --context ${CLUSTER_PROFILE} create secret generic cacerts -n istio-system \
+    --from-file=${CERT_BASE_DIR}/${MP_CLUSTER_NAME}/ca-cert.pem \
+    --from-file=${CERT_BASE_DIR}/${MP_CLUSTER_NAME}/ca-key.pem \
+    --from-file=${CERT_BASE_DIR}/${MP_CLUSTER_NAME}/root-cert.pem \
+    --from-file=${CERT_BASE_DIR}/${MP_CLUSTER_NAME}/cert-chain.pem
+  fi
   
   # start patching deployments that depend on dockerhub asynchronously
-  patch_dockerhub_dep_redis ${MP_CLUSTER_PROFILE} &
-  patch_dockerhub_dep_ratelimit ${MP_CLUSTER_PROFILE} &
+  patch_dockerhub_dep_redis ${MP_CLUSTER_CONTEXT} &
+  patch_dockerhub_dep_ratelimit ${MP_CLUSTER_CONTEXT} &
 
   # install tsb management plane using the demo profile
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/demo-installation
   #   NOTE: the demo profile deploys both the mgmt plane AND the ctrl plane in a demo cluster!
-  kubectl config use-context ${MP_CLUSTER_PROFILE} ;
+  kubectl config use-context ${MP_CLUSTER_CONTEXT} ;
   tctl install demo --registry containers.dl.tetrate.io --admin-password admin ;
 
   # Wait for the management, control and data plane to become available
-  kubectl --context ${MP_CLUSTER_PROFILE} wait deployment -n tsb tsb-operator-management-plane --for condition=Available=True --timeout=600s
-  kubectl --context ${MP_CLUSTER_PROFILE} wait deployment -n istio-system tsb-operator-control-plane --for condition=Available=True --timeout=600s
-  kubectl --context ${MP_CLUSTER_PROFILE} wait deployment -n istio-gateway tsb-operator-data-plane --for condition=Available=True --timeout=600s
-  while ! kubectl --context ${MP_CLUSTER_PROFILE} get deployment -n istio-system edge &>/dev/null; do sleep 1; done ;
-  kubectl --context ${MP_CLUSTER_PROFILE} wait deployment -n istio-system edge --for condition=Available=True --timeout=600s
-  kubectl --context ${MP_CLUSTER_PROFILE} get pods -A
+  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n tsb tsb-operator-management-plane --for condition=Available=True --timeout=600s
+  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n istio-system tsb-operator-control-plane --for condition=Available=True --timeout=600s
+  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n istio-gateway tsb-operator-data-plane --for condition=Available=True --timeout=600s
+  while ! kubectl --context ${MP_CLUSTER_CONTEXT} get deployment -n istio-system edge &>/dev/null; do sleep 1; done ;
+  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n istio-system edge --for condition=Available=True --timeout=600s
+  kubectl --context ${MP_CLUSTER_CONTEXT} get pods -A
 
   # Apply OAP patch for more real time update in the UI (Apache SkyWalking demo tweak)
-  patch_oap_refresh_rate_mp ${MP_CLUSTER_PROFILE} ;
-  patch_oap_refresh_rate_cp ${MP_CLUSTER_PROFILE} ;
+  patch_oap_refresh_rate_mp ${MP_CLUSTER_CONTEXT} ;
+  patch_oap_refresh_rate_cp ${MP_CLUSTER_CONTEXT} ;
+
+  # Demo mgmt plane secret extraction (need to connect application clusters to mgmt cluster)
+  #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets (demo install)
+  MP_OUTPUT_DIR=$(get_mp_output_dir)
+  kubectl --context ${MP_CLUSTER_CONTEXT} get -n istio-system secret mp-certs -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/mp-certs.pem ;
+  kubectl --context ${MP_CLUSTER_CONTEXT} get -n istio-system secret es-certs -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/es-certs.pem ;
+  kubectl --context ${MP_CLUSTER_CONTEXT} get -n istio-system secret xcp-central-ca-bundle -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/xcp-central-ca-certs.pem ;
+
 
   exit 0
 fi
 
 if [[ ${ACTION} = "uninstall" ]]; then
 
-  MP_CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
+  MP_CLUSTER_CONTEXT=$(get_mp_minikube_profile) ;
 
   # Remove tsb completely mp cluster
-  uninstall_tsb ${MP_CLUSTER_PROFILE} ;
+  uninstall_tsb ${MP_CLUSTER_CONTEXT} ;
   sleep 10 ;
 
   exit 0
@@ -184,18 +185,18 @@ fi
 
 if [[ ${ACTION} = "reset" ]]; then
 
-  MP_CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
+  MP_CLUSTER_CONTEXT=$(get_mp_minikube_profile) ;
 
   # Login again as tsb admin in case of a session time-out
-  login_tsb_admin ${MP_CLUSTER_PROFILE} tetrate ;
+  login_tsb_admin ${MP_CLUSTER_CONTEXT} tetrate ;
 
   # Remove all TSB configuration objects
-  kubectl config use-context ${MP_CLUSTER_PROFILE} ;
+  kubectl config use-context ${MP_CLUSTER_CONTEXT} ;
   tctl get all --org tetrate --tenant prod | tctl delete -f - ;
 
   # Remove all TSB kubernetes installation objects
-  kubectl --context ${MP_CLUSTER_PROFILE} get -A egressgateways.install.tetrate.io,ingressgateways.install.tetrate.io,tier1gateways.install.tetrate.io -o yaml \
-   | kubectl --context ${MP_CLUSTER_PROFILE} delete -f - ;
+  kubectl --context ${MP_CLUSTER_CONTEXT} get -A egressgateways.install.tetrate.io,ingressgateways.install.tetrate.io,tier1gateways.install.tetrate.io -o yaml \
+   | kubectl --context ${MP_CLUSTER_CONTEXT} delete -f - ;
 
   exit 0
 fi

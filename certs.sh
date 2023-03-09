@@ -1,24 +1,26 @@
 #!/usr/bin/env bash
 ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
-CERT_BASE_DIR=${ROOT_DIR}/output/certs
+source ${ROOT_DIR}/env.sh
+
+CERTS_BASE_DIR=$(get_certs_base_dir) ;
 
 # Generate a self signed root certificate
 function generate_root_cert {
-  mkdir -p ${CERT_BASE_DIR} ;
-  if [[ -f "${CERT_BASE_DIR}/root-cert.pem" ]]; then 
-    echo "File ${CERT_BASE_DIR}/root-cert.pem already exists... skipping certificate generation"
+  mkdir -p ${CERTS_BASE_DIR} ;
+  if [[ -f "${CERTS_BASE_DIR}/root-cert.pem" ]]; then 
+    echo "File ${CERTS_BASE_DIR}/root-cert.pem already exists... skipping certificate generation"
     return
   fi
 
   openssl req -newkey rsa:4096 -sha512 -nodes \
-    -keyout ${CERT_BASE_DIR}/root-key.pem \
+    -keyout ${CERTS_BASE_DIR}/root-key.pem \
     -subj "/CN=Root CA/O=Istio" \
-    -out ${CERT_BASE_DIR}/root-cert.csr ;
+    -out ${CERTS_BASE_DIR}/root-cert.csr ;
   openssl x509 -req -sha512 -days 3650 \
-    -signkey ${CERT_BASE_DIR}/root-key.pem \
-    -in ${CERT_BASE_DIR}/root-cert.csr \
+    -signkey ${CERTS_BASE_DIR}/root-key.pem \
+    -in ${CERTS_BASE_DIR}/root-cert.csr \
     -extfile <(printf "subjectKeyIdentifier=hash\nbasicConstraints=critical,CA:true\nkeyUsage=critical,digitalSignature,nonRepudiation,keyEncipherment,keyCertSign") \
-    -out ${CERT_BASE_DIR}/root-cert.pem ;
+    -out ${CERTS_BASE_DIR}/root-cert.pem ;
 }
 
 # Generate an intermediate istio certificate signed by the self signed root certificate
@@ -26,9 +28,9 @@ function generate_root_cert {
 #     (1) cluster name
 function generate_istio_cert {
   CLUSTER_NAME=${1}
-  CERT_ISTIO_DIR=${CERT_BASE_DIR}/${CLUSTER_NAME}
+  CERT_ISTIO_DIR=${CERTS_BASE_DIR}/${CLUSTER_NAME}
   mkdir -p ${CERT_ISTIO_DIR} ;
-  if [[ ! -f "${CERT_BASE_DIR}/root-cert.pem" ]]; then generate_root_cert ; fi
+  if [[ ! -f "${CERTS_BASE_DIR}/root-cert.pem" ]]; then generate_root_cert ; fi
   if [[ -f "${CERT_ISTIO_DIR}/ca-cert.pem" ]]; then 
     echo "File ${CERT_ISTIO_DIR}/ca-cert.pem already exists... skipping certificate generation"
     return
@@ -39,13 +41,13 @@ function generate_istio_cert {
     -subj "/CN=Intermediate CA/O=Istio/L=${CLUSTER_NAME}" \
     -out ${CERT_ISTIO_DIR}/ca-cert.csr ;
   openssl x509 -req -sha512 -days 730 -CAcreateserial \
-    -CA ${CERT_BASE_DIR}/root-cert.pem \
-    -CAkey ${CERT_BASE_DIR}/root-key.pem \
+    -CA ${CERTS_BASE_DIR}/root-cert.pem \
+    -CAkey ${CERTS_BASE_DIR}/root-key.pem \
     -in ${CERT_ISTIO_DIR}/ca-cert.csr \
     -extfile <(printf "subjectKeyIdentifier=hash\nbasicConstraints=critical,CA:true,pathlen:0\nkeyUsage=critical,digitalSignature,nonRepudiation,keyEncipherment,keyCertSign\nsubjectAltName=DNS.1:istiod.istio-system.svc") \
     -out ${CERT_ISTIO_DIR}/ca-cert.pem ;
-  cat ${CERT_ISTIO_DIR}/ca-cert.pem ${CERT_BASE_DIR}/root-cert.pem >> ${CERT_ISTIO_DIR}/cert-chain.pem ;
-  cp ${CERT_BASE_DIR}/root-cert.pem ${CERT_ISTIO_DIR}/root-cert.pem ;
+  cat ${CERT_ISTIO_DIR}/ca-cert.pem ${CERTS_BASE_DIR}/root-cert.pem >> ${CERT_ISTIO_DIR}/cert-chain.pem ;
+  cp ${CERTS_BASE_DIR}/root-cert.pem ${CERT_ISTIO_DIR}/root-cert.pem ;
 }
 
 # Generate a workload client certificate signed by the self signed root certificate
@@ -55,9 +57,9 @@ function generate_istio_cert {
 function generate_client_cert {
   CLIENT_NAME=${1}
   DOMAIN=${2}
-  OUT_DIR=${CERT_BASE_DIR}/${CLIENT_NAME}
+  OUT_DIR=${CERTS_BASE_DIR}/${CLIENT_NAME}
   mkdir -p ${OUT_DIR} ;
-  if [[ ! -f "${CERT_BASE_DIR}/root-cert.pem" ]]; then generate_root_cert ; fi
+  if [[ ! -f "${CERTS_BASE_DIR}/root-cert.pem" ]]; then generate_root_cert ; fi
   if [[ -f "${OUT_DIR}/client.${CLIENT_NAME}.${DOMAIN}-cert.pem" ]]; then 
     echo "File ${OUT_DIR}/client.${CLIENT_NAME}.${DOMAIN}-cert.pem already exists... skipping certificate generation"
     return
@@ -68,12 +70,12 @@ function generate_client_cert {
     -subj "/CN=${CLIENT_NAME}.${DOMAIN}/O=Customer/C=US/ST=CA" \
     -out ${OUT_DIR}/client.${CLIENT_NAME}.${DOMAIN}-cert.csr ;
   openssl x509 -req -sha512 -days 3650 -set_serial 1 \
-    -CA ${CERT_BASE_DIR}/root-cert.pem \
-    -CAkey ${CERT_BASE_DIR}/root-key.pem \
+    -CA ${CERTS_BASE_DIR}/root-cert.pem \
+    -CAkey ${CERTS_BASE_DIR}/root-key.pem \
     -in ${OUT_DIR}/client.${CLIENT_NAME}.${DOMAIN}-cert.csr \
     -out ${OUT_DIR}/client.${CLIENT_NAME}.${DOMAIN}-cert.pem ;
-  cat ${OUT_DIR}/client.${CLIENT_NAME}.${DOMAIN}-cert.pem ${CERT_BASE_DIR}/root-cert.pem >> ${OUT_DIR}/client.${CLIENT_NAME}.${DOMAIN}-cert-chain.pem ;
-  cp ${CERT_BASE_DIR}/root-cert.pem ${OUT_DIR}/root-cert.pem ;
+  cat ${OUT_DIR}/client.${CLIENT_NAME}.${DOMAIN}-cert.pem ${CERTS_BASE_DIR}/root-cert.pem >> ${OUT_DIR}/client.${CLIENT_NAME}.${DOMAIN}-cert-chain.pem ;
+  cp ${CERTS_BASE_DIR}/root-cert.pem ${OUT_DIR}/root-cert.pem ;
 }
 
 # Generate a workload server certificate signed by the self signed root certificate
@@ -83,9 +85,9 @@ function generate_client_cert {
 function generate_server_cert {
   SERVER_NAME=${1}
   DOMAIN=${2}
-  OUT_DIR=${CERT_BASE_DIR}/${SERVER_NAME}
+  OUT_DIR=${CERTS_BASE_DIR}/${SERVER_NAME}
   mkdir -p ${OUT_DIR} ;
-  if [[ ! -f "${CERT_BASE_DIR}/root-cert.pem" ]]; then generate_root_cert ; fi
+  if [[ ! -f "${CERTS_BASE_DIR}/root-cert.pem" ]]; then generate_root_cert ; fi
   if [[ -f "${OUT_DIR}/server.${SERVER_NAME}.${DOMAIN}-cert.pem" ]]; then 
     echo "File ${OUT_DIR}/server.${SERVER_NAME}.${DOMAIN}-cert.pem already exists... skipping certificate generation"
     return
@@ -96,13 +98,13 @@ function generate_server_cert {
     -subj "/CN=${SERVER_NAME}.${DOMAIN}/O=Tetrate/C=US/ST=CA" \
     -out ${OUT_DIR}/server.${SERVER_NAME}.${DOMAIN}-cert.csr ;
   openssl x509 -req -sha512 -days 3650 -set_serial 0 \
-    -CA ${CERT_BASE_DIR}/root-cert.pem \
-    -CAkey ${CERT_BASE_DIR}/root-key.pem \
+    -CA ${CERTS_BASE_DIR}/root-cert.pem \
+    -CAkey ${CERTS_BASE_DIR}/root-key.pem \
     -in ${OUT_DIR}/server.${SERVER_NAME}.${DOMAIN}-cert.csr \
     -extfile <(printf "subjectAltName=DNS:${SERVER_NAME}.${DOMAIN},DNS:${DOMAIN},DNS:*.${DOMAIN},DNS:localhost") \
     -out ${OUT_DIR}/server.${SERVER_NAME}.${DOMAIN}-cert.pem ;
-  cat ${OUT_DIR}/server.${SERVER_NAME}.${DOMAIN}-cert.pem ${CERT_BASE_DIR}/root-cert.pem >> ${OUT_DIR}/server.${SERVER_NAME}.${DOMAIN}-cert-chain.pem ;
-  cp ${CERT_BASE_DIR}/root-cert.pem ${OUT_DIR}/root-cert.pem ;
+  cat ${OUT_DIR}/server.${SERVER_NAME}.${DOMAIN}-cert.pem ${CERTS_BASE_DIR}/root-cert.pem >> ${OUT_DIR}/server.${SERVER_NAME}.${DOMAIN}-cert-chain.pem ;
+  cp ${CERTS_BASE_DIR}/root-cert.pem ${OUT_DIR}/root-cert.pem ;
 }
 
 ### Cert Generation Tests
