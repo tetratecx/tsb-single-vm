@@ -304,7 +304,6 @@ if [[ ${ACTION} = "clean" ]]; then
     CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
     VM_INDEX=0
     while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
-      DOCKER_NET=$(get_mp_name) ;
       VM_NAME=$(get_mp_vm_name_by_index ${VM_INDEX}) ;
       echo "Going to delete vm ${VM_NAME} attached to management cluster ${CLUSTER_PROFILE}"
       docker rm ${VM_NAME} ;
@@ -317,7 +316,6 @@ if [[ ${ACTION} = "clean" ]]; then
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
     CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
-    DOCKER_NET=$(get_cp_name_by_index ${CP_INDEX}) ;
     VM_COUNT=$(get_cp_vm_count_by_index ${CP_INDEX}) ;
     if ! [[ ${VM_COUNT} -eq 0 ]] ; then
       VM_INDEX=0
@@ -330,9 +328,21 @@ if [[ ${ACTION} = "clean" ]]; then
     fi
     CP_INDEX=$((CP_INDEX+1))
   done
-
   echo "All minikube cluster profiles and vms deleted"
 
+  # Docker networks
+  MP_DOCKER_NET=$(get_mp_name) ;
+  docker network rm ${MP_DOCKER_NET}  
+  CP_COUNT=$(get_cp_count)
+  CP_INDEX=0
+  while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
+    CP_DOCKER_NET=$(get_cp_name_by_index ${CP_INDEX}) ;
+    docker network rm ${CP_DOCKER_NET} ;
+    CP_INDEX=$((CP_INDEX+1))
+  done
+  echo "All docker networks deleted"
+
+  # Temporary output files
   if [[ -f "${OUTPUT_DIR}/.keep" ]] ; then
     rm -rf ${OUTPUT_DIR}/* ;
     echo "Temporary output files deleted"
