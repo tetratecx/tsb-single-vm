@@ -328,7 +328,7 @@ if [[ ${ACTION} = "clean" ]]; then
 
   echo "All minikube cluster profiles and vms deleted"
 
-  if grep -q "${ROOT_DIR}" <<< "${OUTPUT_DIR}"; then
+  if [[ -f "${OUTPUT_DIR}/.keep" ]] ; then
     rm -rf ${OUTPUT_DIR}/* ;
     echo "Temporary output files deleted"
   fi
