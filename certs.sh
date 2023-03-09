@@ -21,6 +21,7 @@ function generate_root_cert {
     -in ${CERTS_BASE_DIR}/root-cert.csr \
     -extfile <(printf "subjectKeyIdentifier=hash\nbasicConstraints=critical,CA:true\nkeyUsage=critical,digitalSignature,nonRepudiation,keyEncipherment,keyCertSign") \
     -out ${CERTS_BASE_DIR}/root-cert.pem ;
+  echo "New root certificate generated at ${CERTS_BASE_DIR}/root-cert.pem"
 }
 
 # Generate an intermediate istio certificate signed by the self signed root certificate
@@ -48,6 +49,7 @@ function generate_istio_cert {
     -out ${CERT_ISTIO_DIR}/ca-cert.pem ;
   cat ${CERT_ISTIO_DIR}/ca-cert.pem ${CERTS_BASE_DIR}/root-cert.pem >> ${CERT_ISTIO_DIR}/cert-chain.pem ;
   cp ${CERTS_BASE_DIR}/root-cert.pem ${CERT_ISTIO_DIR}/root-cert.pem ;
+  echo "New intermediate istio certificate generated at ${CERT_ISTIO_DIR}/ca-cert.pem"
 }
 
 # Generate a workload client certificate signed by the self signed root certificate
