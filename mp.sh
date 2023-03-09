@@ -176,7 +176,7 @@ if [[ ${ACTION} = "uninstall" ]]; then
   MP_CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
 
   # Remove tsb completely mp cluster
-  remove_tsb ${MP_CLUSTER_PROFILE} ;
+  uninstall_tsb ${MP_CLUSTER_PROFILE} ;
   sleep 10 ;
 
   exit 0
