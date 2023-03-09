@@ -54,8 +54,9 @@ function create_cert_secret {
 #     (1) cluster profile/name
 #     (2) organization
 function login_tsb_admin {
+  kubectl config use-context ${1} ;
   expect <<DONE
-  spawn tctl --profile ${1}login --username admin --password admin --org ${2}
+  spawn tctl login --username admin --password admin --org ${2}
   expect "Tenant:" { send "\\r" }
   expect eof
 DONE
@@ -151,8 +152,8 @@ if [[ ${ACTION} = "install" ]]; then
   # install tsb management plane using the demo profile
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/demo-installation
   #   NOTE: the demo profile deploys both the mgmt plane AND the ctrl plane in a demo cluster!
-  echo "tctl --profile ${MP_CLUSTER_PROFILE} install demo --registry containers.dl.tetrate.io --admin-password admin"
-  tctl --profile ${MP_CLUSTER_PROFILE} install demo --registry containers.dl.tetrate.io --admin-password admin ;
+  kubectl config use-context ${MP_CLUSTER_PROFILE} ;
+  tctl install demo --registry containers.dl.tetrate.io --admin-password admin ;
 
   # Wait for the management, control and data plane to become available
   kubectl --context ${MP_CLUSTER_PROFILE} wait deployment -n tsb tsb-operator-management-plane --for condition=Available=True --timeout=600s
@@ -189,7 +190,8 @@ if [[ ${ACTION} = "reset" ]]; then
   login_tsb_admin ${MP_CLUSTER_PROFILE} tetrate ;
 
   # Remove all TSB configuration objects
-  tctl --profile ${MP_CLUSTER_PROFILE} get all --org tetrate --tenant prod | tctl delete -f - ;
+  kubectl config use-context ${MP_CLUSTER_PROFILE} ;
+  tctl get all --org tetrate --tenant prod | tctl delete -f - ;
 
   # Remove all TSB kubernetes installation objects
   kubectl --context ${MP_CLUSTER_PROFILE} get -A egressgateways.install.tetrate.io,ingressgateways.install.tetrate.io,tier1gateways.install.tetrate.io -o yaml \
