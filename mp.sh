@@ -58,6 +58,29 @@ function patch_oap_refresh_rate_cp {
   kubectl --context ${1} -n istio-system patch controlplanes controlplane --type merge --patch ${OAP_PATCH}
 }
 
+# Expose tsb gui with kubectl port-forward
+#   args:
+#     (1) cluster kubeconfig context
+function expose_tsb_gui {
+  if ! [[ -f "/etc/systemd/system/tsb-gui.service" ]] ; then
+    sudo tee /etc/systemd/system/tsb-gui.service << EOF
+[Unit]
+Description=TSB GUI Exposure
+
+[Service]
+ExecStart=$(which kubectl) --kubeconfig ${HOME}/.kube/config --context ${1} port-forward -n tsb service/envoy 8443:8443 --address 0.0.0.0
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  fi
+
+  sudo systemctl enable tsb-gui ;
+  sudo systemctl start tsb-gui ;
+  echo "The tsb gui should be available at https://$(curl -s ifconfig.me):8443"
+}
+
 
 if [[ ${ACTION} = "install" ]]; then
 
@@ -108,6 +131,8 @@ if [[ ${ACTION} = "install" ]]; then
   kubectl --context ${MP_CLUSTER_CONTEXT} get -n istio-system secret mp-certs -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/mp-certs.pem ;
   kubectl --context ${MP_CLUSTER_CONTEXT} get -n istio-system secret es-certs -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/es-certs.pem ;
   kubectl --context ${MP_CLUSTER_CONTEXT} get -n istio-system secret xcp-central-ca-bundle -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/xcp-central-ca-certs.pem ;
+
+  expose_tsb_gui ${MP_CLUSTER_CONTEXT} ;
 
   exit 0
 fi
