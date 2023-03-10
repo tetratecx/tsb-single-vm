@@ -1,5 +1,5 @@
 {
-  "scenario": "demo-profile",
+  "topology": "demo-profile",
   "tsb": {
     "repo": {
       "password": "<TSB_REPO_APIKEY>",
