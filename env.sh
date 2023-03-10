@@ -8,15 +8,15 @@ if ! [[ -f "${ENV_CONF}" ]] ; then
   exit 1
 fi
 
-if ! cat ${ENV_CONF} | jq -r ".scenario" &>/dev/null ; then
-  echo "Unable to parse scenario from ${ENV_CONF}, aborting..."
+if ! cat ${ENV_CONF} | jq -r ".topology" &>/dev/null ; then
+  echo "Unable to parse topology from ${ENV_CONF}, aborting..."
   exit 2
 fi
 
-SCENARIO_DIR=${ROOT_DIR}/scenarios/$(cat ${ENV_CONF} | jq -r ".scenario")
-INFRA_CONF=${SCENARIO_DIR}/infra.json
-if ! [[ -f "${INFRA_CONF}" ]] ; then
-  echo "Cannot find ${INFRA_CONF}, aborting..."
+TOPOLOGY_DIR=${ROOT_DIR}/topologies/$(cat ${ENV_CONF} | jq -r ".topology")
+TOPOLOGY_CONF=${TOPOLOGY_DIR}/infra.json
+if ! [[ -f "${TOPOLOGY_CONF}" ]] ; then
+  echo "Cannot find ${TOPOLOGY_CONF}, aborting..."
   exit 3
 fi
 
@@ -24,87 +24,87 @@ fi
 ### Infra Configuration ###
 
 function get_istioctl_version {
-  cat ${INFRA_CONF} | jq -r ".istioctl_version"
+  cat ${TOPOLOGY_CONF} | jq -r ".istioctl_version"
 }
 
 function get_k8s_version {
-  cat ${INFRA_CONF} | jq -r ".k8s_version"
+  cat ${TOPOLOGY_CONF} | jq -r ".k8s_version"
 }
 
 ###### MP Cluster ######
 
 function get_mp_minikube_profile {
-  echo $(cat ${INFRA_CONF} | jq -r ".mp_cluster.name")-m1
+  echo $(cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.name")-m1
 }
 
 function get_mp_name {
-  cat ${INFRA_CONF} | jq -r ".mp_cluster.name"
+  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.name"
 }
 
 function get_mp_region {
-  cat ${INFRA_CONF} | jq -r ".mp_cluster.region"
+  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.region"
 }
 
 function get_mp_vm_count {
-  cat ${INFRA_CONF} | jq -r ".mp_cluster.vms[].name" | wc -l | tr -d ' '
+  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.vms[].name" | wc -l | tr -d ' '
 }
 
 function get_mp_vm_image_by_index {
   i=${1}
-  cat ${INFRA_CONF} | jq -r ".mp_cluster.vms[${i}].image"
+  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.vms[${i}].image"
 }
 
 function get_mp_vm_name_by_index {
   i=${1}
-  cat ${INFRA_CONF} | jq -r ".mp_cluster.vms[${i}].name"
+  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.vms[${i}].name"
 }
 
 function get_mp_zone {
-  cat ${INFRA_CONF} | jq -r ".mp_cluster.zone"
+  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.zone"
 }
 
 ###### CP Clusters ######
 
 function get_cp_count {
-  cat ${INFRA_CONF} | jq -r ".cp_clusters[].name" | wc -l | tr -d ' '
+  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[].name" | wc -l | tr -d ' '
 }
 
 function get_cp_minikube_profile_by_index {
   i=${1}
-  echo $(cat ${INFRA_CONF} | jq -r ".cp_clusters[${i}].name")-m$((i+2))
+  echo $(cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].name")-m$((i+2))
 }
 
 function get_cp_name_by_index {
   i=${1}
-  cat ${INFRA_CONF} | jq -r ".cp_clusters[${i}].name"
+  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].name"
 }
 
 function get_cp_vm_count_by_index {
   i=${1}
   j=${2}
-  cat ${INFRA_CONF} | jq -r ".cp_clusters[${i}].vms[].name" | wc -l | tr -d ' '
+  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].vms[].name" | wc -l | tr -d ' '
 }
 
 function get_cp_vm_image_by_index {
   i=${1}
   j=${2}
-  cat ${INFRA_CONF} | jq -r ".cp_clusters[${i}].vms[${j}].image"
+  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].vms[${j}].image"
 }
 
 function get_cp_vm_name_by_index {
   i=${1}
   j=${2}
-  cat ${INFRA_CONF} | jq -r ".cp_clusters[${i}].vms[${j}].name"
+  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].vms[${j}].name"
 }
 
 function get_cp_region_by_index {
   i=${1}
-  cat ${INFRA_CONF} | jq -r ".cp_clusters[${i}].region"
+  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].region"
 }
 
 function get_cp_zone_by_index {
   i=${1}
-  cat ${INFRA_CONF} | jq -r ".cp_clusters[${i}].zone"
+  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].zone"
 }
 
 
@@ -132,7 +132,7 @@ function get_certs_base_dir {
 }
 
 function get_mp_config_dir {
-  echo ${SCENARIO_DIR}/$(get_mp_name)
+  echo ${TOPOLOGY_DIR}/$(get_mp_name)
 }
 
 function get_mp_output_dir {
@@ -142,7 +142,7 @@ function get_mp_output_dir {
 
 function get_cp_config_dir {
   i=${1}
-  echo ${SCENARIO_DIR}/$(get_cp_name_by_index ${i})
+  echo ${TOPOLOGY_DIR}/$(get_cp_name_by_index ${i})
 }
 
 function get_cp_output_dir {
