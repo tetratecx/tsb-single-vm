@@ -39,16 +39,20 @@ if [[ ${ACTION} = "deploy" ]]; then
 
   # Deploy kubernetes objects in mgmt cluster
   kubectl --context mgmt-cluster-m1 apply -f ./k8s/mgmt-cluster/01-namespace.yaml ;
-  kubectl --context mgmt-cluster-m1 create secret tls app-abc-certs -n gateway-tier1 \
-    --key ../../../output/certs/abc/server.abc.demo.tetrate.io-key.pem \
-    --cert ../../../output/certs/abc/server.abc.demo.tetrate.io-cert.pem ;
+  if ! kubectl --context mgmt-cluster-m1 get secret app-abc-certs -n gateway-tier1 &>/dev/null ; then
+    kubectl --context mgmt-cluster-m1 create secret tls app-abc-certs -n gateway-tier1 \
+      --key ../../../output/certs/abc/server.abc.demo.tetrate.io-key.pem \
+      --cert ../../../output/certs/abc/server.abc.demo.tetrate.io-cert.pem ;
+  fi
   kubectl --context mgmt-cluster-m1 apply -f ./k8s/mgmt-cluster/02-tier1-gateway.yaml ;
 
   # Deploy kubernetes objects in active cluster
   kubectl --context active-cluster-m2 apply -f ./k8s/active-cluster/01-namespace.yaml ;
-  kubectl --context active-cluster-m2 create secret tls app-abc-certs -n gateway-abc \
-    --key ../../../output/certs/abc/server.abc.demo.tetrate.io-key.pem \
-    --cert ../../../output/certs/abc/server.abc.demo.tetrate.io-cert.pem ;
+  if ! kubectl --context active-cluster-m2 get secret app-abc-certs -n gateway-abc &>/dev/null ; then
+    kubectl --context active-cluster-m2 create secret tls app-abc-certs -n gateway-abc \
+      --key ../../../output/certs/abc/server.abc.demo.tetrate.io-key.pem \
+      --cert ../../../output/certs/abc/server.abc.demo.tetrate.io-cert.pem ;
+  fi
   kubectl --context active-cluster-m2 apply -f ./k8s/active-cluster/02-service-account.yaml
   kubectl --context active-cluster-m2 apply -f ./k8s/active-cluster/03-deployment.yaml
   kubectl --context active-cluster-m2 apply -f ./k8s/active-cluster/04-service.yaml
@@ -57,9 +61,11 @@ if [[ ${ACTION} = "deploy" ]]; then
 
   # Deploy kubernetes objects in standby cluster
   kubectl --context standby-cluster-m3 apply -f ./k8s/standby-cluster/01-namespace.yaml ;
-  kubectl --context standby-cluster-m3 create secret tls app-abc-certs -n gateway-abc \
-    --key ../../../output/certs/abc/server.abc.demo.tetrate.io-key.pem \
-    --cert ../../../output/certs/abc/server.abc.demo.tetrate.io-cert.pem ;
+  if ! kubectl --context standby-cluster-m3 get secret app-abc-certs -n gateway-abc &>/dev/null ; then
+    kubectl --context standby-cluster-m3 create secret tls app-abc-certs -n gateway-abc \
+      --key ../../../output/certs/abc/server.abc.demo.tetrate.io-key.pem \
+      --cert ../../../output/certs/abc/server.abc.demo.tetrate.io-cert.pem ;
+  fi
   kubectl --context standby-cluster-m3 apply -f ./k8s/standby-cluster/02-service-account.yaml
   kubectl --context standby-cluster-m3 apply -f ./k8s/standby-cluster/03-deployment.yaml
   kubectl --context standby-cluster-m3 apply -f ./k8s/standby-cluster/04-service.yaml
