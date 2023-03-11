@@ -56,15 +56,15 @@ if [[ ${ACTION} = "deploy" ]]; then
   kubectl --context active-cluster-m2 apply -f ./k8s/active-cluster/06-ingress-gateway.yaml
 
   # Deploy kubernetes objects in standby cluster
-  kubectl --context standby-cluster-m2 apply -f ./k8s/standby-cluster/01-namespace.yaml ;
-  kubectl --context standby-cluster-m2 create secret tls app-abc-certs -n gateway-abc \
+  kubectl --context standby-cluster-m3 apply -f ./k8s/standby-cluster/01-namespace.yaml ;
+  kubectl --context standby-cluster-m3 create secret tls app-abc-certs -n gateway-abc \
     --key ../../../output/certs/abc/server.abc.demo.tetrate.io-key.pem \
     --cert ../../../output/certs/abc/server.abc.demo.tetrate.io-cert.pem ;
-  kubectl --context standby-cluster-m2 apply -f ./k8s/standby-cluster/02-service-account.yaml
-  kubectl --context standby-cluster-m2 apply -f ./k8s/standby-cluster/03-deployment.yaml
-  kubectl --context standby-cluster-m2 apply -f ./k8s/standby-cluster/04-service.yaml
-  kubectl --context standby-cluster-m2 apply -f ./k8s/standby-cluster/05-eastwest-gateway.yaml
-  kubectl --context standby-cluster-m2 apply -f ./k8s/standby-cluster/06-ingress-gateway.yaml
+  kubectl --context standby-cluster-m3 apply -f ./k8s/standby-cluster/02-service-account.yaml
+  kubectl --context standby-cluster-m3 apply -f ./k8s/standby-cluster/03-deployment.yaml
+  kubectl --context standby-cluster-m3 apply -f ./k8s/standby-cluster/04-service.yaml
+  kubectl --context standby-cluster-m3 apply -f ./k8s/standby-cluster/05-eastwest-gateway.yaml
+  kubectl --context standby-cluster-m3 apply -f ./k8s/standby-cluster/06-ingress-gateway.yaml
 
   # Deploy tsb objects
   tctl apply -f ./tsb/04-workspace.yaml ;
