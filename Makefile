@@ -52,32 +52,18 @@ tsb-cp-install: ## Install TSB control/data plane(s)
 tsb-cp-uninstall: ## Install TSB control/data plane(s)
 	@/bin/bash -c './cp.sh uninstall'
 
-reset-tsb: ## Reset all TSB configuration
-	@/bin/bash -c './tsb.sh reset-tsb'
-
-deploy-app-abc-k8s: ## Deploy abc application on kubernetes
-	@/bin/bash -c './apps-k8s.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE}'
-
-deploy-app-abc-vm: ## Deploy abc application on vms
-	@/bin/bash -c 'if [[ ${VM_APP_A} = "enabled" ]] ; then ./apps-vm.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-a ; fi'
-	@/bin/bash -c 'if [[ ${VM_APP_B} = "enabled" ]] ; then ./apps-vm.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-b ; fi'
-	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./apps-vm.sh deploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-c ; fi'
-
-undeploy-app-abc-k8s: ## Undeploy abc application from kubernetes
-	@/bin/bash -c './apps-k8s.sh undeploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE}'
-
-undeploy-app-abc-vm: ## Undeploy abc application from vms
-	@/bin/bash -c 'if [[ ${VM_APP_A} = "enabled" ]] ; then ./apps-vm.sh undeploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-a ; fi'
-	@/bin/bash -c 'if [[ ${VM_APP_B} = "enabled" ]] ; then ./apps-vm.sh undeploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-b ; fi'
-	@/bin/bash -c 'if [[ ${VM_APP_C} = "enabled" ]] ; then ./apps-vm.sh undeploy-app ${TIER1_MODE} ${TIER2_MODE} ${APP_ABC_MODE} ubuntu-vm-c ; fi'
-
-test-app-abc: ## Generate curl commands to test ABC traffic
-	@/bin/bash -c './apps-k8s.sh traffic-cmd-abc'
-
-
-
 info: ## Get infra environment info
 	@/bin/bash -c './infra.sh info'
+
+scenario-deploy: ## Deploy this scenario
+	@/bin/bash -c './scenario.sh deploy'
+
+scenario-undeploy: ## Undeploy this scenario
+	@/bin/bash -c './scenario.sh undeploy'
+
+scenario-info: ## Info about this scenario
+	@/bin/bash -c './scenario.sh info'
+
 
 clean: ## Clean up all resources
 	@/bin/bash -c './infra.sh clean'

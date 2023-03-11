@@ -151,6 +151,10 @@ function get_cp_output_dir {
   echo ${OUTPUT_DIR}/$(get_cp_name_by_index ${i})
 }
 
+function get_scenario_dir {
+  echo "scenarios/$(cat ${ENV_CONF} | jq -r .topology)/$(cat ${ENV_CONF} | jq -r .scenario)"
+}
+
 ### Parsing Tests
 #
 # get_istioctl_version;
@@ -196,3 +200,5 @@ function get_cp_output_dir {
 # get_cp_output_dir 0;
 # get_cp_config_dir 1;
 # get_cp_output_dir 1;
+
+# get_scenario_dir;

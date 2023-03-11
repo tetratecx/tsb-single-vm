@@ -1,5 +1,6 @@
 {
-  "topology": "demo-profile",
+  "scenario": "abc-failover",
+  "topology": "active-standby",
   "tsb": {
     "repo": {
       "password": "<TSB_REPO_APIKEY>",
