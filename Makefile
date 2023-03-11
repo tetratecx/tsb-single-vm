@@ -58,14 +58,20 @@ info: ## Get infra environment info
 scenario-deploy: ## Deploy this scenario
 	@/bin/bash -c '\
 		SCENARIO_DIR="$$(pwd)/scenarios/$$(cat env.json | jq -r .topology)/$$(cat env.json | jq -r .scenario)"; \
-		$${SCENARIO_DIR}/run.sh $${SCENARIO_DIR} deploy; \
+		$${SCENARIO_DIR}/run.sh deploy; \
 	'
 
 scenario-undeploy: ## Undeploy this scenario
-	@/bin/bash -c './scenario.sh undeploy'
+	@/bin/bash -c '\
+		SCENARIO_DIR="$$(pwd)/scenarios/$$(cat env.json | jq -r .topology)/$$(cat env.json | jq -r .scenario)"; \
+		$${SCENARIO_DIR}/run.sh undeploy; \
+	'
 
 scenario-info: ## Info about this scenario
-	@/bin/bash -c './scenario.sh info'
+	@/bin/bash -c '\
+		SCENARIO_DIR="$$(pwd)/scenarios/$$(cat env.json | jq -r .topology)/$$(cat env.json | jq -r .scenario)"; \
+		$${SCENARIO_DIR}/run.sh info; \
+	'
 
 
 clean: ## Clean up all resources
