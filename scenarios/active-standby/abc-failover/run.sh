@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 SCENARIO_ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 
+echo ${SCENARIO_ROOT_DIR}
+
 ACTION=${1}
 
 GREEN='\033[0;32m'
