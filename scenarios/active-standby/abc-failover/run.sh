@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 SCENARIO_ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P ; cd -  >/dev/null 2>&1)"
 
+pwd
 source env.sh
 source certs.sh
 
