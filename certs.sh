@@ -2,6 +2,8 @@
 ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 CERTS_BASE_DIR=${ROOT_DIR}/output/certs ;
 
+echo AAA ${CERTS_BASE_DIR}
+
 # Get certificate directory
 function get_certs_base_dir {
   echo ${CERTS_BASE_DIR}
