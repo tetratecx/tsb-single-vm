@@ -36,7 +36,6 @@ if [[ ${ACTION} = "deploy" ]]; then
 
   # Generate tier1 and tier2 ingress certificates for the application
   generate_abc_cert ;
-  exit
 
   # Deploy kubernetes objects in mgmt cluster
   kubectl --context mgmt-cluster-m1 apply -f ./k8s/mgmt-cluster/01-namespace.yaml ;
