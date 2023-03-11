@@ -1,12 +1,6 @@
 #!/usr/bin/env bash
 SCENARIO_ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P)"
-
-pwd
-./env.sh
-./certs.sh
-
-ls env.sh
-exit
+CERTS_BASE_DIR=./output/certs
 
 ACTION=${1}
 
