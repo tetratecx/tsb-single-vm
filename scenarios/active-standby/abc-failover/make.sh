@@ -74,7 +74,7 @@ if [[ ${ACTION} = "deploy" ]]; then
 
   # Deploy tsb objects
   tctl apply -f ./tsb/04-workspace.yaml ;
-  tctl apply -f ./tsb/05-workspace-settings.yaml ;
+  tctl apply -f ./tsb/05-workspace-setting.yaml ;
   tctl apply -f ./tsb/06-group.yaml ;
   tctl apply -f ./tsb/07-tier1-gateway.yaml ;
   tctl apply -f ./tsb/08-ingress-gateway.yaml ;
