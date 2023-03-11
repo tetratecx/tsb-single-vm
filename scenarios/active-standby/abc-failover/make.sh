@@ -45,7 +45,7 @@ if [[ ${ACTION} = "deploy" ]]; then
   kubectl --context mgmt-cluster-m1 apply -f ./k8s/mgmt-cluster/02-tier1-gateway.yaml ;
 
   # Deploy kubernetes objects in active cluster
-  kubectl --context active-cluster-m2 apply -f ./k8s/active-cluster/01-namesapce.yaml ;
+  kubectl --context active-cluster-m2 apply -f ./k8s/active-cluster/01-namespace.yaml ;
   kubectl --context active-cluster-m2 create secret tls app-abc-certs -n gateway-abc \
     --key ../../../output/certs/abc/server.abc.demo.tetrate.io-key.pem \
     --cert ../../../output/certs/abc/server.abc.demo.tetrate.io-cert.pem ;
@@ -56,7 +56,7 @@ if [[ ${ACTION} = "deploy" ]]; then
   kubectl --context active-cluster-m2 apply -f ./k8s/active-cluster/06-ingress-gateway.yaml
 
   # Deploy kubernetes objects in standby cluster
-  kubectl --context standby-cluster-m2 apply -f ./k8s/standby-cluster/01-namesapce.yaml ;
+  kubectl --context standby-cluster-m2 apply -f ./k8s/standby-cluster/01-namespace.yaml ;
   kubectl --context standby-cluster-m2 create secret tls app-abc-certs -n gateway-abc \
     --key ../../../output/certs/abc/server.abc.demo.tetrate.io-key.pem \
     --cert ../../../output/certs/abc/server.abc.demo.tetrate.io-cert.pem ;
