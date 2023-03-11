@@ -2,8 +2,8 @@
 SCENARIO_ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P)"
 
 pwd
-env.sh
-certs.sh
+./env.sh
+./certs.sh
 
 ls env.sh
 exit
