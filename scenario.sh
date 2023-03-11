@@ -9,17 +9,17 @@ ACTION=${1}
 SCENARIO_DIR=$(get_scenario_dir)
 
 if [[ ${ACTION} = "deploy" ]]; then
-  . ./${SCENARIO_DIR}/run.sh deploy
+  ${SCENARIO_DIR}/run.sh deploy
   exit 0
 fi
 
 if [[ ${ACTION} = "undeploy" ]]; then
-  . ./${SCENARIO_DIR}/run.sh undeploy
+  ${SCENARIO_DIR}/run.sh undeploy
   exit 0
 fi
 
 if [[ ${ACTION} = "info" ]]; then
-  . ./${SCENARIO_DIR}/run.sh info
+  ${SCENARIO_DIR}/run.sh info
   exit 0
 fi
 
