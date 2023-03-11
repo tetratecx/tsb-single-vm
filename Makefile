@@ -56,7 +56,10 @@ info: ## Get infra environment info
 	@/bin/bash -c './infra.sh info'
 
 scenario-deploy: ## Deploy this scenario
-	@/bin/bash -c './scenario.sh deploy'
+	@/bin/bash -c '\
+		SCENARIO_DIR="$(pwd)/scenarios/$(cat env.conf | jq -r .topology)/$(cat env.conf | jq -r .scenario)"; \
+		${SCENARIO_DIR}/run.sh ${SCENARIO_DIR} deploy; \
+	'
 
 scenario-undeploy: ## Undeploy this scenario
 	@/bin/bash -c './scenario.sh undeploy'
