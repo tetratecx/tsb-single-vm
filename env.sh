@@ -127,10 +127,6 @@ function get_tsb_version {
 
 
 ### Configuration and output directories ###
-function get_certs_base_dir {
-  echo ${OUTPUT_DIR}/certs
-}
-
 function get_mp_config_dir {
   echo ${TOPOLOGY_DIR}/$(get_mp_name)
 }
