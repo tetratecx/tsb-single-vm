@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
-source ${ROOT_DIR}/env.sh
+CERTS_BASE_DIR=${ROOT_DIR}/output/certs ;
 
-CERTS_BASE_DIR=$(get_certs_base_dir) ;
+# Get certificate directory
+function get_certs_base_dir {
+  echo ${CERTS_BASE_DIR}
+}
 
 # Generate a self signed root certificate
 function generate_root_cert {
