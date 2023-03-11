@@ -2,6 +2,8 @@
 
 ACTION=${1}
 
+GREEN='\033[0;32m'
+NC='\033[0m'
 
 # Generate tier1 and tier2 ingress certificates for the application
 function generate_abc_cert {
@@ -105,36 +107,20 @@ fi
 
 if [[ ${ACTION} = "info" ]]; then
 
-  kubectl config use-context ${MGMT_CLUSTER_CONTEXT} ;
-  T1_GW_IP=$(kubectl get svc -n gateway-tier1 gw-tier1-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
-  kubectl config use-context ${ACTIVE_CLUSTER_CONTEXT} ;
-  INGRESS_ACTIVE_GW_IP=$(kubectl get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
-  kubectl config use-context ${STANDBY_CLUSTER_CONTEXT} ;
-  INGRESS_STANDBY_GW_IP=$(kubectl get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  T1_GW_IP=$(kubectl --context mgmt-cluster-m1 get svc -n gateway-tier1 gw-tier1-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  INGRESS_ACTIVE_GW_IP=$(kubectl --context active-cluster-m2 get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  INGRESS_STANDBY_GW_IP=$(kubectl --context standby-cluster-m3 get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
 
   echo "****************************"
   echo "*** ABC Traffic Commands ***"
   echo "****************************"
   echo
-  echo "Traffic to Active Ingress Gateway: HTTP"
-  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.tetrate.prod:80:${INGRESS_ACTIVE_GW_IP}\" \"http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
-  echo "Traffic to Standby Ingress Gateway: HTTP"
-  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.tetrate.prod:80:${INGRESS_STANDBY_GW_IP}\" \"http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
-  echo
-  echo "Traffic to Active Ingress Gateway: HTTPS"
-  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.tetrate.prod:443:${INGRESS_ACTIVE_GW_IP}\" --cacert ca.crt=certs/root-cert.pem \"https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
-  echo "Traffic to Standby Ingress Gateway: HTTPS"
-  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.tetrate.prod:443:${INGRESS_STANDBY_GW_IP}\" --cacert ca.crt=certs/root-cert.pem \"https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
-  echo
-  echo
-  echo "Traffic through T1 Gateway: HTTP"
-  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.tetrate.prod:80:${T1_GW_IP}\" \"http://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
-  echo
-  echo "Traffic through T1 Gateway: HTTPS"
-  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.tetrate.prod:443:${T1_GW_IP}\" --cacert ca.crt=certs/root-cert.pem \"https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
-  echo
-  echo "Traffic through T1 Gateway: MTLS"
-  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.tetrate.prod:443:${T1_GW_IP}\" --cacert ca.crt=certs/root-cert.pem --cert certs/app-abc/client.abc.tetrate.prod.pem --key certs/app-abc/client.abc.tetrate.prod.key \"https://abc.tetrate.prod/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
+  echo "Traffic to Active Ingress Gateway"
+  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${INGRESS_ACTIVE_GW_IP}\" --cacert ca.crt=certs/root-cert.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
+  echo "Traffic to Standby Ingress Gateway"
+  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${INGRESS_STANDBY_GW_IP}\" --cacert ca.crt=certs/root-cert.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
+  echo "Traffic through T1 Gateway"
+  printf "${GREEN}curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${T1_GW_IP}\" --cacert ca.crt=certs/root-cert.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\" ${NC}\n"
   echo
   exit 0
 fi
