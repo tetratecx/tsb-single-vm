@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 SCENARIO_ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P)"
 
-pushd ../../..
 pwd
 source env.sh
 source certs.sh
-popd
 
 ls env.sh
 exit
