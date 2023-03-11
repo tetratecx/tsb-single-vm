@@ -3,6 +3,11 @@ SCENARIO_ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P)"
 
 source ./certs.sh
 
+pwd
+CERTS_BASE_DIR=$(get_certs_base_dir) ;
+echo ${CERTS_BASE_DIR}
+exit
+
 ACTION=${1}
 
 GREEN='\033[0;32m'
