@@ -31,15 +31,12 @@ prereq-check: ## Check if prerequisites are installed
 prereq-install: ## Install prerequisites
 	@/bin/sh -c './prereq.sh install'
 
-###########################
 infra-up: prereq-check ## Bring up and configure minikube clusters and vms
 	@/bin/bash -c './infra.sh up'
 
-###########################
 infra-down: ## Bring down minikube clusters and vms
 	@/bin/bash -c './infra.sh down'
 
-###########################
 tsb-mp-install: ## Install TSB management cluster
 	@/bin/bash -c './mp.sh install'
 
@@ -64,17 +61,6 @@ scenario-undeploy: ## Undeploy this scenario
 scenario-info: ## Info about this scenario
 	@/bin/bash -c './scenario.sh info'
 
-
-
 clean: ## Clean up all resources
 	@/bin/bash -c './infra.sh clean'
-	@/bin/bash -c 'rm -f \
-		./config/01-mgmt-cluster/clusteroperators.yaml \
-		./config/01-mgmt-cluster/*.pem \
-		./config/02-active-cluster/cluster-service-account.jwk \
-		./config/02-active-cluster/controlplane-secrets.yaml \
-		./config/02-active-cluster/controlplane.yaml \
-		./config/03-standby-cluster/cluster-service-account.jwk \
-		./config/03-standby-cluster/controlplane-secrets.yaml \
-		./config/03-standby-cluster/controlplane.yaml \
-	'
+	@/bin/bash -c 'rm -f ./output/*'

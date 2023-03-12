@@ -343,12 +343,6 @@ if [[ ${ACTION} = "clean" ]]; then
   done
   echo "All docker networks deleted"
 
-  # Temporary output files
-  if [[ -f "${OUTPUT_DIR}/.keep" ]] ; then
-    rm -rf ${OUTPUT_DIR}/* ;
-    echo "Temporary output files deleted"
-  fi
-
   exit 0
 fi
 
