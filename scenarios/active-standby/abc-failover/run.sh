@@ -24,10 +24,6 @@ DONE
 #     (1) cluster name
 function wait_cluster_onboarded {
   echo "Wait for cluster ${1} to be onboarded"
-  while ! tctl experimental status cs ${1} | grep "READY" &>/dev/null ; do
-    sleep 1
-    echo -n "."
-  done
   while ! tctl experimental status cs ${1} | grep "Cluster onboarded" &>/dev/null ; do
     sleep 1
     echo -n "."
