@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 source ${ROOT_DIR}/env.sh ${ROOT_DIR}
+source ${ROOT_DIR}/helpers.sh
 
 ACTION=${1}
 
@@ -44,7 +45,7 @@ if [[ ${ACTION} = "up" ]]; then
   if minikube profile list 2>/dev/null | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
     echo "Minikube management cluster profile ${CLUSTER_PROFILE} already running"
   else
-    echo "Starting minikube management cluster profile ${CLUSTER_PROFILE}"
+    print_info "Starting minikube management cluster profile ${CLUSTER_PROFILE}"
     minikube start --kubernetes-version=v${K8S_VERSION} --profile ${CLUSTER_PROFILE} --network ${DOCKER_NET} ${MINIKUBE_OPTS} ;
   fi
 
@@ -83,10 +84,10 @@ if [[ ${ACTION} = "up" ]]; then
       if docker ps --filter "status=running" | grep ${VM_NAME} &>/dev/null ; then
         echo "Do nothing, vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} is already running"
       elif docker ps --filter "status=exited" | grep ${VM_NAME} &>/dev/null ; then
-        echo "Going to start vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} again"
+        print_info "Going to start vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} again"
         docker start ${VM_NAME} ;
       else
-        echo "Going to start vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} for the first time"
+        print_info "Going to start vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} for the first time"
         docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE} ;
       fi
       VM_INDEX=$((VM_INDEX+1))
@@ -107,7 +108,7 @@ if [[ ${ACTION} = "up" ]]; then
     if minikube profile list 2>/dev/null | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
       echo "Minikube application cluster profile ${CLUSTER_PROFILE} already running"
     else
-      echo "Starting minikube application cluster profile ${CLUSTER_PROFILE}"
+      print_info "Starting minikube application cluster profile ${CLUSTER_PROFILE}"
       minikube start --kubernetes-version=v${K8S_VERSION} --profile ${CLUSTER_PROFILE} --network ${DOCKER_NET} ${MINIKUBE_OPTS} ;
     fi
 
@@ -146,10 +147,10 @@ if [[ ${ACTION} = "up" ]]; then
         if docker ps --filter "status=running" | grep ${VM_NAME} &>/dev/null ; then
           echo "Do nothing, vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} is already running"
         elif docker ps --filter "status=exited" | grep ${VM_NAME} &>/dev/null ; then
-          echo "Going to start vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} again"
+          print_info "Going to start vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} again"
           docker start ${VM_NAME} ;
         else
-          echo "Going to start vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} for the first time"
+          print_info "Going to start vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} for the first time"
           docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE} ;
         fi
         VM_INDEX=$((VM_INDEX+1))
@@ -162,7 +163,8 @@ if [[ ${ACTION} = "up" ]]; then
   # https://serverfault.com/questions/830135/routing-among-different-docker-networks-on-the-same-host-machine 
   echo "Flushing docker isolation iptable rules to allow cross network communication"
   sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2
-  
+
+  print_info "All minikube cluster and vms started"
   exit 0
 fi
 
@@ -170,14 +172,14 @@ if [[ ${ACTION} = "down" ]]; then
 
   # Stop minikube profiles
   CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
-  echo "Going to stop minikube management cluster profile ${CLUSTER_PROFILE}"
+  print_info "Going to stop minikube management cluster profile ${CLUSTER_PROFILE}"
   minikube stop --profile ${CLUSTER_PROFILE} 2>/dev/null ;
 
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
     CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
-    echo "Going to stop minikube application cluster profile ${CLUSTER_PROFILE}"
+    print_info "Going to stop minikube application cluster profile ${CLUSTER_PROFILE}"
     minikube stop --profile ${CLUSTER_PROFILE} 2>/dev/null ;
     CP_INDEX=$((CP_INDEX+1))
   done
@@ -190,7 +192,7 @@ if [[ ${ACTION} = "down" ]]; then
     while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
       DOCKER_NET=$(get_mp_name) ;
       VM_NAME=$(get_mp_vm_name_by_index ${VM_INDEX}) ;
-      echo "Going to stop vm ${VM_NAME} attached to management cluster ${CLUSTER_PROFILE}"
+      print_info "Going to stop vm ${VM_NAME} attached to management cluster ${CLUSTER_PROFILE}"
       docker stop ${VM_NAME} ;
       VM_INDEX=$((VM_INDEX+1))
     done
@@ -207,7 +209,7 @@ if [[ ${ACTION} = "down" ]]; then
       VM_INDEX=0
       while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
         VM_NAME=$(get_cp_vm_name_by_index ${CP_INDEX} ${VM_INDEX}) ;
-        echo "Going to stop vm ${VM_NAME} attached to application cluster ${CLUSTER_PROFILE}"
+        print_info "Going to stop vm ${VM_NAME} attached to application cluster ${CLUSTER_PROFILE}"
         docker stop ${VM_NAME} ;
         VM_INDEX=$((VM_INDEX+1))
       done
@@ -215,7 +217,7 @@ if [[ ${ACTION} = "down" ]]; then
     CP_INDEX=$((CP_INDEX+1))
   done
 
-  echo "All minikube cluster profiles and vms stopped"
+  print_info "All minikube cluster profiles and vms stopped"
   exit 0
 fi
 
