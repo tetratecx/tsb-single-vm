@@ -43,8 +43,8 @@ if [[ ${ACTION} = "deploy" ]]; then
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;
 
   # Wait for clusters to be onboarded to avoid race conditions
-  wait_cluster_onboarded active-cluster ;
-  wait_cluster_onboarded standby-cluster ;
+  # wait_cluster_onboarded active-cluster ;
+  # wait_cluster_onboarded standby-cluster ;
 
   # Generate tier1 and tier2 ingress certificates for the application
   generate_server_cert abc demo.tetrate.io ;
