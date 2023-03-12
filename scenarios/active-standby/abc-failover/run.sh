@@ -88,6 +88,7 @@ if [[ ${ACTION} = "undeploy" ]]; then
 
   # Delete tsb configuration
   for TSB_FILE in $(ls -1 ${SCENARIO_ROOT_DIR}/tsb | sort -r) ; do
+    echo "Going to delete tsb/${TSB_FILE}"
     tctl delete -f ${SCENARIO_ROOT_DIR}/tsb/${TSB_FILE} 2>/dev/null ;
   done
 
