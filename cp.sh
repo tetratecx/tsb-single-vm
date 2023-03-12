@@ -112,6 +112,76 @@ if [[ ${ACTION} = "install" ]]; then
   exit 0
 fi
 
+if [[ ${ACTION} = "uninstall" ]]; then
+
+  CP_COUNT=$(get_cp_count)
+  CP_INDEX=0
+  while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
+    CP_CLUSTER_CONTEXT=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
+    CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
+    print_info "Start removing installation of tsb control plane in cluster ${CP_CLUSTER_NAME} (kubectl context ${CP_CLUSTER_CONTEXT})"
+
+    # Put operators to sleep
+    for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
+      kubectl --context ${MP_CLUSTER_CONTEXT} get deployments -n ${NS} -o custom-columns=:metadata.name \
+        | grep operator | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} scale deployment {} -n ${NS} --replicas=0 ; 
+    done
+
+    sleep 5 ;
+
+    # Clean up namespace specific resources
+    for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
+      kubectl --context ${MP_CLUSTER_CONTEXT} get deployments -n ${NS} -o custom-columns=:metadata.name \
+        | grep operator | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete deployment {} -n ${NS} --timeout=10s --wait=false ;
+      sleep 5 ;
+      kubectl --context ${MP_CLUSTER_CONTEXT} delete --all deployments -n ${NS} --timeout=10s --wait=false ;
+      kubectl --context ${MP_CLUSTER_CONTEXT} delete --all jobs -n ${NS} --timeout=10s --wait=false ;
+      kubectl --context ${MP_CLUSTER_CONTEXT} delete --all statefulset -n ${NS} --timeout=10s --wait=false ;
+      kubectl --context ${MP_CLUSTER_CONTEXT} get deployments -n ${NS} -o custom-columns=:metadata.name \
+        | grep operator | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} patch deployment {} -n ${NS} --type json \
+        --patch='[ { "op": "remove", "path": "/metadata/finalizers" } ]' ;
+      kubectl --context ${MP_CLUSTER_CONTEXT} delete --all deployments -n ${NS} --timeout=10s --wait=false ;
+      sleep 5 ;
+      kubectl --context ${MP_CLUSTER_CONTEXT} delete namespace ${NS} --timeout=10s --wait=false ;
+    done 
+
+    # Clean up cluster wide resources
+    kubectl --context ${MP_CLUSTER_CONTEXT} get mutatingwebhookconfigurations -o custom-columns=:metadata.name \
+      | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete mutatingwebhookconfigurations {}  --timeout=10s --wait=false ;
+    kubectl --context ${MP_CLUSTER_CONTEXT} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+      | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete crd {} --timeout=10s --wait=false ;
+    kubectl --context ${MP_CLUSTER_CONTEXT} get validatingwebhookconfigurations -o custom-columns=:metadata.name \
+      | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete validatingwebhookconfigurations {} --timeout=10s --wait=false ;
+    kubectl --context ${MP_CLUSTER_CONTEXT} get clusterrole -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tsb\|xcp" \
+      | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete clusterrole {} --timeout=10s --wait=false ;
+    kubectl --context ${MP_CLUSTER_CONTEXT} get clusterrolebinding -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tsb\|xcp" \
+      | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete clusterrolebinding {} --timeout=10s --wait=false ;
+
+    # Cleanup custom resource definitions
+    kubectl --context ${MP_CLUSTER_CONTEXT} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+      | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete crd {} --timeout=10s --wait=false ;
+    sleep 5 ;
+    kubectl --context ${MP_CLUSTER_CONTEXT} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+      | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} patch crd {} --type json --patch='[ { "op": "remove", "path": "/metadata/finalizers" } ]' ;
+    sleep 5 ;
+    kubectl --context ${MP_CLUSTER_CONTEXT} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+      | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete crd {} --timeout=10s --wait=false ;
+
+    # Clean up pending finalizer namespaces
+    for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
+      kubectl --context ${MP_CLUSTER_CONTEXT} get namespace ${NS} -o json \
+        | tr -d "\n" | sed "s/\"finalizers\": \[[^]]\+\]/\"finalizers\": []/" \
+        | kubectl --context ${MP_CLUSTER_CONTEXT} replace --raw /api/v1/namespaces/${NS}/finalize -f - ;
+    done
+
+    sleep 10 ;
+
+    print_info "Finished removing installation of tsb control plane in cluster ${CP_CLUSTER_NAME} (kubectl context ${CP_CLUSTER_CONTEXT})"
+    CP_INDEX=$((CP_INDEX+1))
+  done
+
+  exit 0
+fi
 
 
 echo "Please specify one of the following action:"
