@@ -63,4 +63,4 @@ scenario-info: ## Info about this scenario
 
 clean: ## Clean up all resources
 	@/bin/bash -c './infra.sh clean'
-	@/bin/bash -c 'rm -f ./output/*'
+	@/bin/bash -c 'rm -rf ./output/*'
