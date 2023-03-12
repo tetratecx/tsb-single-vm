@@ -19,7 +19,7 @@ spec:
     port: 443
     tls:
       mode: SIMPLE
-      secretName: app-abc-certs
+      secretName: app-abc-cert
     clusters:
     - name: active-cluster
     - name: standby-cluster

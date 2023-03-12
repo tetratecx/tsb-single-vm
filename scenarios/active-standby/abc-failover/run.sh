@@ -35,8 +35,8 @@ if [[ ${ACTION} = "deploy" ]]; then
 
   # Deploy kubernetes objects in mgmt cluster
   kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/01-namespace.yaml ;
-  if ! kubectl --context mgmt-cluster-m1 get secret app-abc-certs -n gateway-tier1 &>/dev/null ; then
-    kubectl --context mgmt-cluster-m1 create secret tls app-abc-certs -n gateway-tier1 \
+  if ! kubectl --context mgmt-cluster-m1 get secret app-abc-cert -n gateway-tier1 &>/dev/null ; then
+    kubectl --context mgmt-cluster-m1 create secret tls app-abc-cert -n gateway-tier1 \
       --key ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-cert.pem ;
   fi
@@ -44,8 +44,8 @@ if [[ ${ACTION} = "deploy" ]]; then
 
   # Deploy kubernetes objects in active cluster
   kubectl --context active-cluster-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/active-cluster/01-namespace.yaml ;
-  if ! kubectl --context active-cluster-m2 get secret app-abc-certs -n gateway-abc &>/dev/null ; then
-    kubectl --context active-cluster-m2 create secret tls app-abc-certs -n gateway-abc \
+  if ! kubectl --context active-cluster-m2 get secret app-abc-cert -n gateway-abc &>/dev/null ; then
+    kubectl --context active-cluster-m2 create secret tls app-abc-cert -n gateway-abc \
       --key ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-cert.pem ;
   fi
@@ -57,8 +57,8 @@ if [[ ${ACTION} = "deploy" ]]; then
 
   # Deploy kubernetes objects in standby cluster
   kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/01-namespace.yaml ;
-  if ! kubectl --context standby-cluster-m3 get secret app-abc-certs -n gateway-abc &>/dev/null ; then
-    kubectl --context standby-cluster-m3 create secret tls app-abc-certs -n gateway-abc \
+  if ! kubectl --context standby-cluster-m3 get secret app-abc-cert -n gateway-abc &>/dev/null ; then
+    kubectl --context standby-cluster-m3 create secret tls app-abc-cert -n gateway-abc \
       --key ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-cert.pem ;
   fi
