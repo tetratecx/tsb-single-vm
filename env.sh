@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
+ROOT_DIR=${1}
 OUTPUT_DIR=${ROOT_DIR}/output
 
 ENV_CONF=env.json
@@ -13,8 +13,20 @@ if ! cat ${ENV_CONF} | jq -r ".topology" &>/dev/null ; then
   exit 2
 fi
 
-TOPOLOGY_DIR=${ROOT_DIR}/topologies/$(cat ${ENV_CONF} | jq -r ".topology")
-TOPOLOGY_CONF=${TOPOLOGY_DIR}/infra.json
+function get_topology {
+  cat ${ENV_CONF} | jq -r ".topology"
+}
+function get_scenario {
+  cat ${ENV_CONF} | jq -r ".scenario"
+}
+function get_topology_dir {
+  echo ${ROOT_DIR}/topologies/$(get_topology)
+}
+function get_scenario_dir {
+  echo ${ROOT_DIR}/scenarios/$(get_topology)/$(get_scenario)
+}
+
+TOPOLOGY_CONF=$(get_topology_dir)/infra.json
 if ! [[ -f "${TOPOLOGY_CONF}" ]] ; then
   echo "Cannot find ${TOPOLOGY_CONF}, aborting..."
   exit 3
@@ -145,10 +157,6 @@ function get_cp_output_dir {
   i=${1}
   mkdir -p ${OUTPUT_DIR}/$(get_cp_name_by_index ${i})
   echo ${OUTPUT_DIR}/$(get_cp_name_by_index ${i})
-}
-
-function get_scenario_dir {
-  echo "scenarios/$(cat ${ENV_CONF} | jq -r .topology)/$(cat ${ENV_CONF} | jq -r .scenario)"
 }
 
 ### Parsing Tests

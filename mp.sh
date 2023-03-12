@@ -2,8 +2,8 @@
 
 ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 
-source ${ROOT_DIR}/env.sh
-source ${ROOT_DIR}/certs.sh
+source ${ROOT_DIR}/env.sh ${ROOT_DIR}
+source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 
 ACTION=${1}
 

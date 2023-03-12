@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 SCENARIO_ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
-
-./certs.sh
-
-ACTION=${1}
+ROOT_DIR=${1}
+ACTION=${2}
+source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 
 GREEN='\033[0;32m'
 NC='\033[0m'
-
 
 # Login as admin into tsb
 #   args:
