@@ -289,14 +289,14 @@ if [[ ${ACTION} = "clean" ]]; then
 
   # Delete minikube profiles
   CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
-  echo "Going to delete minikube management cluster profile ${CLUSTER_PROFILE}"
+  print_info "Going to delete minikube management cluster profile ${CLUSTER_PROFILE}"
   minikube delete --profile ${CLUSTER_PROFILE} 2>/dev/null ;
 
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
     CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
-    echo "Going to delete minikube application cluster profile ${CLUSTER_PROFILE}"
+    print_info "Going to delete minikube application cluster profile ${CLUSTER_PROFILE}"
     minikube delete --profile ${CLUSTER_PROFILE} 2>/dev/null ;
     CP_INDEX=$((CP_INDEX+1))
   done
@@ -308,7 +308,7 @@ if [[ ${ACTION} = "clean" ]]; then
     VM_INDEX=0
     while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
       VM_NAME=$(get_mp_vm_name_by_index ${VM_INDEX}) ;
-      echo "Going to delete vm ${VM_NAME} attached to management cluster ${CLUSTER_PROFILE}"
+      print_info "Going to delete vm ${VM_NAME} attached to management cluster ${CLUSTER_PROFILE}"
       docker rm ${VM_NAME} ;
       VM_INDEX=$((VM_INDEX+1))
     done
@@ -324,14 +324,13 @@ if [[ ${ACTION} = "clean" ]]; then
       VM_INDEX=0
       while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
         VM_NAME=$(get_cp_vm_name_by_index ${CP_INDEX} ${VM_INDEX}) ;
-        echo "Going to delete vm ${VM_NAME} attached to application cluster ${CLUSTER_PROFILE}"
+        print_info "Going to delete vm ${VM_NAME} attached to application cluster ${CLUSTER_PROFILE}"
         docker rm ${VM_NAME} ;
         VM_INDEX=$((VM_INDEX+1))
       done
     fi
     CP_INDEX=$((CP_INDEX+1))
   done
-  echo "All minikube cluster profiles and vms deleted"
 
   # Docker networks
   MP_DOCKER_NET=$(get_mp_name) ;
@@ -345,6 +344,7 @@ if [[ ${ACTION} = "clean" ]]; then
   done
   echo "All docker networks deleted"
 
+  print_info "All minikube cluster profiles and vms deleted"
   exit 0
 fi
 
