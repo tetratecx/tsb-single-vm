@@ -70,6 +70,10 @@ if [[ ${ACTION} = "deploy" ]]; then
   kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/05-eastwest-gateway.yaml
   kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/06-ingress-gateway.yaml
 
+  tctl experimental status cs mgmt-cluster
+  tctl experimental status cs active-cluster
+  tctl experimental status cs standby-cluster
+
   # Deploy tsb objects
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/04-workspace.yaml ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/05-workspace-setting.yaml ;
