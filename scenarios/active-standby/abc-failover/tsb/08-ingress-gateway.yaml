@@ -15,7 +15,7 @@ spec:
       app: gw-ingress-abc
   http:
   - name: abc
-    hostname: abc.tetrate.prod
+    hostname: abc.demo.tetrate.io
     port: 443
     tls:
       mode: SIMPLE
