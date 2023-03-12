@@ -28,6 +28,10 @@ function wait_cluster_onboarded {
     sleep 1
     echo -n "."
   done
+  while ! tctl experimental status cs ${1} | grep "Cluster onboarded" &>/dev/null ; do
+    sleep 1
+    echo -n "."
+  done
   echo "DONE"
 }
 
