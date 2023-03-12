@@ -46,7 +46,7 @@ if [[ ${ACTION} = "install" ]]; then
     CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
     CP_CONFIG_DIR=$(get_cp_config_dir ${CP_INDEX}) ;
     CP_OUTPUT_DIR=$(get_cp_output_dir ${CP_INDEX}) ;
-    echo "Installing tsb control plane in cluster ${CP_CLUSTER_NAME} (kubectl context ${CP_CLUSTER_CONTEXT})"
+    print_info "Start installation of tsb control plane in cluster ${CP_CLUSTER_NAME} (kubectl context ${CP_CLUSTER_CONTEXT})"
 
     # Generate a service account private key for the active cluster
     #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets
@@ -105,6 +105,7 @@ if [[ ${ACTION} = "install" ]]; then
     # Apply OAP patch for more real time update in the UI (Apache SkyWalking demo tweak)
     patch_oap_refresh_rate_cp ${CP_CLUSTER_CONTEXT} ;
 
+    print_info "Finished installation of tsb control plane in cluster ${CP_CLUSTER_NAME} (kubectl context ${CP_CLUSTER_CONTEXT})"
     CP_INDEX=$((CP_INDEX+1))
   done
 
