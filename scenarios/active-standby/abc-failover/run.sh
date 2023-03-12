@@ -43,7 +43,7 @@ if [[ ${ACTION} = "deploy" ]]; then
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;
 
   # Wait for clusters to be onboarded to avoid race conditions
-  sleep 1 ;
+  sleep 5 ;
   wait_cluster_onboarded active-cluster ;
   wait_cluster_onboarded standby-cluster ;
 
