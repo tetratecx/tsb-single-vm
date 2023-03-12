@@ -140,7 +140,7 @@ function get_tsb_version {
 
 ### Configuration and output directories ###
 function get_mp_config_dir {
-  echo ${TOPOLOGY_DIR}/$(get_mp_name)
+  echo $(get_topology_dir)/$(get_mp_name)
 }
 
 function get_mp_output_dir {
@@ -150,7 +150,7 @@ function get_mp_output_dir {
 
 function get_cp_config_dir {
   i=${1}
-  echo ${TOPOLOGY_DIR}/$(get_cp_name_by_index ${i})
+  echo $(get_topology_dir)/$(get_cp_name_by_index ${i})
 }
 
 function get_cp_output_dir {
