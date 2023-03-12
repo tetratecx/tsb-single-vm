@@ -56,13 +56,13 @@ info: ## Get infra environment info
 	@/bin/bash -c './infra.sh info'
 
 scenario-deploy: ## Deploy this scenario
-	@/bin/bash -c ''./scenario.sh deploy'
+	@/bin/bash -c './scenario.sh deploy'
 
 scenario-undeploy: ## Undeploy this scenario
-	@/bin/bash -c ''./scenario.sh undeploy'
+	@/bin/bash -c './scenario.sh undeploy'
 
 scenario-info: ## Info about this scenario
-	@/bin/bash -c ''./scenario.sh info'
+	@/bin/bash -c './scenario.sh info'
 
 
 
