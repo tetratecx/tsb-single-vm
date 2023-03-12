@@ -33,7 +33,7 @@ function generate_root_cert {
 #   args:
 #     (1) cluster name
 function generate_istio_cert {
-  if [[ ! -f "${OUTPUT_DIR}/root-cert.pem" ]]; then generate_root_cert ${OUTPUT_DIR}; fi
+  if [[ ! -f "${OUTPUT_DIR}/root-cert.pem" ]]; then generate_root_cert ; fi
   if [[ -f "${OUTPUT_DIR}/ca-cert.pem" ]]; then echo "File ${OUTPUT_DIR}/ca-cert.pem already exists... skipping certificate generation" ; return ; fi
 
   mkdir -p ${OUTPUT_DIR}/${1} ;
