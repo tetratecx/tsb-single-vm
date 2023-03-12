@@ -34,7 +34,7 @@ function generate_root_cert {
 #     (1) cluster name
 function generate_istio_cert {
   if [[ ! -f "${OUTPUT_DIR}/root-cert.pem" ]]; then generate_root_cert ; fi
-  if [[ -f "${OUTPUT_DIR}/ca-cert.pem" ]]; then echo "File ${OUTPUT_DIR}/ca-cert.pem already exists... skipping istio certificate generation" ; return ; fi
+  if [[ -f "${OUTPUT_DIR}/${1}/ca-cert.pem" ]]; then echo "File ${OUTPUT_DIR}/${1}/ca-cert.pem already exists... skipping istio certificate generation" ; return ; fi
 
   mkdir -p ${OUTPUT_DIR}/${1} ;
   openssl req -newkey rsa:4096 -sha512 -nodes \
