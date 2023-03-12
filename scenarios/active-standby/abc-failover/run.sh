@@ -25,9 +25,8 @@ DONE
 function wait_cluster_onboarded {
   echo "Wait for cluster ${1} to be onboarded"
   while ! tctl experimental status cs ${1} | grep "Cluster onboarded" &>/dev/null ; do
-    tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml &>/dev/null ;
-    sleep 1
-    echo -n "."
+    sleep 1 ;
+    echo -n "." ;
   done
   echo "DONE"
 }
@@ -44,6 +43,7 @@ if [[ ${ACTION} = "deploy" ]]; then
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;
 
   # Wait for clusters to be onboarded to avoid race conditions
+  sleep 1 ;
   wait_cluster_onboarded active-cluster ;
   wait_cluster_onboarded standby-cluster ;
 
