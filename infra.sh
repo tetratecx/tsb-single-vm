@@ -164,7 +164,7 @@ if [[ ${ACTION} = "up" ]]; then
   echo "Flushing docker isolation iptable rules to allow cross network communication"
   sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2
 
-  print_info "All minikube cluster and vms started"
+  print_info "All minikube cluster profiles and vms started"
   exit 0
 fi
 
