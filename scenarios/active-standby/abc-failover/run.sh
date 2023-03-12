@@ -19,6 +19,18 @@ function login_tsb_admin {
 DONE
 }
 
+# Wait for cluster to be onboarded
+#   args:
+#     (1) cluster name
+function wait_cluster_onboarded {
+  echo "Wait for cluster ${1} to be onboarded"
+  while ! tctl experimental status cs ${1} | grep "READY" &>/dev/null ; do
+    sleep 1
+    echo -n "."
+  done
+  echo "DONE"
+}
+
 
 if [[ ${ACTION} = "deploy" ]]; then
 
@@ -29,7 +41,10 @@ if [[ ${ACTION} = "deploy" ]]; then
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/02-organization-setting.yaml ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;
-  # sleep 20 ;
+
+  # Wait for clusters to be onboarded to avoid race conditions
+  wait_cluster_onboarded active-cluster ;
+  wait_cluster_onboarded standby-cluster ;
 
   # Generate tier1 and tier2 ingress certificates for the application
   generate_server_cert abc demo.tetrate.io ;
@@ -69,10 +84,6 @@ if [[ ${ACTION} = "deploy" ]]; then
   kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/04-service.yaml
   kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/05-eastwest-gateway.yaml
   kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/06-ingress-gateway.yaml
-
-  tctl experimental status cs mgmt-cluster
-  tctl experimental status cs active-cluster
-  tctl experimental status cs standby-cluster
 
   # Deploy tsb objects
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/04-workspace.yaml ;
