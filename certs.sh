@@ -58,7 +58,7 @@ function generate_istio_cert {
 #     (2) domain name
 function generate_client_cert {
   if [[ ! -f "${OUTPUT_DIR}/root-cert.pem" ]]; then generate_root_cert ${OUTPUT_DIR}; fi
-  if [[ -f "${OUTPUT_DIR}/ca-cert.pem" ]]; then echo "File ${OUTPUT_DIR}/ca-cert.pem already exists... skipping certificate generation" ; return ; fi
+  if [[ -f "${OUTPUT_DIR}/${1}/client.${1}.${2}-cert.pem" ]]; then echo "File ${OUTPUT_DIR}/${1}/client.${1}.${2}-cert.pem already exists... skipping certificate generation" ; return ; fi
 
   mkdir -p ${OUTPUT_DIR}/${1} ;
   openssl req -newkey rsa:4096 -sha512 -nodes \
@@ -80,7 +80,7 @@ function generate_client_cert {
 #     (2) domain name
 function generate_server_cert {
   if [[ ! -f "${OUTPUT_DIR}/root-cert.pem" ]]; then generate_root_cert ${OUTPUT_DIR}; fi
-  if [[ -f "${OUTPUT_DIR}/ca-cert.pem" ]]; then echo "File ${OUTPUT_DIR}/ca-cert.pem already exists... skipping certificate generation" ; return ; fi
+  if [[ -f "${OUTPUT_DIR}/${1}/server.${1}.${2}-cert.pem" ]]; then echo "File ${OUTPUT_DIR}/${1}/server.${1}.${2}-cert.pem already exists... skipping certificate generation" ; return ; fi
 
   mkdir -p ${OUTPUT_DIR}/${1} ;
   openssl req -newkey rsa:4096 -sha512 -nodes \
