@@ -3,6 +3,8 @@ ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 SCENARIO_DIR=$(get_scenario_dir)
 
+ACTION=${1}
+
 if [[ ${ACTION} = "deploy" ]]; then
   ${SCENARIO_DIR}/run.sh ${ROOT_DIR} deploy
   exit 0
