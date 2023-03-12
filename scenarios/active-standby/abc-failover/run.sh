@@ -29,7 +29,8 @@ if [[ ${ACTION} = "deploy" ]]; then
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/02-organization-setting.yaml ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;
-
+  sleep 20 ;
+  
   # Generate tier1 and tier2 ingress certificates for the application
   generate_server_cert abc demo.tetrate.io ;
   CERTS_BASE_DIR=$(get_certs_base_dir) ;
