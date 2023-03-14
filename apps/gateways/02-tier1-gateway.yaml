@@ -1,7 +1,0 @@
----
-apiVersion: install.tetrate.io/v1alpha1
-kind: Tier1Gateway
-metadata:
-  name: gw-tier1-abc
-  namespace: gateway-tier1
-spec: {}

@@ -309,6 +309,7 @@ if [[ ${ACTION} = "clean" ]]; then
     while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
       VM_NAME=$(get_mp_vm_name_by_index ${VM_INDEX}) ;
       print_info "Going to delete vm ${VM_NAME} attached to management cluster ${CLUSTER_PROFILE}"
+      docker stop ${VM_NAME} ;
       docker rm ${VM_NAME} ;
       VM_INDEX=$((VM_INDEX+1))
     done
@@ -325,6 +326,7 @@ if [[ ${ACTION} = "clean" ]]; then
       while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
         VM_NAME=$(get_cp_vm_name_by_index ${CP_INDEX} ${VM_INDEX}) ;
         print_info "Going to delete vm ${VM_NAME} attached to application cluster ${CLUSTER_PROFILE}"
+        docker stop ${VM_NAME} ;
         docker rm ${VM_NAME} ;
         VM_INDEX=$((VM_INDEX+1))
       done

@@ -5,9 +5,6 @@ ACTION=${2}
 source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
 
-GREEN='\033[0;32m'
-NC='\033[0m'
-
 # Login as admin into tsb
 #   args:
 #     (1) organization
@@ -37,7 +34,7 @@ if [[ ${ACTION} = "deploy" ]]; then
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
 
-  # Deploy tsb cluster, organization and tenant objects
+  # Deploy tsb cluster, organization-settings and tenant objects
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/02-organization-setting.yaml ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;

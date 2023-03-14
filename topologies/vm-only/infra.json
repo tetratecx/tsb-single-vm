@@ -9,13 +9,13 @@
     "vms": [
       {
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",
-        "name": "app1-vm"
+        "name": "vm1"
       },{
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",
-        "name": "app2-vm"
+        "name": "vm2"
       },{
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",
-        "name": "app3-vm"
+        "name": "vm3"
       }
     ],
     "zone": "zone1a"

@@ -41,6 +41,7 @@ RUN apt-get update -y && apt-get install --no-install-recommends -y \
     git \
     gnupg2 \
     iproute2 \
+    iptables \
     iputils-ping \
     net-tools \
     openssh-server \
@@ -60,7 +61,7 @@ RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
 RUN systemctl enable ssh 
 RUN /bin/bash -c 'echo -e "root\nroot" | passwd root'
 RUN /bin/bash -c 'echo -e "\n\nPermitRootLogin yes" | tee -a /etc/ssh/sshd_config'
-RUN /bin/bash -c 'useradd -p $(openssl passwd -1 ubuntu) ubuntu'
+RUN /bin/bash -c 'useradd --create-home -p $(openssl passwd -1 ubuntu) ubuntu'
 RUN /bin/bash -c 'usermod -aG sudo ubuntu'
 RUN /bin/bash -c 'echo -e "\n\nubuntu ALL=(ALL:ALL) NOPASSWD:ALL" | tee -a /etc/sudoers'
 RUN /bin/bash -c 'usermod --shell /bin/bash root'
