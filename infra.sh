@@ -88,7 +88,7 @@ if [[ ${ACTION} = "up" ]]; then
         docker start ${VM_NAME} ;
       else
         print_info "Going to start vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} for the first time"
-        docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE} ;
+        docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --hostname ${VM_NAME} --name ${VM_NAME} ${VM_IMAGE} ;
       fi
       VM_INDEX=$((VM_INDEX+1))
     done
@@ -151,7 +151,7 @@ if [[ ${ACTION} = "up" ]]; then
           docker start ${VM_NAME} ;
         else
           print_info "Going to start vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} for the first time"
-          docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --name ${VM_NAME} ${VM_IMAGE} ;
+          docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --hostname ${VM_NAME} --name ${VM_NAME} ${VM_IMAGE} ;
         fi
         VM_INDEX=$((VM_INDEX+1))
       done
@@ -159,10 +159,13 @@ if [[ ${ACTION} = "up" ]]; then
     CP_INDEX=$((CP_INDEX+1))
   done
 
-  # https://serverfault.com/questions/1102209/how-to-disable-docker-network-isolation
-  # https://serverfault.com/questions/830135/routing-among-different-docker-networks-on-the-same-host-machine 
-  echo "Flushing docker isolation iptable rules to allow cross network communication"
-  sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2
+  # When multiple docker networks are used (cp installs), we need to disable docker isolation for cross cluster connectivity
+  if [[ ${CP_COUNT} -gt 0 ]]; then
+    # https://serverfault.com/questions/1102209/how-to-disable-docker-network-isolation
+    # https://serverfault.com/questions/830135/routing-among-different-docker-networks-on-the-same-host-machine 
+    echo "Flushing docker isolation iptable rules to allow cross network communication"
+    sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2
+  fi
 
   print_info "All minikube cluster profiles and vms started"
   exit 0

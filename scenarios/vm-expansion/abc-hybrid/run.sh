@@ -88,7 +88,7 @@ function generate_vm_jwt_tokens {
     export SAMPLE_JWT_ISSUER="https://issuer-vm1.demo.tetrate.io"
     export SAMPLE_JWT_SUBJECT="vm1.demo.tetrate.io"
     export SAMPLE_JWT_ATTRIBUTES_FIELD="custom_attributes"
-    export SAMPLE_JWT_ATTRIBUTES="instance_name=vm1,instance_role=app-a,region=region1"
+    export SAMPLE_JWT_ATTRIBUTES="instance_name=vm1,instance_role=app-b,region=region1"
     export SAMPLE_JWT_EXPIRATION="87600h"
     ${ROOT_DIR}/output/onboarding-agent-sample-jwt-credential-plugin generate key -o ${MP_OUTPUT_DIR}/vm1/sample-jwt-issuer ;
   fi
@@ -110,15 +110,6 @@ function generate_vm_jwt_tokens {
     export SAMPLE_JWT_EXPIRATION="87600h"
     ${ROOT_DIR}/output/onboarding-agent-sample-jwt-credential-plugin generate key -o ${MP_OUTPUT_DIR}/vm3/sample-jwt-issuer ;
   fi
-
-  if ! [[ -f "${MP_OUTPUT_DIR}/vm4/sample-jwt-issuer.jwks" ]]; then
-    export SAMPLE_JWT_ISSUER="https://issuer-vm4.demo.tetrate.io"
-    export SAMPLE_JWT_SUBJECT="vm4.demo.tetrate.io"
-    export SAMPLE_JWT_ATTRIBUTES_FIELD="custom_attributes"
-    export SAMPLE_JWT_ATTRIBUTES="instance_name=vm4,instance_role=app-c,region=region1"
-    export SAMPLE_JWT_EXPIRATION="87600h"
-    ${ROOT_DIR}/output/onboarding-agent-sample-jwt-credential-plugin generate key -o ${MP_OUTPUT_DIR}/vm4/sample-jwt-issuer ;
-  fi
 }
 
 
@@ -129,7 +120,6 @@ if [[ ${ACTION} = "deploy" ]]; then
   mkdir -p ${MP_OUTPUT_DIR}/vm1 ;
   mkdir -p ${MP_OUTPUT_DIR}/vm2 ;
   mkdir -p ${MP_OUTPUT_DIR}/vm3 ;
-  mkdir -p ${MP_OUTPUT_DIR}/vm4 ;
 
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
@@ -147,7 +137,6 @@ if [[ ${ACTION} = "deploy" ]]; then
   export JWKS_VM1=$(cat ${MP_OUTPUT_DIR}/vm1/sample-jwt-issuer.jwks | tr '\n' ' ' | tr -d ' ')
   export JWKS_VM2=$(cat ${MP_OUTPUT_DIR}/vm2/sample-jwt-issuer.jwks | tr '\n' ' ' | tr -d ' ')
   export JWKS_VM3=$(cat ${MP_OUTPUT_DIR}/vm3/sample-jwt-issuer.jwks | tr '\n' ' ' | tr -d ' ')
-  export JWKS_VM4=$(cat ${MP_OUTPUT_DIR}/vm4/sample-jwt-issuer.jwks | tr '\n' ' ' | tr -d ' ')
   envsubst < ${SCENARIO_ROOT_DIR}/patch/onboarding-vm-patch-template.yaml > ${MP_OUTPUT_DIR}/onboarding-vm-patch.yaml ;
   kubectl --context mgmt-cluster-m1 -n istio-system patch controlplanes controlplane --patch-file ${MP_OUTPUT_DIR}/onboarding-vm-patch.yaml --type merge ;
 
@@ -165,11 +154,12 @@ if [[ ${ACTION} = "deploy" ]]; then
   fi
   kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/01-namespace.yaml ;
   kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/02-serviceaccount.yaml ;
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/03-workload-group.yaml ;
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/04-service.yaml ;
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/05-onboarding-policy.yaml ;
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/06-sidecar.yaml ;
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/07-ingress-gateway.yaml ;
+  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/03-deployment.yaml ;
+  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/04-workload-group.yaml ;
+  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/05-service.yaml ;
+  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/06-onboarding-policy.yaml ;
+  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/07-sidecar.yaml ;
+  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/08-ingress-gateway.yaml ;
 
   # Get vm gateway external load balancer ip address
   echo "Getting vm gateway exernal load balancer ip address"
@@ -187,15 +177,12 @@ if [[ ${ACTION} = "deploy" ]]; then
   export JWK_VM1=$(cat ${MP_OUTPUT_DIR}/vm1/sample-jwt-issuer.jwk | tr '\n' ' ' | tr -d ' ')
   export JWK_VM2=$(cat ${MP_OUTPUT_DIR}/vm2/sample-jwt-issuer.jwk | tr '\n' ' ' | tr -d ' ')
   export JWK_VM3=$(cat ${MP_OUTPUT_DIR}/vm3/sample-jwt-issuer.jwk | tr '\n' ' ' | tr -d ' ')
-  export JWK_VM4=$(cat ${MP_OUTPUT_DIR}/vm4/sample-jwt-issuer.jwk | tr '\n' ' ' | tr -d ' ')
   envsubst < ${SCENARIO_ROOT_DIR}/vm/vm1/onboard-vm-template.sh > ${MP_OUTPUT_DIR}/vm1/onboard-vm.sh ;
   onboard_vm "vm1" ${MP_OUTPUT_DIR}/vm1/onboard-vm.sh ;
   envsubst < ${SCENARIO_ROOT_DIR}/vm/vm2/onboard-vm-template.sh > ${MP_OUTPUT_DIR}/vm2/onboard-vm.sh ;
   onboard_vm "vm2" ${MP_OUTPUT_DIR}/vm2/onboard-vm.sh ;
   envsubst < ${SCENARIO_ROOT_DIR}/vm/vm3/onboard-vm-template.sh > ${MP_OUTPUT_DIR}/vm3/onboard-vm.sh ;
   onboard_vm "vm3" ${MP_OUTPUT_DIR}/vm3/onboard-vm.sh ;
-  envsubst < ${SCENARIO_ROOT_DIR}/vm/vm4/onboard-vm-template.sh > ${MP_OUTPUT_DIR}/vm4/onboard-vm.sh ;
-  onboard_vm "vm4" ${MP_OUTPUT_DIR}/vm4/onboard-vm.sh ;
 
   # Deploy tsb objects
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-workspace.yaml ;
@@ -225,7 +212,6 @@ if [[ ${ACTION} = "undeploy" ]]; then
   offboard_vm "vm1" ${SCENARIO_ROOT_DIR}/vm/offboard-vm.sh ;
   offboard_vm "vm2" ${SCENARIO_ROOT_DIR}/vm/offboard-vm.sh ;
   offboard_vm "vm3" ${SCENARIO_ROOT_DIR}/vm/offboard-vm.sh ;
-  offboard_vm "vm4" ${SCENARIO_ROOT_DIR}/vm/offboard-vm.sh ;
 
   exit 0
 fi

@@ -8,6 +8,7 @@ metadata:
     app: app-a
     version: v1
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: app-a
@@ -55,6 +56,7 @@ metadata:
     app: app-b
     version: v1
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: app-b
@@ -102,6 +104,7 @@ metadata:
     app: app-c
     version: v1
 spec:
+  replicas: 2
   selector:
     matchLabels:
       app: app-c

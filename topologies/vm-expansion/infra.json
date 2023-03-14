@@ -1,24 +1,23 @@
 {
   "istioctl_version": "1.15.2",
   "k8s_version": "1.24.9",
-  "cp_clusters": [
-    {
-      "name": "app-cluster",
-      "region": "region1",
-      "vms": [
-        {
-          "image": "boeboe/tsb-ubuntu-vm:1.0.0",
-          "name": "app-vm"
-        }
-      ],
-      "zone": "zone1a"
-    }
-  ],
+  "cp_clusters": [],
   "mp_cluster": {
     "demo_profile": true,
     "name": "mgmt-cluster",
     "region": "region1",
-    "vms": [],
+    "vms": [
+      {
+        "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+        "name": "vm1"
+      },{
+        "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+        "name": "vm2"
+      },{
+        "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+        "name": "vm3"
+      }
+    ],
     "zone": "zone1a"
   }
 }

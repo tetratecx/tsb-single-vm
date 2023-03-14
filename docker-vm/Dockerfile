@@ -6,11 +6,9 @@ RUN apt-get update -y && apt-get install -y git make golang docker.io curl jq &&
 RUN mkdir -p /root/.docker/cli-plugins && \
     curl https://github.com/docker/buildx/releases/download/v0.10.3/buildx-v0.10.3.linux-amd64 -o /root/.docker/cli-plugins/docker-buildx && \
     chmod +x /root/.docker/cli-plugins/docker-buildx && ls /root/.docker/cli-plugins/docker-buildx
-RUN git clone -c "core.sshCommand=ssh -i /id_rsa -o StrictHostKeyChecking=no -F /dev/null" git@github.com:tetrateio/tetrate.git && \
+RUN git clone -c "core.sshCommand=ssh -i /id_rsa -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" -F /dev/null" git@github.com:tetrateio/tetrate.git && \
     cd /tmp/tetrate/test/services/obs-tester && \
     make && cp /tmp/tetrate/test/services/obs-tester/build/bin/linux/*/obs-tester-server /obs-tester-server
-
-
 
 
 FROM ubuntu:jammy
