@@ -16,6 +16,9 @@
       },{
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",
         "name": "vm3"
+      },{
+        "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+        "name": "vm4"
       }
     ],
     "zone": "zone1a"

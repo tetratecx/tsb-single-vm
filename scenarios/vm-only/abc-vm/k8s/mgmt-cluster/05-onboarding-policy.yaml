@@ -41,6 +41,8 @@ spec:
   - workloads:
     - jwt:
         issuer: "https://issuer-vm3.demo.tetrate.io"
+    - jwt:
+        issuer: "https://issuer-vm4.demo.tetrate.io"
     onboardTo:
     - workloadGroupSelector:
         matchLabels:

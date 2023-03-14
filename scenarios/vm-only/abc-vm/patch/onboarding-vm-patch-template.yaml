@@ -31,3 +31,10 @@ spec:
                   jsonPath: .custom_attributes
               jwks: |
                 ${JWKS_VM3}
+            - issuer: https://issuer-vm4.demo.tetrate.io
+              shortName: vm4
+              tokenFields:
+                attributes:
+                  jsonPath: .custom_attributes
+              jwks: |
+                ${JWKS_VM4}
