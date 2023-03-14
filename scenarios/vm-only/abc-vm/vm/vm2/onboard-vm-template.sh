@@ -2,6 +2,7 @@
 #
 # Helper script for vm onboarding and application bootstrapping
 #
+trap "" INT QUIT TSTP EXIT SIGHUP SIGKILL SIGTERM SIGINT
 
 # Configure application
 sudo tee /usr/lib/systemd/system/obstester.service <<EOF

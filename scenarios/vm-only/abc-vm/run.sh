@@ -44,6 +44,33 @@ DONE
 DONE
 }
 
+# Offboard vm by uploading offboarding script and running it
+#   args:
+#     (1) vm name
+#     (2) offboarding script path
+function offboard_vm {
+  VM_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1})
+
+  # scp offboarding script
+  expect <<DONE
+  spawn scp -o StrictHostKeyChecking=no ${2} ubuntu@${VM_IP}:/home/ubuntu/offboard-vm.sh
+  expect "password:" { send "ubuntu\\r" }
+  expect eof
+DONE
+
+  # ssh bootstrap offboarding script
+  expect <<DONE
+  spawn ssh -o StrictHostKeyChecking=no ubuntu@${VM_IP} -- chmod +x /home/ubuntu/offboard-vm.sh
+  expect "password:" { send "ubuntu\\r" }
+  expect eof
+DONE
+  expect <<DONE
+  spawn ssh -o StrictHostKeyChecking=no ubuntu@${VM_IP} -- /home/ubuntu/offboard-vm.sh
+  expect "password:" { send "ubuntu\\r" }
+  expect "Offboarding finished"
+DONE
+}
+
 # Generate vm jwt tokens
 # In case you want to change some attributes of the JWT token, please check the docs and adjust the proper files accordingly
 #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/workload_onboarding/quickstart/on-premise/configure-workload-onboarding#allow-workloads-to-authenticate-themselves-by-means-of-a-jwt-token
@@ -180,6 +207,10 @@ if [[ ${ACTION} = "undeploy" ]]; then
 
   # Delete kubernetes configuration in mgmt cluster
   kubectl --context mgmt-cluster-m1 delete -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster 2>/dev/null ;
+
+  offboard_vm "vm1" ${SCENARIO_ROOT_DIR}/vm/offboard-vm.sh ;
+  offboard_vm "vm2" ${SCENARIO_ROOT_DIR}/vm/offboard-vm.sh ;
+  offboard_vm "vm3" ${SCENARIO_ROOT_DIR}/vm/offboard-vm.sh ;
 
   exit 0
 fi
