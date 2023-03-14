@@ -22,7 +22,7 @@ DONE
 #     (1) vm name
 #     (2) onboarding script path
 function onboard_vm {
-  VM_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1})
+  VM_IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1})
 
   # scp onboarding script
   expect <<DONE
@@ -49,7 +49,7 @@ DONE
 #     (1) vm name
 #     (2) offboarding script path
 function offboard_vm {
-  VM_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1})
+  VM_IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1})
 
   # scp offboarding script
   expect <<DONE

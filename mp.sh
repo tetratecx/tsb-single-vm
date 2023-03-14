@@ -79,7 +79,8 @@ EOF
 
   sudo systemctl enable tsb-gui ;
   sudo systemctl start tsb-gui ;
-  echo "The tsb gui should be available at https://$(curl -s ifconfig.me):8443"
+  echo "The tsb gui should be available locally at https://127.0.0.1:8443"
+  echo "The tsb gui should be available remotely at https://$(curl -s ifconfig.me):8443"
 }
 
 

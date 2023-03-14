@@ -227,24 +227,26 @@ fi
 if [[ ${ACTION} = "info" ]]; then
 
   CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
+  CLUSTER_NAME=$(get_mp_name) ;
   TSB_API_ENDPOINT=$(kubectl --context ${CLUSTER_PROFILE} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
 
-  echo "Minikube profiles"
+  print_info "Minikube profiles:"
   minikube profile list ;
   echo ""
 
-  echo "Management plane cluster:"
+  print_info "Management plane cluster ${CLUSTER_NAME}:"
   echo "TSB GUI: https://${TSB_API_ENDPOINT}:8443 (admin/admin)"
   echo "TSB GUI (port-fowarded): https://$(curl -s ifconfig.me):8443 (admin/admin)"
-  echo "kubectl --context ${CLUSTER_PROFILE} get pods -A"
-  echo ""
+  print_command "kubectl --context ${CLUSTER_PROFILE} get pods -A"
 
-  echo "Control plane cluster:"
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
     CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
-    echo "kubectl --context ${CLUSTER_PROFILE} get pods -A"
+    CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
+    echo ""
+    print_info "Control plane cluster ${CLUSTER_NAME}:"
+    print_command "kubectl --context ${CLUSTER_PROFILE} get pods -A"
     CP_INDEX=$((CP_INDEX+1))
   done
 
@@ -252,15 +254,17 @@ if [[ ${ACTION} = "info" ]]; then
   VM_COUNT=$(get_mp_vm_count) ;
   if ! [[ ${VM_COUNT} -eq 0 ]] ; then
     CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
+    CLUSTER_NAME=$(get_mp_name) ;
     echo ""
-    echo "VMs attached to management cluster ${CLUSTER_PROFILE}:"
+    print_info "VMs attached to management cluster ${CLUSTER_NAME}:"
     VM_INDEX=0
     while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
       DOCKER_NET=$(get_mp_name) ;
       VM_NAME=$(get_mp_vm_name_by_index ${VM_INDEX}) ;
-      VM_IP=$(docker container inspect ${VM_NAME} --format "{{.NetworkSettings.Networks.${DOCKER_NET}.IPAddress}}") ;
+      VM_IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${VM_NAME}) ;
       echo "${VM_NAME} has ip address ${VM_IP}"
-      VM_INDEX=$((VM_INDEX+1))
+      print_command "ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${VM_IP}"
+    VM_INDEX=$((VM_INDEX+1))
     done
   fi
 
@@ -269,16 +273,18 @@ if [[ ${ACTION} = "info" ]]; then
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
     CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
+    CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
     DOCKER_NET=$(get_cp_name_by_index ${CP_INDEX}) ;
     VM_COUNT=$(get_cp_vm_count_by_index ${CP_INDEX}) ;
     if ! [[ ${VM_COUNT} -eq 0 ]] ; then
       echo ""
-      echo "VMs attached to application cluster ${CLUSTER_PROFILE}:"
+      print_info "VMs attached to application cluster ${CLUSTER_NAME}:"
       VM_INDEX=0
       while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
         VM_NAME=$(get_cp_vm_name_by_index ${CP_INDEX} ${VM_INDEX}) ;
-        VM_IP=$(docker container inspect ${VM_NAME} --format "{{.NetworkSettings.Networks.${DOCKER_NET}.IPAddress}}") ;
+        VM_IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${VM_NAME}) ;
         echo "${VM_NAME} has ip address ${VM_IP}"
+        print_command "ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${VM_IP}"
         VM_INDEX=$((VM_INDEX+1))
       done
     fi
