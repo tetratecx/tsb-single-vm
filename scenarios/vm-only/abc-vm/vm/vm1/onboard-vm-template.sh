@@ -29,6 +29,7 @@ EOF
 sudo chmod 664 /usr/lib/systemd/system/obstester.service ;
 
 # Update hosts file for dns resolving of istio enabled services
+if ! cat /etc/hosts | grep "The following lines are insterted for istio" &>/dev/null ; then
 sudo tee -a /etc/hosts << EOF
 
 # The following lines are insterted for istio
@@ -37,20 +38,13 @@ sudo tee -a /etc/hosts << EOF
 127.0.0.2 zipkin.istio-system
 127.0.0.2 app-b.ns-b
 EOF
+fi
 
 # Install onboarding agent, istio sidecar and sample jwt credentials plugin
 # DOC: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/workload_onboarding/quickstart/on-premise/configure-vm
 # SRC: https://github.com/tetrateio/onboarding-agent-sample-jwt-credential-plugin
-echo "Going to download vm onboarding packages from vm-onboarding endpoint"
-while ! curl -k -fL -o /tmp/onboarding-agent.deb "https://vm-onboarding.demo.tetrate.io/install/deb/amd64/onboarding-agent.deb" --resolve "vm-onboarding.demo.tetrate.io:443:${TSB_VM_ONBOARDING_ENDPOINT}" 2>/dev/null ; do
-  echo -n "." ;
-  sleep 5 ;
-done
-while ! curl -k -fL -o /tmp/istio-sidecar.deb "https://vm-onboarding.demo.tetrate.io/install/deb/amd64/istio-sidecar.deb" --resolve "vm-onboarding.demo.tetrate.io:443:${TSB_VM_ONBOARDING_ENDPOINT}" 2>/dev/null ; do
-  echo -n "." ;
-  sleep 5 ;
-done
-echo "DONE"
+curl -k -fL -o /tmp/onboarding-agent.deb "https://vm-onboarding.demo.tetrate.io/install/deb/amd64/onboarding-agent.deb" --resolve "vm-onboarding.demo.tetrate.io:443:${TSB_VM_ONBOARDING_ENDPOINT}"
+curl -k -fL -o /tmp/istio-sidecar.deb "https://vm-onboarding.demo.tetrate.io/install/deb/amd64/istio-sidecar.deb" --resolve "vm-onboarding.demo.tetrate.io:443:${TSB_VM_ONBOARDING_ENDPOINT}"
 sudo apt-get install -o Dpkg::Options::="--force-confold" -y /tmp/onboarding-agent.deb ;
 sudo apt-get install -o Dpkg::Options::="--force-confold" -y /tmp/istio-sidecar.deb ;
 rm /tmp/onboarding-agent.deb ;
@@ -117,5 +111,10 @@ EOF
 # Start demo application and onboarding agent
 sudo systemctl enable obstester ;
 sudo systemctl start obstester ;
-sudo systemctl enable onboarding-agent ;
-sudo systemctl start onboarding-agent ;
+
+if sudo systemctl is-active onboarding-agent &>/dev/null ; then
+  sudo systemctl restart onboarding-agent ;
+else
+  sudo systemctl enable onboarding-agent ;
+  sudo systemctl start onboarding-agent ;
+fi

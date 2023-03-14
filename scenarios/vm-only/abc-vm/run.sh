@@ -33,9 +33,14 @@ DONE
 
   # ssh bootstrap onboarding script
   expect <<DONE
-  spawn ssh -o StrictHostKeyChecking=no ubuntu@${VM_IP} -- chmod +x /home/ubuntu/onboard-vm.sh && /home/ubuntu/onboard-vm.sh
+  spawn ssh -o StrictHostKeyChecking=no ubuntu@${VM_IP} -- chmod +x /home/ubuntu/onboard-vm.sh
   expect "password:" { send "ubuntu\\r" }
   expect eof
+DONE
+  expect <<DONE
+  spawn ssh -o StrictHostKeyChecking=no ubuntu@${VM_IP} -- /home/ubuntu/onboard-vm.sh
+  expect "password:" { send "ubuntu\\r" }
+  expect "Onboarding finished"
 DONE
 }
 
@@ -134,6 +139,10 @@ if [[ ${ACTION} = "deploy" ]]; then
     echo -n "."
   done
   echo "DONE"
+
+  # Wait for onboarding-plane and onboarding-repository to be ready
+  kubectl --context mgmt-cluster-m1 wait deployment -n istio-system onboarding-plane --for condition=Available=True --timeout=600s ;
+  kubectl --context mgmt-cluster-m1 wait deployment -n istio-system onboarding-repository --for condition=Available=True --timeout=600s ;
 
   # Onboard vms
   export TSB_VM_ONBOARDING_ENDPOINT=${VM_GW_IP}
