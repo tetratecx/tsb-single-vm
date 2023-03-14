@@ -116,3 +116,5 @@ else
   sudo systemctl enable onboarding-agent ;
   sudo systemctl start onboarding-agent ;
 fi
+
+echo "Onboarding finished"
