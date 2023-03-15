@@ -155,13 +155,13 @@ if [[ ${ACTION} = "info" ]]; then
   echo "****************************"
   echo
   echo "ABC Traffic through T1 Gateway"
-  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${ABC_T1_GW_IP}\" --cacert ca.crt=${CERTS_BASE_DIR}/root-cert.pem --cert ${CERTS_BASE_DIR}/abc/client.abc.demo.tetrate.io-cert.pem --key ${CERTS_BASE_DIR}/abc/client.abc.demo.tetrate.io-key.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\""
+  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${ABC_T1_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem --cert ${CERTS_BASE_DIR}/abc/client.abc.demo.tetrate.io-cert.pem --key ${CERTS_BASE_DIR}/abc/client.abc.demo.tetrate.io-key.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\""
   echo
   echo "DEF Traffic through T1 Gateway"
-  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"def.demo.tetrate.io:443:${DEF_T1_GW_IP}\" --cacert ca.crt=${CERTS_BASE_DIR}/root-cert.pem --cert ${CERTS_BASE_DIR}/def/client.def.demo.tetrate.io-cert.pem --key ${CERTS_BASE_DIR}/def/client.def.demo.tetrate.io-key.pem \"https://def.demo.tetrate.io/proxy/app-e.ns-e/proxy/app-f.ns-f\""
+  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"def.demo.tetrate.io:443:${DEF_T1_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem --cert ${CERTS_BASE_DIR}/def/client.def.demo.tetrate.io-cert.pem --key ${CERTS_BASE_DIR}/def/client.def.demo.tetrate.io-key.pem \"https://def.demo.tetrate.io/proxy/app-e.ns-e/proxy/app-f.ns-f\""
   echo
   echo "GHI Traffic through T1 Gateway"
-  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"ghi.demo.tetrate.io:443:${GHI_T1_GW_IP}\" --cacert ca.crt=${CERTS_BASE_DIR}/root-cert.pem --cert ${CERTS_BASE_DIR}/ghi/client.ghi.demo.tetrate.io-cert.pem --key ${CERTS_BASE_DIR}/ghi/client.ghi.demo.tetrate.io-key.pem \"https://ghi.demo.tetrate.io/proxy/app-h.ns-h/proxy/app-i.ns-i\""
+  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"ghi.demo.tetrate.io:443:${GHI_T1_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem --cert ${CERTS_BASE_DIR}/ghi/client.ghi.demo.tetrate.io-cert.pem --key ${CERTS_BASE_DIR}/ghi/client.ghi.demo.tetrate.io-key.pem \"https://ghi.demo.tetrate.io/proxy/app-h.ns-h/proxy/app-i.ns-i\""
   echo
   exit 0
 fi
