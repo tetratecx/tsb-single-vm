@@ -104,7 +104,7 @@ metadata:
     app: app-i
     version: v1
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: app-i
