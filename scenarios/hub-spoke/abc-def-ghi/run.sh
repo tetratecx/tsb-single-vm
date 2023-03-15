@@ -57,19 +57,22 @@ if [[ ${ACTION} = "deploy" ]]; then
   # Deploy kubernetes objects in mgmt cluster
   kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/01-namespace.yaml ;
   if ! kubectl --context mgmt-cluster-m1 get secret app-abc-cert -n gateway-tier1-abc &>/dev/null ; then
-    kubectl --context mgmt-cluster-m1 create secret tls app-abc-cert -n gateway-tier1-abc \
-      --key ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-key.pem \
-      --cert ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-cert.pem ;
+    kubectl --context mgmt-cluster-m1 create secret generic app-abc-cert -n gateway-tier1-abc \
+      --from-file=tls.key=${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-key.pem \
+      --from-file=tls.crt=${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-cert.pem \
+      --from-file=ca.crt=${CERTS_BASE_DIR}/root-cert.pem ;
   fi
   if ! kubectl --context mgmt-cluster-m1 get secret app-def-cert -n gateway-tier1-def &>/dev/null ; then
-    kubectl --context mgmt-cluster-m1 create secret tls app-def-cert -n gateway-tier1-def \
-      --key ${CERTS_BASE_DIR}/def/server.def.demo.tetrate.io-key.pem \
-      --cert ${CERTS_BASE_DIR}/def/server.def.demo.tetrate.io-cert.pem ;
+    kubectl --context mgmt-cluster-m1 create secret generic app-def-cert -n gateway-tier1-def \
+      --from-file=tls.key=${CERTS_BASE_DIR}/def/server.def.demo.tetrate.io-key.pem \
+      --from-file=tls.crt=${CERTS_BASE_DIR}/def/server.def.demo.tetrate.io-cert.pem \
+      --from-file=ca.crt=${CERTS_BASE_DIR}/root-cert.pem ;
   fi
   if ! kubectl --context mgmt-cluster-m1 get secret app-ghi-cert -n gateway-tier1-ghi &>/dev/null ; then
-    kubectl --context mgmt-cluster-m1 create secret tls app-ghi-cert -n gateway-tier1-ghi \
-      --key ${CERTS_BASE_DIR}/ghi/server.ghi.demo.tetrate.io-key.pem \
-      --cert ${CERTS_BASE_DIR}/ghi/server.ghi.demo.tetrate.io-cert.pem ;
+    kubectl --context mgmt-cluster-m1 create secret generic app-ghi-cert -n gateway-tier1-ghi \
+      --from-file=tls.key=${CERTS_BASE_DIR}/ghi/server.ghi.demo.tetrate.io-key.pem \
+      --from-file=tls.crt=${CERTS_BASE_DIR}/ghi/server.ghi.demo.tetrate.io-cert.pem \
+      --from-file=ca.crt=${CERTS_BASE_DIR}/root-cert.pem ;
   fi
   kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/02-tier1-gateway.yaml ;
 
