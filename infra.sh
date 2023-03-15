@@ -30,6 +30,20 @@ function configure_metallb {
 DONE
 }
 
+# Patch for minikube metallb addon dependencies to docker.io
+#   args:
+#     (1) minikube profile name
+function patch_metallb_pull_repo {
+  CONTROLLER_PATCH='{"spec":{"template":{"spec":{"containers":[{"name":"controller","image":"quay.io/metallb/controller:v0.9.6"}]}}}}'
+  SPEAKER_PATCH='{"spec":{"template":{"spec":{"containers":[{"name":"speaker","image":"quay.io/metallb/speaker:v0.9.6"}]}}}}'
+
+  while ! kubectl --context ${1} -n metallb-system get deployment controller ; do sleep 1 ; done
+  kubectl --context ${1} -n metallb-system patch deployment controller --patch ${CONTROLLER_PATCH} ;
+  while ! kubectl --context ${1} -n metallb-system get daemonset speaker ; do sleep 1 ; done
+  kubectl --context ${1} -n metallb-system patch daemonset speaker --patch ${SPEAKER_PATCH} ;
+}
+
+
 ######################## START OF ACTIONS ########################
 
 if [[ ${ACTION} = "up" ]]; then
@@ -58,6 +72,7 @@ if [[ ${ACTION} = "up" ]]; then
   else
     configure_metallb ${CLUSTER_PROFILE} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_STARTIP} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_ENDIP} ;
     minikube --profile ${CLUSTER_PROFILE} addons enable metallb ;
+    patch_metallb_pull_repo ${CLUSTER_PROFILE} ;
   fi  
 
   # Make sure minikube has access to tsb private repo
@@ -121,6 +136,7 @@ if [[ ${ACTION} = "up" ]]; then
     else
       configure_metallb ${CLUSTER_PROFILE} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_STARTIP} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_ENDIP} ;
       minikube --profile ${CLUSTER_PROFILE} addons enable metallb ;
+      patch_metallb_pull_repo ${CLUSTER_PROFILE} ;
     fi  
 
     # Make sure minikube has access to tsb private repo
