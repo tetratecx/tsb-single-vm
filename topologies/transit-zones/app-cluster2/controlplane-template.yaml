@@ -1,0 +1,34 @@
+---
+apiVersion: install.tetrate.io/v1alpha1
+kind: ControlPlane
+metadata:
+  name: controlplane
+  namespace: istio-system
+spec:
+  hub: containers.dl.tetrate.io
+  managementPlane:
+    host: $TSB_API_ENDPOINT
+    port: 8443
+    clusterName: app-cluster2
+    selfSigned: true
+  telemetryStore:
+    elastic:
+      host: $TSB_API_ENDPOINT
+      port: 8443
+      version: 7
+      selfSigned: true
+  components:
+    internalCertProvider:
+      certManager:
+        managed: INTERNAL
+    xcp:
+      centralAuthMode: JWT
+      enableHttpMeshInternalIdentityPropagation: true
+      kubeSpec:
+        overlays:
+        - apiVersion: install.xcp.tetrate.io/v1alpha1
+          kind: EdgeXcp
+          name: edge-xcp
+          patches:
+          - path: spec.centralAuthJwt.centralSni
+            value: "central.xcp.tetrate.io"

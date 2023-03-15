@@ -1,0 +1,37 @@
+{
+  "istioctl_version": "1.15.2",
+  "k8s_version": "1.24.9",
+  "cp_clusters": [
+    {
+      "name": "app-cluster1",
+      "region": "region1",
+      "vms": [],
+      "zone": "zone1a"
+    },
+    {
+      "name": "transit-cluster1",
+      "region": "region1",
+      "vms": [],
+      "zone": "zone1b"
+    },
+    {
+      "name": "transit-cluster2",
+      "region": "region2",
+      "vms": [],
+      "zone": "zone2a"
+    },
+    {
+      "name": "app-cluster2",
+      "region": "region2",
+      "vms": [],
+      "zone": "zone2b"
+    }
+  ],
+  "mp_cluster": {
+    "demo_profile": true,
+    "name": "mgmt-cluster",
+    "region": "region0",
+    "vms": [],
+    "zone": "zone0a"
+  }
+}
