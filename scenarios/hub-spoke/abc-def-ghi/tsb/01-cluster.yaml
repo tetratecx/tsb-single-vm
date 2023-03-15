@@ -34,7 +34,6 @@ spec:
   tier1Cluster: false
   tokenTtl: 31536000s
   network: tier2-2
-
 ---
 apiVersion: api.tsb.tetrate.io/v2
 kind: Cluster
