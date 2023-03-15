@@ -1,0 +1,114 @@
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod-abc
+  name: gw-tier1-abc-ws
+spec:
+  displayName: GatewayT1_WS_ABC
+  namespaceSelector:
+    names:
+      - "demo/gateway-tier1-abc"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod-def
+  name: gw-tier1-def-ws
+spec:
+  displayName: GatewayT1_WS_DEF
+  namespaceSelector:
+    names:
+      - "demo/gateway-tier1-def"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod-ghi
+  name: gw-tier1-ghi-ws
+spec:
+  displayName: GatewayT1_WS_GHI
+  namespaceSelector:
+    names:
+      - "demo/gateway-tier1-ghi"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod-abc
+  name: gw-ingress-abc-ws
+spec:
+  displayName: GatewayIngress_WS_ABC
+  namespaceSelector:
+    names:
+      - "*/gateway-abc"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod-def
+  name: gw-ingress-def-ws
+spec:
+  displayName: GatewayIngress_WS_DEF
+  namespaceSelector:
+    names:
+      - "*/gateway-def"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod-ghi
+  name: gw-ingress-ghi-ws
+spec:
+  displayName: GatewayIngress_WS_GHI
+  namespaceSelector:
+    names:
+      - "*/gateway-ghi"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod-abc
+  name: app-abc-ws
+spec:
+  displayName: AppABC_WS
+  namespaceSelector:
+    names:
+      - "*/ns-a"
+      - "*/ns-b"
+      - "*/ns-c"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod-def
+  name: app-def-ws
+spec:
+  displayName: AppDEF_WS
+  namespaceSelector:
+    names:
+      - "*/ns-d"
+      - "*/ns-e"
+      - "*/ns-f"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod-ghi
+  name: app-ghi-ws
+spec:
+  displayName: AppGHI_WS
+  namespaceSelector:
+    names:
+      - "*/ns-g"
+      - "*/ns-h"
+      - "*/ns-i"

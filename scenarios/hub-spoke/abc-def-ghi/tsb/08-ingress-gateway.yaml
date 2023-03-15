@@ -1,0 +1,81 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  organization: tetrate
+  tenant: prod-abc
+  workspace: gw-ingress-abc-ws
+  group: gw-ingress-abc-group
+  name: gw-ingress-abc
+spec:
+  displayName: GatewayIngress_ABC
+  workloadSelector:
+    namespace: gateway-abc
+    labels:
+      app: gw-ingress-abc
+  http:
+  - name: abc-https
+    hostname: abc.demo.tetrate.io
+    port: 443
+    tls:
+      mode: SIMPLE
+      secretName: app-abc-cert
+    routing:
+      rules:
+      - route:
+          host: ns-a/app-a.ns-a.svc.cluster.local
+          port: 80
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  organization: tetrate
+  tenant: prod-def
+  workspace: gw-ingress-def-ws
+  group: gw-ingress-def-group
+  name: gw-ingress-def
+spec:
+  displayName: GatewayIngress_DEF
+  workloadSelector:
+    namespace: gateway-def
+    labels:
+      app: gw-ingress-def
+  http:
+  - name: def-https
+    hostname: def.demo.tetrate.io
+    port: 443
+    tls:
+      mode: SIMPLE
+      secretName: app-def-cert
+    routing:
+      rules:
+      - route:
+          host: ns-d/app-d.ns-d.svc.cluster.local
+          port: 80
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  organization: tetrate
+  tenant: prod-ghi
+  workspace: gw-ingress-ghi-ws
+  group: gw-ingress-ghi-group
+  name: gw-ingress-ghi
+spec:
+  displayName: GatewayIngress_GHI
+  workloadSelector:
+    namespace: gateway-ghi
+    labels:
+      app: gw-ingress-ghi
+  http:
+  - name: ghi-https
+    hostname: ghi.demo.tetrate.io
+    port: 443
+    tls:
+      mode: SIMPLE
+      secretName: app-ghi-cert
+    routing:
+      rules:
+      - route:
+          host: ns-g/app-g.ns-g.svc.cluster.local
+          port: 80

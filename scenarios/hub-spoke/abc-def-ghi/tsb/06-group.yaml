@@ -1,0 +1,180 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod-abc
+  workspace: gw-tier1-abc-ws
+  name: gw-tier1-abc-group
+spec:
+  displayName: GatewayT1_Group_ABC
+  namespaceSelector:
+    names:
+      - "demo/gateway-tier1-abc"
+  configMode: BRIDGED
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod-def
+  workspace: gw-tier1-def-ws
+  name: gw-tier1-def-group
+spec:
+  displayName: GatewayT1_Group_DEF
+  namespaceSelector:
+    names:
+      - "demo/gateway-tier1-def"
+  configMode: BRIDGED
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod-ghi
+  workspace: gw-tier1-ghi-ws
+  name: gw-tier1-ghi-group
+spec:
+  displayName: GatewayT1_Group_GHI
+  namespaceSelector:
+    names:
+      - "demo/gateway-tier1-ghi"
+  configMode: BRIDGED
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+Metadata:
+  organization: tetrate
+  tenant: prod-abc
+  workspace: gw-ingress-abc-ws
+  name: gw-ingress-abc-group
+spec:
+  displayName: GatewayIngress_Group_ABC
+  namespaceSelector:
+    names:
+      - "*/gateway-abc"
+  configMode: BRIDGED
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+Metadata:
+  organization: tetrate
+  tenant: prod-def
+  workspace: gw-ingress-def-ws
+  name: gw-ingress-def-group
+spec:
+  displayName: GatewayIngress_Group_DEF
+  namespaceSelector:
+    names:
+      - "*/gateway-def"
+  configMode: BRIDGED
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+Metadata:
+  organization: tetrate
+  tenant: prod-ghi
+  workspace: gw-ingress-ghi-ws
+  name: gw-ingress-ghi-group
+spec:
+  displayName: GatewayIngress_Group_GHI
+  namespaceSelector:
+    names:
+      - "*/gateway-ghi"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod-abc
+  workspace: app-abc-ws
+  name: traffic-abc-group
+spec:
+  displayName: Traffic_Group_ABC
+  namespaceSelector:
+    names:
+      - "*/ns-a"
+      - "*/ns-b"
+      - "*/ns-c"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod-abc
+  workspace: app-abc-ws
+  name: security-abc-group
+spec:
+  displayName: Security_Group_ABC
+  namespaceSelector:
+    names:
+      - "*/ns-a"
+      - "*/ns-b"
+      - "*/ns-c"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod-def
+  workspace: app-def-ws
+  name: traffic-def-group
+spec:
+  displayName: Traffic_Group_DEF
+  namespaceSelector:
+    names:
+      - "*/ns-d"
+      - "*/ns-e"
+      - "*/ns-f"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod-def
+  workspace: app-def-ws
+  name: security-def-group
+spec:
+  displayName: Security_Group_DEF
+  namespaceSelector:
+    names:
+      - "*/ns-d"
+      - "*/ns-e"
+      - "*/ns-f"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod-ghi
+  workspace: app-ghi-ws
+  name: traffic-ghi-group
+spec:
+  displayName: Traffic_Group_GHI
+  namespaceSelector:
+    names:
+      - "*/ns-g"
+      - "*/ns-h"
+      - "*/ns-i"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod-ghi
+  workspace: app-ghi-ws
+  name: security-ghi-group
+spec:
+  displayName: Security_Group_GHI
+  namespaceSelector:
+    names:
+      - "*/ns-g"
+      - "*/ns-h"
+      - "*/ns-i"
+  configMode: BRIDGED

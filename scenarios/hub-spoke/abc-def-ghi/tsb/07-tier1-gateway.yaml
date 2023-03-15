@@ -1,0 +1,72 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: prod-abc
+  workspace: gw-tier1-abc-ws
+  group: gw-tier1-abc-group
+  name: gw-tier1-abc
+spec:
+  displayName: GatewayT1_ABC
+  workloadSelector:
+    namespace: gateway-tier1-abc
+    labels:
+      app: gw-tier1-abc
+  externalServers:
+  - name: abc-mtls
+    hostname: abc.demo.tetrate.io
+    port: 443
+    tls:
+      mode: MUTUAL
+      secretName: app-abc-cert
+    clusters:
+    - name: cluster1
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: prod-def
+  workspace: gw-tier1-def-ws
+  group: gw-tier1-def-group
+  name: gw-tier1-def
+spec:
+  displayName: GatewayT1_DEF
+  workloadSelector:
+    namespace: gateway-tier1-def
+    labels:
+      app: gw-tier1-def
+  externalServers:
+  - name: def-mtls
+    hostname: def.demo.tetrate.io
+    port: 443
+    tls:
+      mode: MUTUAL
+      secretName: app-def-cert
+    clusters:
+    - name: cluster2
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: prod-ghi
+  workspace: gw-tier1-ghi-ws
+  group: gw-tier1-ghi-group
+  name: gw-tier1-ghi
+spec:
+  displayName: GatewayT1_GHI
+  workloadSelector:
+    namespace: gateway-tier1-ghi
+    labels:
+      app: gw-tier1-ghi
+  externalServers:
+  - name: ghi-mtls
+    hostname: ghi.demo.tetrate.io
+    port: 443
+    tls:
+      mode: MUTUAL
+      secretName: app-ghi-cert
+    clusters:
+    - name: cluster3

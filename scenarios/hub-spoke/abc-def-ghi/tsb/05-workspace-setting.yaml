@@ -1,0 +1,42 @@
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: WorkspaceSetting
+metadata:
+  organization: tetrate
+  tenant: prod-abc
+  workspace: gw-ingress-abc-ws
+  name: gw-ingress-abc-ws-setting
+spec:
+  defaultTrafficSetting:
+    reachability:
+      hosts:
+      - ns-a/*
+      mode: CUSTOM
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: WorkspaceSetting
+metadata:
+  organization: tetrate
+  tenant: prod-def
+  workspace: gw-ingress-def-ws
+  name: gw-ingress-def-ws-setting
+spec:
+  defaultTrafficSetting:
+    reachability:
+      hosts:
+      - ns-d/*
+      mode: CUSTOM
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: WorkspaceSetting
+metadata:
+  organization: tetrate
+  tenant: prod-ghi
+  workspace: gw-ingress-ghi-ws
+  name: gw-ingress-ghi-ws-setting
+spec:
+  defaultTrafficSetting:
+    reachability:
+      hosts:
+      - ns-g/*
+      mode: CUSTOM
