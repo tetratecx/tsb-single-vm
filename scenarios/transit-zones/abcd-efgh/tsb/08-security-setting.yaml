@@ -28,9 +28,9 @@ kind: SecuritySetting
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: fghi-ws
-  group: fghi-security-group
-  name: fghi-security-settings
+  workspace: efgh-ws
+  group: efgh-security-group
+  name: efgh-security-settings
 spec:
   authenticationSettings:
     trafficMode: REQUIRED
