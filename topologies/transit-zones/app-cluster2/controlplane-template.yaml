@@ -23,7 +23,7 @@ spec:
         managed: INTERNAL
     xcp:
       centralAuthMode: JWT
-      enableHttpMeshInternalIdentityPropagation: true
+      # enableHttpMeshInternalIdentityPropagation: true
       kubeSpec:
         overlays:
         - apiVersion: install.xcp.tetrate.io/v1alpha1
@@ -32,3 +32,7 @@ spec:
           patches:
           - path: spec.centralAuthJwt.centralSni
             value: "central.xcp.tetrate.io"
+          - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+            value:
+              name: ENABLE_ENHANCED_EAST_WEST_ROUTING
+              value: "true"
