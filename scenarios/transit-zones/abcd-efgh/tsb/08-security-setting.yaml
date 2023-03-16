@@ -1,0 +1,48 @@
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: SecuritySetting
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  group: abcd-security-group
+  name: abcd-security-settings
+spec:
+  authenticationSettings:
+    trafficMode: REQUIRED
+  # authorization:
+  #   mode: RULES
+  #   rules:
+  #     allow:
+  #      - from:
+  #          fqn: organizations/tetrate/tenants/prod-abc/workspaces/gw-ingress-abc-ws
+  #        to:
+  #          fqn: organizations/tetrate/tenants/prod-abc/workspaces/app-abc-ws/securitygroups/security-abc-group
+  #      - from:
+  #          fqn: organizations/tetrate/tenants/prod-abc/workspaces/app-abc-ws/securitygroups/security-abc-group
+  #        to:
+  #          fqn: organizations/tetrate/tenants/prod-abc/workspaces/app-abc-ws/securitygroups/security-abc-group
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: SecuritySetting
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: fghi-ws
+  group: fghi-security-group
+  name: fghi-security-settings
+spec:
+  authenticationSettings:
+    trafficMode: REQUIRED
+  # authorization:
+  #   mode: RULES
+  #   rules:
+  #     allow:
+  #      - from:
+  #          fqn: organizations/tetrate/tenants/prod-abc/workspaces/gw-ingress-abc-ws
+  #        to:
+  #          fqn: organizations/tetrate/tenants/prod-abc/workspaces/app-abc-ws/securitygroups/security-abc-group
+  #      - from:
+  #          fqn: organizations/tetrate/tenants/prod-abc/workspaces/app-abc-ws/securitygroups/security-abc-group
+  #        to:
+  #          fqn: organizations/tetrate/tenants/prod-abc/workspaces/app-abc-ws/securitygroups/security-abc-group

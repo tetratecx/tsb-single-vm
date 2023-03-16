@@ -1,0 +1,60 @@
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: Cluster
+metadata:
+  organization: tetrate
+  name: demo
+spec:
+  locality:
+    region: region0
+  tier1Cluster: true
+  tokenTtl: 31536000s
+  network: tier0
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: Cluster
+metadata:
+  organization: tetrate
+  name: app-cluster1
+spec:
+  locality:
+    region: region1
+  tier1Cluster: false
+  tokenTtl: 31536000s
+  network: tier2-1
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: Cluster
+metadata:
+  organization: tetrate
+  name: transit-cluster1
+spec:
+  locality:
+    region: region1
+  tier1Cluster: true
+  tokenTtl: 31536000s
+  network: tier1-1
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: Cluster
+metadata:
+  organization: tetrate
+  name: transit-cluster2
+spec:
+  locality:
+    region: region2
+  tier1Cluster: true
+  tokenTtl: 31536000s
+  network: tier1-2
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: Cluster
+metadata:
+  organization: tetrate
+  name: app-cluster2
+spec:
+  locality:
+    region: region2
+  tier1Cluster: false
+  tokenTtl: 31536000s
+  network: tier2-2

@@ -1,0 +1,40 @@
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: abcd-ws
+spec:
+  displayName: WORKSPACE_ABCD
+  namespaceSelector:
+    names:
+      - "transit-cluster1/gateway-t1-abcd"
+      - "app-cluster1/gateway-a"
+      - "app-cluster1/ns-a"
+      - "app-cluster1/ns-b"
+      - "transit-cluster1/gateway-transit1-c"
+      - "transit-cluster2/gateway-transit2-c"
+      - "app-cluster2/gateway-c"
+      - "app-cluster2/ns-c"
+      - "app-cluster2/ns-d"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: efgh-ws
+spec:
+  displayName: WORKSPACE_EFGH
+  namespaceSelector:
+    names:
+      - "transit-cluster2/gateway-t1-efgh"
+      - "app-cluster2/gateway-e"
+      - "app-cluster2/ns-e"
+      - "app-cluster2/ns-f"
+      - "transit-cluster2/gateway-transit2-g"
+      - "transit-cluster1/gateway-transit1-g"
+      - "app-cluster1/gateway-g"
+      - "app-cluster1/ns-g"
+      - "app-cluster1/ns-h"

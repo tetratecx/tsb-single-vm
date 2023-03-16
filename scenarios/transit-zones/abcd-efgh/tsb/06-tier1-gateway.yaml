@@ -1,0 +1,128 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  group: abcd-gateway-group
+  name: gw-t1-abcd
+spec:
+  displayName: GatewayT1_ABCD
+  workloadSelector:
+    namespace: gateway-t1-abcd
+    labels:
+      app: gw-t1-abcd
+  externalServers:
+  - name: abcd
+    hostname: abcd.demo.tetrate.io
+    port: 443
+    tls:
+      mode: SIMPLE
+      secretName: app-abcd-cert
+    clusters:
+    - name: app-cluster1
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  group: abcd-gateway-group
+  name: gw-transit1-c
+spec:
+  displayName: GatewayTransit1_C
+  workloadSelector:
+    namespace: gateway-transit1-c
+    labels:
+      app: gw-transit1-c
+  internalServers:
+  - name: transit1-c
+    hostname: app-c.nc-c
+    clusters:
+    - name: transit-cluster2
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  group: abcd-gateway-group
+  name: gw-transit2-c
+spec:
+  displayName: GatewayTransit2_C
+  workloadSelector:
+    namespace: gateway-transit2-c
+    labels:
+      app: gw-transit2-c
+  internalServers:
+  - name: transit2-c
+    hostname: app-c.nc-c
+    clusters:
+    - name: app-cluster2
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  group: efgh-gateway-group
+  name: gw-t1-efgh
+spec:
+  displayName: GatewayT1_EFGH
+  workloadSelector:
+    namespace: gateway-t1-efgh
+    labels:
+      app: gw-t1-efgh
+  externalServers:
+  - name: efgh
+    hostname: efgh.demo.tetrate.io
+    port: 443
+    tls:
+      mode: SIMPLE
+      secretName: app-efgh-cert
+    clusters:
+    - name: app-cluster2
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  group: efgh-gateway-group
+  name: gw-transit1-c
+spec:
+  displayName: GatewayTransit2_G
+  workloadSelector:
+    namespace: gateway-transit2-G
+    labels:
+      app: gw-transit2-g
+  internalServers:
+  - name: transit2-g
+    hostname: app-g.nc-g
+    clusters:
+    - name: transit-cluster1
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Tier1Gateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  group: efgh-gateway-group
+  name: gw-transit1-g
+spec:
+  displayName: GatewayTransit1_G
+  workloadSelector:
+    namespace: gateway-transit1-g
+    labels:
+      app: gw-transit1-g
+  internalServers:
+  - name: transit1-g
+    hostname: app-g.nc-g
+    clusters:
+    - name: app-cluster1

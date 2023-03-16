@@ -1,0 +1,114 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  name: abcd-gateway-group
+spec:
+  displayName: Gateway_Group_ABCD
+  namespaceSelector:
+    names:
+      - "transit-cluster1/gateway-t1-abcd"
+      - "app-cluster1/gateway-a"
+      - "transit-cluster1/gateway-transit1-c"
+      - "transit-cluster2/gateway-transit2-c"
+      - "app-cluster2/gateway-c"
+  configMode: BRIDGED
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  name: efgh-gateway-group
+spec:
+  displayName: Gateway_Group_EFGH
+  namespaceSelector:
+    names:
+      - "transit-cluster2/gateway-t1-efgh"
+      - "app-cluster2/gateway-e"
+      - "transit-cluster2/gateway-transit2-g"
+      - "transit-cluster1/gateway-transit1-g"
+      - "app-cluster1/gateway-g"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  name: abcd-traffic-group
+spec:
+  displayName: Traffic_Group_ABCD
+  namespaceSelector:
+    names:
+      - "app-cluster1/ns-a"
+      - "app-cluster1/ns-b"
+      - "app-cluster2/ns-c"
+      - "app-cluster2/ns-d"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  name: efgh-traffic-group
+spec:
+  displayName: Traffic_Group_EFGH
+  namespaceSelector:
+    names:
+      - "app-cluster2/ns-e"
+      - "app-cluster2/ns-f"
+      - "app-cluster1/ns-g"
+      - "app-cluster1/ns-h"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  name: abcd-security-group
+spec:
+  displayName: Security_Group_ABCD
+  namespaceSelector:
+    names:
+      - "transit-cluster1/gateway-t1-abcd"
+      - "app-cluster1/gateway-a"
+      - "app-cluster1/ns-a"
+      - "app-cluster1/ns-b"
+      - "transit-cluster1/gateway-transit1-c"
+      - "transit-cluster2/gateway-transit2-c"
+      - "app-cluster2/gateway-c"
+      - "app-cluster2/ns-c"
+      - "app-cluster2/ns-d"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  name: efgh-security-group
+spec:
+  displayName: Security_Group_EFGH
+  namespaceSelector:
+    names:
+      - "transit-cluster2/gateway-t1-efgh"
+      - "app-cluster2/gateway-e"
+      - "app-cluster2/ns-e"
+      - "app-cluster2/ns-f"
+      - "transit-cluster2/gateway-transit2-g"
+      - "transit-cluster1/gateway-transit1-g"
+      - "app-cluster1/gateway-g"
+      - "app-cluster1/ns-g"
+      - "app-cluster1/ns-h"
+  configMode: BRIDGED
