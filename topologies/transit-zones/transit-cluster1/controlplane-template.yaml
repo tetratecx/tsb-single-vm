@@ -23,7 +23,7 @@ spec:
         managed: INTERNAL
     xcp:
       centralAuthMode: JWT
-      enableHttpMeshInternalIdentityPropagation: true
+      # enableHttpMeshInternalIdentityPropagation: true
       kubeSpec:
         overlays:
         - apiVersion: install.xcp.tetrate.io/v1alpha1
