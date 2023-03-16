@@ -9,7 +9,7 @@ spec:
     region: region0
   tier1Cluster: true
   tokenTtl: 31536000s
-  network: tier0
+  network: mgmt
 ---
 apiVersion: api.tsb.tetrate.io/v2
 kind: Cluster
@@ -21,7 +21,7 @@ spec:
     region: region1
   tier1Cluster: false
   tokenTtl: 31536000s
-  network: tier2-1
+  network: apps1
 ---
 apiVersion: api.tsb.tetrate.io/v2
 kind: Cluster
@@ -33,7 +33,7 @@ spec:
     region: region1
   tier1Cluster: true
   tokenTtl: 31536000s
-  network: tier1-1
+  network: transit1
 ---
 apiVersion: api.tsb.tetrate.io/v2
 kind: Cluster
@@ -45,7 +45,7 @@ spec:
     region: region2
   tier1Cluster: true
   tokenTtl: 31536000s
-  network: tier1-2
+  network: transit2
 ---
 apiVersion: api.tsb.tetrate.io/v2
 kind: Cluster
@@ -57,4 +57,4 @@ spec:
     region: region2
   tier1Cluster: false
   tokenTtl: 31536000s
-  network: tier2-2
+  network: apps2

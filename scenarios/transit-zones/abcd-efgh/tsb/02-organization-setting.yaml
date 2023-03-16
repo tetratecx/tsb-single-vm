@@ -7,8 +7,8 @@ metadata:
 spec:
   networkSettings:
     networkReachability:
-      tier0: tier1-1,tier1-2,tier2-1,tier2-2
-      tier1-1: tier0,tier2-1,tier1-2
-      tier1-2: tier0,tier2-2,tier1-1
-      tier2-1: tier0,tier1-1
-      tier2-2: tier0,tier1-2
+      apps1: transit1
+      apps2: transit2
+      transit1: apps1,transit2
+      transit2: apps2,transit1
+  
