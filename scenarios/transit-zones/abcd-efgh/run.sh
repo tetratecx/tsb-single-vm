@@ -83,8 +83,8 @@ if [[ ${ACTION} = "deploy" ]]; then
 
   # Deploy kubernetes objects in app-cluster2
   kubectl --context app-cluster2-m5 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster2/01-namespace.yaml ;
-  if ! kubectl --context app-cluster2-m5 get secret app-efgh-cert -n gateway-a &>/dev/null ; then
-    kubectl --context app-cluster2-m5 create secret tls app-efgh-cert -n gateway-a \
+  if ! kubectl --context app-cluster2-m5 get secret app-efgh-cert -n gateway-e &>/dev/null ; then
+    kubectl --context app-cluster2-m5 create secret tls app-efgh-cert -n gateway-e \
       --key ${CERTS_BASE_DIR}/efgh/server.efgh.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/efgh/server.efgh.demo.tetrate.io-cert.pem ;
   fi
