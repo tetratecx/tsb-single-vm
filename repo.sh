@@ -157,6 +157,9 @@ if [[ ${ACTION} = "local-stop" ]]; then
   exit 0
 fi
 
+echo ${ACTION}
+echo ${REPO_ENDPOINT}
+
 if [[ ${ACTION} = "sync" ]] && [[ -z "${REPO_ENDPOINT}" ]] ; then
   sync_tsb_images ${REPO_ENDPOINT} ;  
   exit 0
