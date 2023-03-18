@@ -2,15 +2,22 @@
 ROOT_DIR=${1}
 OUTPUT_DIR=${ROOT_DIR}/output
 
+source ${ROOT_DIR}/helpers.sh
+
 ENV_CONF=env.json
 if ! [[ -f "${ENV_CONF}" ]] ; then
-  echo "Cannot find ${ENV_CONF}, aborting..."
+  print_error "Cannot find ${ENV_CONF}, aborting..."
   exit 1
 fi
 
-if ! cat ${ENV_CONF} | jq -r ".topology" &>/dev/null ; then
-  echo "Unable to parse topology from ${ENV_CONF}, aborting..."
+if ! which jq ; then
+  print_error "Package for json parsing jq is not installed, please run 'sudo apt-get install -y jq'"
   exit 2
+fi
+
+if ! cat ${ENV_CONF} | jq -r ".topology" &>/dev/null ; then
+  print_error "Unable to parse topology from ${ENV_CONF}, aborting..."
+  exit 3
 fi
 
 function get_topology {
@@ -28,8 +35,8 @@ function get_scenario_dir {
 
 TOPOLOGY_CONF=$(get_topology_dir)/infra.json
 if ! [[ -f "${TOPOLOGY_CONF}" ]] ; then
-  echo "Cannot find ${TOPOLOGY_CONF}, aborting..."
-  exit 3
+  print_error "Cannot find ${TOPOLOGY_CONF}, aborting..."
+  exit 4
 fi
 
 
@@ -122,21 +129,44 @@ function get_cp_zone_by_index {
 
 ### TSB Configuration ###
 
-function get_tsb_repo_password {
-  cat ${ENV_CONF} | jq -r ".tsb.repo.password"
-}
-function get_tsb_repo_url {
-  cat ${ENV_CONF} | jq -r ".tsb.repo.url"
+function is_local_repo_enabled {
+  cat ${ENV_CONF} | jq -r ".tsb.local_repo.enabled"
 }
 
-function get_tsb_repo_user {
-  cat ${ENV_CONF} | jq -r ".tsb.repo.user"
+function is_private_repo_enabled {
+  cat ${ENV_CONF} | jq -r ".tsb.private_repo.enabled"
+}
+
+function is_private_repo_insecure_registry {
+  cat ${ENV_CONF} | jq -r ".tsb.private_repo.insecure_registry"
+}
+
+function get_private_repo_password {
+  cat ${ENV_CONF} | jq -r ".tsb.private_repo.password"
+}
+
+function get_private_repo_url {
+  cat ${ENV_CONF} | jq -r ".tsb.private_repo.url"
+}
+
+function get_private_repo_user {
+  cat ${ENV_CONF} | jq -r ".tsb.private_repo.user"
+}
+
+function get_tetrate_repo_password {
+  cat ${ENV_CONF} | jq -r ".tsb.tetrate_repo.password"
+}
+function get_tetrate_repo_url {
+  cat ${ENV_CONF} | jq -r ".tsb.tetrate_repo.url"
+}
+
+function get_tetrate_repo_user {
+  cat ${ENV_CONF} | jq -r ".tsb.tetrate_repo.user"
 }
 
 function get_tsb_version {
   cat ${ENV_CONF} | jq -r ".tsb.version"
 }
-
 
 ### Configuration and output directories ###
 function get_mp_config_dir {

@@ -3,6 +3,7 @@
   "topology": "active-standby",
   "tsb": {
     "repo": {
+      "local_mirror": true,
       "password": "<TSB_REPO_APIKEY>",
       "url": "containers.dl.tetrate.io",
       "user": "<TSB_REPO_USERNAME>"

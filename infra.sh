@@ -6,7 +6,7 @@ source ${ROOT_DIR}/helpers.sh
 ACTION=${1}
 
 # MINIKUBE_OPTS="--driver docker --cpus=6"
-MINIKUBE_OPTS="--driver docker"
+MINIKUBE_OPTS="--driver docker --insecure-registry \"192.168.48.0/24\""
 CLUSTER_METALLB_STARTIP=100
 CLUSTER_METALLB_ENDIP=199
 
@@ -43,6 +43,15 @@ function patch_metallb_pull_repo {
   kubectl --context ${1} -n metallb-system patch daemonset speaker --patch ${SPEAKER_PATCH} ;
 }
 
+# Configure minikube clusters to have access to docker repo containing tsb images
+#   args:
+#     (1) minikube profile name
+function configure_docker_access {
+  minikube --profile ${1} ssh -- docker login ${TSB_REPO_URL} --username ${TSB_REPO_USER} --password ${TSB_REPO_PW} &>/dev/null ;
+  minikube --profile ${1} ssh -- sudo cp /home/docker/.docker/config.json /var/lib/kubelet ;
+  minikube --profile ${1} ssh -- sudo systemctl restart kubelet ;
+}
+
 
 ######################## START OF ACTIONS ########################
 
@@ -75,10 +84,8 @@ if [[ ${ACTION} = "up" ]]; then
     patch_metallb_pull_repo ${CLUSTER_PROFILE} ;
   fi  
 
-  # Make sure minikube has access to tsb private repo
-  minikube --profile ${CLUSTER_PROFILE} ssh -- docker login ${TSB_REPO_URL} --username ${TSB_REPO_USER} --password ${TSB_REPO_PW} &>/dev/null ;
-  minikube --profile ${CLUSTER_PROFILE} ssh -- sudo cp /home/docker/.docker/config.json /var/lib/kubelet ;
-  minikube --profile ${CLUSTER_PROFILE} ssh -- sudo systemctl restart kubelet ;
+  # Make sure minikube has access to docker repo containing tsb images
+  configure_docker_access ${CLUSTER_PROFILE} ;
 
   # Add nodes labels for locality based routing (region and zone)
   if ! kubectl --context ${CLUSTER_PROFILE} get nodes ${CLUSTER_PROFILE} --show-labels | grep "topology.kubernetes.io/region=${CLUSTER_REGION}" &>/dev/null ; then
@@ -124,7 +131,7 @@ if [[ ${ACTION} = "up" ]]; then
       echo "Minikube application cluster profile ${CLUSTER_PROFILE} already running"
     else
       print_info "Starting minikube application cluster profile ${CLUSTER_PROFILE}"
-      minikube start --kubernetes-version=v${K8S_VERSION} --profile ${CLUSTER_PROFILE} --network ${DOCKER_NET} ${MINIKUBE_OPTS} ;
+      minikube start --kubernetes-version=v${K8S_VERSION} --profile ${CLUSTER_PROFILE} --network ${DOCKER_NET} ${MINIKUBE_OPTS};
     fi
 
     # Extract the docker network subnet (default 192.168.49.0/24) for this application cluster
@@ -139,10 +146,8 @@ if [[ ${ACTION} = "up" ]]; then
       patch_metallb_pull_repo ${CLUSTER_PROFILE} ;
     fi  
 
-    # Make sure minikube has access to tsb private repo
-    minikube --profile ${CLUSTER_PROFILE} ssh -- docker login ${TSB_REPO_URL} --username ${TSB_REPO_USER} --password ${TSB_REPO_PW} &>/dev/null ;
-    minikube --profile ${CLUSTER_PROFILE} ssh -- sudo cp /home/docker/.docker/config.json /var/lib/kubelet ;
-    minikube --profile ${CLUSTER_PROFILE} ssh -- sudo systemctl restart kubelet ;
+    # Make sure minikube has access to docker repo containing tsb images
+    configure_docker_access ${CLUSTER_PROFILE} ;
 
     # Add nodes labels for locality based routing (region and zone)
     if ! kubectl --context ${CLUSTER_PROFILE} get nodes ${CLUSTER_PROFILE} --show-labels | grep "topology.kubernetes.io/region=${CLUSTER_REGION}" &>/dev/null ; then

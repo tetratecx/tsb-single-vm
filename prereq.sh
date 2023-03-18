@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 source ${ROOT_DIR}/env.sh ${ROOT_DIR}
+source ${ROOT_DIR}/helpers.sh
 
 ACTION=${1}
 ISTIOCTL_VERSION=$(get_istioctl_version) ;
@@ -10,6 +11,7 @@ K8S_VERSION=$(get_k8s_version) ;
 TSB_REPO_URL=$(get_tsb_repo_url) ;
 TSB_REPO_USER=$(get_tsb_repo_user) ;
 TSB_REPO_PW=$(get_tsb_repo_password) ;
+
 
 if [[ ${ACTION} = "check" ]]; then
 
