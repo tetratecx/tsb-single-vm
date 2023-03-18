@@ -81,7 +81,6 @@ function add_insecure_registry {
     print_info "Insecure registry configured"
   elif cat /etc/docker/daemon.json | grep ${1} &>/dev/null; then
     print_info "Insecure registry already configured"
-    return
   else
     print_warning "File /etc/docker/daemon.json already exists"
     print_warning "Please merge ${DOCKER_JSON} manually and restart docker with 'sudo systemctl restart docker'"
