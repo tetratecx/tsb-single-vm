@@ -157,11 +157,10 @@ if [[ ${ACTION} = "local-stop" ]]; then
   exit 0
 fi
 
-echo ${ACTION}
-echo ${REPO_ENDPOINT}
-
 if [[ ${ACTION} = "sync" ]] && [[ -n "${REPO_ENDPOINT}" ]] ; then
-  sync_tsb_images ${REPO_ENDPOINT} ;  
+  print_info "Going to sync tsb images to repo ${REPO_ENDPOINT}"
+  sync_tsb_images ${REPO_ENDPOINT} ;
+  print_info "Finished to sync tsb images to repo ${REPO_ENDPOINT}"
   exit 0
 fi
 
