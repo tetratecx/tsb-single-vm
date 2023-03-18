@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
+#
+# Helper script to create local docker repo with tsb images or push tsb images
+# to another private repo.
+#
 ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
-source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
 
 ACTION=${1}
+REPO_ENDPOINT=${2}
 
-
-LOCAL_REPO_MIRROR_ENABLED=$(local_mirror_enabled) ;
 LOCAL_REPO_NETWORK="registry" 
 LOCAL_REPO_NAME="registry"
-
-
 
 # Start local docker repo
 #   args:
@@ -62,7 +62,10 @@ function remove_local_repo {
 #   args:
 #     (1) repo name
 function get_repo_endpoint {
-  IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1}) ;
+  if ! IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1}  2>/dev/null ); then
+    print_error "Local docker repo not running" ; 
+    exit 1 ;
+  fi
   echo "${IP}:5000" ;
 }
 
@@ -128,38 +131,42 @@ function sync_tsb_images {
       docker push ${1}/netshoot ;
     fi
 
-    print_info "All tsb images synced and avaiable in the local repo"
+    print_info "All tsb images synced and available in the local repo"
 }
 
 
-if [[ ${ACTION} = "start" ]]; then
-  if [[ ${LOCAL_REPO_MIRROR_ENABLED} == "true" ]]; then
-    # Start local docker repo if not running
-    start_local_repo ${LOCAL_REPO_NETWORK} ${LOCAL_REPO_NAME} ;
-    REPO_ENDPOINT=$(get_repo_endpoint ${LOCAL_REPO_NAME})
-
-    # Add local docker repo as insecure registry
-    add_insecure_registry ${REPO_ENDPOINT} ;
-
-    # Sync docker images if needed
-    sync_tsb_images ${REPO_ENDPOINT} ;
-  fi
+if [[ ${ACTION} = "local-info" ]]; then
+  echo $(get_repo_endpoint ${LOCAL_REPO_NAME}) ;
   exit 0
 fi
 
-if [[ ${ACTION} = "stop" ]]; then
+if [[ ${ACTION} = "local-remove" ]]; then
+  remove_local_repo ${LOCAL_REPO_NETWORK} ${LOCAL_REPO_NAME} ;
+  exit 0
+fi
+
+if [[ ${ACTION} = "local-start" ]]; then
+  start_local_repo ${LOCAL_REPO_NETWORK} ${LOCAL_REPO_NAME} ;
+  REPO_ENDPOINT=$(get_repo_endpoint ${LOCAL_REPO_NAME})
+  add_insecure_registry ${REPO_ENDPOINT} ;
+  exit 0
+fi
+
+if [[ ${ACTION} = "local-stop" ]]; then
   stop_local_repo ${LOCAL_REPO_NAME} ;
   exit 0
 fi
 
-if [[ ${ACTION} = "remove" ]]; then
-  remove_local_repo ${LOCAL_REPO_NETWORK} ${LOCAL_REPO_NAME} ;
+if [[ ${ACTION} = "sync" ]] && [[ -z "${REPO_ENDPOINT}" ]] ; then
+  sync_tsb_images ${REPO_ENDPOINT} ;  
   exit 0
 fi
 
 
 echo "Please specify correct action:"
-echo "  - start"
-echo "  - stop"
-echo "  - remove"
+echo "  - local-info"
+echo "  - local-remove"
+echo "  - local-start"
+echo "  - local-stop"
+echo "  - sync <repo-url>"
 exit 1
