@@ -160,7 +160,7 @@ fi
 echo ${ACTION}
 echo ${REPO_ENDPOINT}
 
-if [[ ${ACTION} = "sync" ]] && [[ -z "${REPO_ENDPOINT}" ]] ; then
+if [[ ${ACTION} = "sync" ]] && [[ -n "${REPO_ENDPOINT}" ]] ; then
   sync_tsb_images ${REPO_ENDPOINT} ;  
   exit 0
 fi
