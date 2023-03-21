@@ -105,6 +105,7 @@ if [[ ${ACTION} = "install" ]]; then
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
     CP_CLUSTER_CONTEXT=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
+    CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
     print_info "Wait installation of tsb control plane in cluster ${CP_CLUSTER_NAME} to finish (kubectl context ${CP_CLUSTER_CONTEXT})"
 
     # Wait for the control and data plane to become available
