@@ -39,7 +39,7 @@ spec:
       app: gw-transit1-c
   internalServers:
   - name: transit1-c
-    hostname: app-c.nc-c
+    hostname: app-c.ns-c
     clusters:
     - name: transit-cluster2
 ---
@@ -59,7 +59,7 @@ spec:
       app: gw-transit2-c
   internalServers:
   - name: transit2-c
-    hostname: app-c.nc-c
+    hostname: app-c.ns-c
     clusters:
     - name: app-cluster2
 ---
@@ -103,7 +103,7 @@ spec:
       app: gw-transit2-g
   internalServers:
   - name: transit2-g
-    hostname: app-g.nc-g
+    hostname: app-g.ns-g
     clusters:
     - name: transit-cluster1
 ---
@@ -123,6 +123,6 @@ spec:
       app: gw-transit1-g
   internalServers:
   - name: transit1-g
-    hostname: app-g.nc-g
+    hostname: app-g.ns-g
     clusters:
     - name: app-cluster1

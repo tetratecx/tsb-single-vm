@@ -22,9 +22,11 @@ DONE
 # Wait for cluster to be onboarded
 #   args:
 #     (1) cluster name
+#     (2) cluster profile
 function wait_cluster_onboarded {
   echo "Wait for cluster ${1} to be onboarded"
   while ! tctl experimental status cs ${1} | grep "Cluster onboarded" &>/dev/null ; do
+    kubectl --context ${2} rollout restart deployment edge -n istio-system &>/dev/null ;
     sleep 5
     echo -n "."
   done
@@ -43,11 +45,11 @@ if [[ ${ACTION} = "deploy" ]]; then
   # Deploy tsb cluster, organization-settings and tenant objects
   # Wait for clusters to be onboarded to avoid race conditions
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ;
-  sleep 10 ;
-  wait_cluster_onboarded app-cluster1 ;
-  wait_cluster_onboarded transit-cluster1 ;
-  wait_cluster_onboarded transit-cluster2 ;
-  wait_cluster_onboarded app-cluster2 ;
+  sleep 5 ;
+  wait_cluster_onboarded app-cluster1 app-cluster1-m2 ;
+  wait_cluster_onboarded transit-cluster1 transit-cluster1-m3 ;
+  wait_cluster_onboarded transit-cluster2 transit-cluster2-m4 ;
+  wait_cluster_onboarded app-cluster2 app-cluster2-m5 ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/02-organization-setting.yaml ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;
 
