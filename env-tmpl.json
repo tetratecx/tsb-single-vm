@@ -2,8 +2,13 @@
   "scenario": "abc-failover",
   "topology": "active-standby",
   "tsb": {
-    "repo": {
-      "local_mirror": true,
+    "install_repo": {
+      "insecure_registry": true,
+      "password": "",
+      "url": "192.168.48.2:5000",
+      "user": ""
+    },
+    "tetrate_repo": {
       "password": "<TSB_REPO_APIKEY>",
       "url": "containers.dl.tetrate.io",
       "user": "<TSB_REPO_USERNAME>"

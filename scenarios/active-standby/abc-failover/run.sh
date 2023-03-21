@@ -2,8 +2,11 @@
 SCENARIO_ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 ROOT_DIR=${1}
 ACTION=${2}
+source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
+
+INSTALL_REPO_URL=$(get_install_repo_url) ;
 
 # Login as admin into tsb
 #   args:
@@ -30,6 +33,9 @@ function wait_cluster_onboarded {
 
 
 if [[ ${ACTION} = "deploy" ]]; then
+
+  # Set TSB_INSTALL_REPO_URL for envsubst of image repo
+  export TSB_INSTALL_REPO_URL=${INSTALL_REPO_URL}
 
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
@@ -64,11 +70,13 @@ if [[ ${ACTION} = "deploy" ]]; then
       --key ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-cert.pem ;
   fi
-  kubectl --context active-cluster-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/active-cluster/02-service-account.yaml
-  kubectl --context active-cluster-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/active-cluster/03-deployment.yaml
-  kubectl --context active-cluster-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/active-cluster/04-service.yaml
-  kubectl --context active-cluster-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/active-cluster/05-eastwest-gateway.yaml
-  kubectl --context active-cluster-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/active-cluster/06-ingress-gateway.yaml
+  kubectl --context active-cluster-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/active-cluster/02-service-account.yaml ;
+  mkdir -p ${ROOT_DIR}/output/active-cluster/k8s ;
+  envsubst < ${SCENARIO_ROOT_DIR}/k8s/active-cluster/03-deployment.yaml > ${ROOT_DIR}/output/active-cluster/k8s/03-deployment.yaml ;
+  kubectl --context active-cluster-m2 apply -f ${ROOT_DIR}/output/active-cluster/k8s/03-deployment.yaml ;
+  kubectl --context active-cluster-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/active-cluster/04-service.yaml ;
+  kubectl --context active-cluster-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/active-cluster/05-eastwest-gateway.yaml ;
+  kubectl --context active-cluster-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/active-cluster/06-ingress-gateway.yaml ;
 
   # Deploy kubernetes objects in standby cluster
   kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/01-namespace.yaml ;
@@ -77,11 +85,13 @@ if [[ ${ACTION} = "deploy" ]]; then
       --key ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-cert.pem ;
   fi
-  kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/02-service-account.yaml
-  kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/03-deployment.yaml
-  kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/04-service.yaml
-  kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/05-eastwest-gateway.yaml
-  kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/06-ingress-gateway.yaml
+  kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/02-service-account.yaml ;
+  mkdir -p ${ROOT_DIR}/output/standby-cluster/k8s ;
+  envsubst < ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/03-deployment.yaml > ${ROOT_DIR}/output/standby-cluster/k8s/03-deployment.yaml ;
+  kubectl --context standby-cluster-m3 apply -f ${ROOT_DIR}/output/standby-cluster/k8s/03-deployment.yaml ;
+  kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/04-service.yaml ;
+  kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/05-eastwest-gateway.yaml ;
+  kubectl --context standby-cluster-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster/06-ingress-gateway.yaml ;
 
   # Deploy tsb objects
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/04-workspace.yaml ;
@@ -108,7 +118,9 @@ if [[ ${ACTION} = "undeploy" ]]; then
 
   # Delete kubernetes configuration in mgmt, active and standby cluster
   kubectl --context mgmt-cluster-m1 delete -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster 2>/dev/null ;
+  kubectl --context active-cluster-m2 delete -f ${ROOT_DIR}/output/active-cluster/k8s/03-deployment.yaml 2>/dev/null ;
   kubectl --context active-cluster-m2 delete -f ${SCENARIO_ROOT_DIR}/k8s/active-cluster 2>/dev/null ;
+  kubectl --context standby-cluster-m3 delete -f ${ROOT_DIR}/output/standby-cluster/k8s/03-deployment.yaml 2>/dev/null ;
   kubectl --context standby-cluster-m3 delete -f ${SCENARIO_ROOT_DIR}/k8s/standby-cluster 2>/dev/null ;
 
   exit 0
@@ -121,9 +133,9 @@ if [[ ${ACTION} = "info" ]]; then
   INGRESS_ACTIVE_GW_IP=$(kubectl --context active-cluster-m2 get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
   INGRESS_STANDBY_GW_IP=$(kubectl --context standby-cluster-m3 get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
 
-  echo "****************************"
-  echo "*** ABC Traffic Commands ***"
-  echo "****************************"
+  print_info "****************************"
+  print_info "*** ABC Traffic Commands ***"
+  print_info "****************************"
   echo
   echo "Traffic to Active Ingress Gateway"
   print_command "curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${INGRESS_ACTIVE_GW_IP}\" --cacert ca.crt=certs/root-cert.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\""

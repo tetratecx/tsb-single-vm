@@ -5,16 +5,17 @@ source ${ROOT_DIR}/helpers.sh
 
 ACTION=${1}
 
-# MINIKUBE_OPTS="--driver docker --cpus=6"
-MINIKUBE_OPTS="--driver docker --insecure-registry \"192.168.48.0/24\""
 CLUSTER_METALLB_STARTIP=100
 CLUSTER_METALLB_ENDIP=199
 
 K8S_VERSION=$(get_k8s_version) ;
-TSB_REPO_PW=$(get_tsb_repo_password) ;
-TSB_REPO_URL=$(get_tsb_repo_url) ;
-TSB_REPO_USER=$(get_tsb_repo_user) ;
+INSTALL_REPO_PW=$(get_install_repo_password) ;
+INSTALL_REPO_URL=$(get_install_repo_url) ;
+INSTALL_REPO_USER=$(get_install_repo_user) ;
 
+INSTALL_REPO_INSECURE_REGISTRY=$(is_install_repo_insecure_registry) ;
+MINIKUBE_OPTS="--driver docker --insecure-registry 192.168.48.0/24"
+# MINIKUBE_OPTS="--driver docker --cpus=6"
 
 # Configure metallb start and end IP
 #   args:
@@ -47,9 +48,14 @@ function patch_metallb_pull_repo {
 #   args:
 #     (1) minikube profile name
 function configure_docker_access {
-  minikube --profile ${1} ssh -- docker login ${TSB_REPO_URL} --username ${TSB_REPO_USER} --password ${TSB_REPO_PW} &>/dev/null ;
-  minikube --profile ${1} ssh -- sudo cp /home/docker/.docker/config.json /var/lib/kubelet ;
-  minikube --profile ${1} ssh -- sudo systemctl restart kubelet ;
+  if ! [[ ${INSTALL_REPO_INSECURE_REGISTRY} == "true" ]]; then
+    minikube --profile ${1} ssh -- docker login ${INSTALL_REPO_URL} --username ${INSTALL_REPO_USER} --password ${INSTALL_REPO_PW} &>/dev/null ;
+    minikube --profile ${1} ssh -- sudo cp /home/docker/.docker/config.json /var/lib/kubelet ;
+    minikube --profile ${1} ssh -- sudo systemctl restart kubelet ;
+    print_info "Logged-in into docker repo ${INSTALL_REPO_URL} inside minikube profile ${1} cluster"
+  else
+    print_info "Insecure docker registry configured, skipping docker login"
+  fi
 }
 
 

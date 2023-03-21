@@ -2,8 +2,11 @@
 SCENARIO_ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 ROOT_DIR=${1}
 ACTION=${2}
+source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
+
+INSTALL_REPO_URL=$(get_install_repo_url) ;
 
 # Login as admin into tsb
 #   args:
@@ -30,6 +33,9 @@ function wait_cluster_onboarded {
 
 
 if [[ ${ACTION} = "deploy" ]]; then
+
+  # Set TSB_INSTALL_REPO_URL for envsubst of image repo
+  export TSB_INSTALL_REPO_URL=${INSTALL_REPO_URL}
 
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
@@ -83,10 +89,12 @@ if [[ ${ACTION} = "deploy" ]]; then
       --key ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-cert.pem ;
   fi
-  kubectl --context cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/02-service-account.yaml
-  kubectl --context cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/03-deployment.yaml
-  kubectl --context cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/04-service.yaml
-  kubectl --context cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/05-ingress-gateway.yaml
+  kubectl --context cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/02-service-account.yaml ;
+  mkdir -p ${ROOT_DIR}/output/cluster1/k8s ;
+  envsubst < ${SCENARIO_ROOT_DIR}/k8s/cluster1/03-deployment.yaml > ${ROOT_DIR}/output/cluster1/k8s/03-deployment.yaml ;
+  kubectl --context cluster1-m2 apply -f ${ROOT_DIR}/output/cluster1/k8s/03-deployment.yaml ;
+  kubectl --context cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/04-service.yaml ;
+  kubectl --context cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/05-ingress-gateway.yaml ;
 
   # Deploy kubernetes objects in in cluster2
   kubectl --context cluster2-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/01-namespace.yaml ;
@@ -95,10 +103,12 @@ if [[ ${ACTION} = "deploy" ]]; then
       --key ${CERTS_BASE_DIR}/def/server.def.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/def/server.def.demo.tetrate.io-cert.pem ;
   fi
-  kubectl --context cluster2-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/02-service-account.yaml
-  kubectl --context cluster2-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/03-deployment.yaml
-  kubectl --context cluster2-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/04-service.yaml
-  kubectl --context cluster2-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/05-ingress-gateway.yaml
+  kubectl --context cluster2-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/02-service-account.yaml ;
+  mkdir -p ${ROOT_DIR}/output/cluster2/k8s ;
+  envsubst < ${SCENARIO_ROOT_DIR}/k8s/cluster2/03-deployment.yaml > ${ROOT_DIR}/output/cluster2/k8s/03-deployment.yaml ;
+  kubectl --context cluster2-m3 apply -f ${ROOT_DIR}/output/cluster2/k8s/03-deployment.yaml ;
+  kubectl --context cluster2-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/04-service.yaml ;
+  kubectl --context cluster2-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/05-ingress-gateway.yaml ;
 
   # Deploy kubernetes objects in in cluster3
   kubectl --context cluster3-m4 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/01-namespace.yaml ;
@@ -107,10 +117,12 @@ if [[ ${ACTION} = "deploy" ]]; then
       --key ${CERTS_BASE_DIR}/ghi/server.ghi.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/ghi/server.ghi.demo.tetrate.io-cert.pem ;
   fi
-  kubectl --context cluster3-m4 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/02-service-account.yaml
-  kubectl --context cluster3-m4 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/03-deployment.yaml
-  kubectl --context cluster3-m4 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/04-service.yaml
-  kubectl --context cluster3-m4 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/05-ingress-gateway.yaml
+  kubectl --context cluster3-m4 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/02-service-account.yaml ;
+  mkdir -p ${ROOT_DIR}/output/cluster3/k8s ;
+  envsubst < ${SCENARIO_ROOT_DIR}/k8s/cluster3/03-deployment.yaml > ${ROOT_DIR}/output/cluster3/k8s/03-deployment.yaml ;
+  kubectl --context cluster3-m4 apply -f ${ROOT_DIR}/output/cluster3/k8s/03-deployment.yaml ;
+  kubectl --context cluster3-m4 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/04-service.yaml ;
+  kubectl --context cluster3-m4 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/05-ingress-gateway.yaml ;
 
   # Deploy tsb objects
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/04-workspace.yaml ;
@@ -137,8 +149,11 @@ if [[ ${ACTION} = "undeploy" ]]; then
 
   # Delete kubernetes configuration in mgmt, active and standby cluster
   kubectl --context mgmt-cluster-m1 delete -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster 2>/dev/null ;
+  kubectl --context cluster1-m2 delete -f ${ROOT_DIR}/output/cluster1/k8s/03-deployment.yaml 2>/dev/null ;
   kubectl --context cluster1-m2 delete -f ${SCENARIO_ROOT_DIR}/k8s/cluster1 2>/dev/null ;
+  kubectl --context cluster2-m3 delete -f ${ROOT_DIR}/output/cluster2/k8s/03-deployment.yaml 2>/dev/null ;
   kubectl --context cluster2-m3 delete -f ${SCENARIO_ROOT_DIR}/k8s/cluster2 2>/dev/null ;
+  kubectl --context cluster3-m4 delete -f ${ROOT_DIR}/output/cluster3/k8s/03-deployment.yaml 2>/dev/null ;
   kubectl --context cluster3-m4 delete -f ${SCENARIO_ROOT_DIR}/k8s/cluster3 2>/dev/null ;
 
   exit 0

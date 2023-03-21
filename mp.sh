@@ -8,11 +8,15 @@ source ${ROOT_DIR}/helpers.sh
 
 ACTION=${1}
 
+INSTALL_REPO_PW=$(get_install_repo_password) ;
+INSTALL_REPO_URL=$(get_install_repo_url) ;
+INSTALL_REPO_USER=$(get_install_repo_user) ;
+
 # Patch deployment still using dockerhub: tsb/ratelimit-redis
 #   args:
 #     (1) cluster kubeconfig context
 function patch_dockerhub_dep_redis {
-  while ! kubectl --context ${1} -n tsb set image deployment/ratelimit-redis redis=containers.dl.tetrate.io/redis:7.0.5-alpine &>/dev/null;
+  while ! kubectl --context ${1} -n tsb set image deployment/ratelimit-redis redis=${INSTALL_REPO_URL}/redis:7.0.5-alpine &>/dev/null;
   do
     sleep 1 ;
   done
@@ -23,7 +27,7 @@ function patch_dockerhub_dep_redis {
 #   args:
 #     (1) cluster kubeconfig context
 function patch_dockerhub_dep_ratelimit {
-  while ! kubectl --context ${1} -n istio-system set image deployment/ratelimit-server ratelimit=containers.dl.tetrate.io/ratelimit:5e9a43f9 &>/dev/null;
+  while ! kubectl --context ${1} -n istio-system set image deployment/ratelimit-server ratelimit=${INSTALL_REPO_URL}/ratelimit:5e9a43f9 &>/dev/null;
   do
     sleep 1 ;
   done
@@ -114,7 +118,7 @@ if [[ ${ACTION} = "install" ]]; then
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/demo-installation
   #   NOTE: the demo profile deploys both the mgmt plane AND the ctrl plane in a demo cluster!
   kubectl config use-context ${MP_CLUSTER_CONTEXT} ;
-  tctl install demo --registry containers.dl.tetrate.io --admin-password admin ;
+  tctl install demo --registry ${INSTALL_REPO_URL} --admin-password admin ;
 
   # Wait for the management, control and data plane to become available
   kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n tsb tsb-operator-management-plane --for condition=Available=True --timeout=600s ;

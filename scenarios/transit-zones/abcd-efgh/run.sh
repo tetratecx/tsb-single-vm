@@ -2,8 +2,11 @@
 SCENARIO_ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 ROOT_DIR=${1}
 ACTION=${2}
+source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
+
+INSTALL_REPO_URL=$(get_install_repo_url) ;
 
 # Login as admin into tsb
 #   args:
@@ -30,6 +33,9 @@ function wait_cluster_onboarded {
 
 
 if [[ ${ACTION} = "deploy" ]]; then
+
+  # Set TSB_INSTALL_REPO_URL for envsubst of image repo
+  export TSB_INSTALL_REPO_URL=${INSTALL_REPO_URL}
 
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
@@ -59,7 +65,9 @@ if [[ ${ACTION} = "deploy" ]]; then
       --cert ${CERTS_BASE_DIR}/abcd/server.abcd.demo.tetrate.io-cert.pem ;
   fi
   kubectl --context app-cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster1/02-service-account.yaml
-  kubectl --context app-cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster1/03-deployment.yaml
+  mkdir -p ${ROOT_DIR}/output/app-cluster1/k8s ;
+  envsubst < ${SCENARIO_ROOT_DIR}/k8s/app-cluster1/03-deployment.yaml > ${ROOT_DIR}/output/app-cluster1/k8s/03-deployment.yaml ;
+  kubectl --context app-cluster1-m2 apply -f ${ROOT_DIR}/output/app-cluster1/k8s/03-deployment.yaml ;
   kubectl --context app-cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster1/04-service.yaml
   kubectl --context app-cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster1/05-ingress-gateway.yaml
 
@@ -89,7 +97,9 @@ if [[ ${ACTION} = "deploy" ]]; then
       --cert ${CERTS_BASE_DIR}/efgh/server.efgh.demo.tetrate.io-cert.pem ;
   fi
   kubectl --context app-cluster2-m5 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster2/02-service-account.yaml
-  kubectl --context app-cluster2-m5 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster2/03-deployment.yaml
+  mkdir -p ${ROOT_DIR}/output/app-cluster2/k8s ;
+  envsubst < ${SCENARIO_ROOT_DIR}/k8s/app-cluster2/03-deployment.yaml > ${ROOT_DIR}/output/app-cluster2/k8s/03-deployment.yaml ;
+  kubectl --context app-cluster2-m5 apply -f ${ROOT_DIR}/output/app-cluster2/k8s/03-deployment.yaml ;
   kubectl --context app-cluster2-m5 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster2/04-service.yaml
   kubectl --context app-cluster2-m5 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster2/05-ingress-gateway.yaml
 
@@ -116,9 +126,11 @@ if [[ ${ACTION} = "undeploy" ]]; then
   done
 
   # Delete kubernetes configuration in mgmt, active and standby cluster
+  kubectl --context app-cluster1-m2 delete -f ${ROOT_DIR}/output/app-cluster1/k8s/03-deployment.yaml 2>/dev/null ;
   kubectl --context app-cluster1-m2 delete -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster1 2>/dev/null ;
   kubectl --context transit-cluster1-m3 delete -f ${SCENARIO_ROOT_DIR}/k8s/transit-cluster1 2>/dev/null ;
   kubectl --context transit-cluster2-m4 delete -f ${SCENARIO_ROOT_DIR}/k8s/transit-cluster2 2>/dev/null ;
+  kubectl --context app-cluster2-m5 delete -f ${ROOT_DIR}/output/app-cluster2/k8s/03-deployment.yaml 2>/dev/null ;
   kubectl --context app-cluster2-m5 delete -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster2 2>/dev/null ;
 
   exit 0

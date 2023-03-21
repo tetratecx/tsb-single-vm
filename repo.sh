@@ -165,9 +165,9 @@ fi
 
 
 echo "Please specify correct action:"
-echo "  - local-info"
-echo "  - local-remove"
-echo "  - local-start"
-echo "  - local-stop"
-echo "  - sync <repo-url>"
+echo "  - local-info : get local docker repo url (default: 192.168.48.2:5000)"
+echo "  - local-remove : remove local docker repo"
+echo "  - local-start : start local docker repo"
+echo "  - local-stop : stop local docker repo"
+echo "  - sync <repo-url> : sync tsb images from official repo to provided target repo"
 exit 1

@@ -7,6 +7,7 @@ source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
 
 ACTION=${1}
+INSTALL_REPO_URL=$(get_install_repo_url) ;
 
 # Login as admin into tsb
 #   args:
@@ -38,7 +39,8 @@ if [[ ${ACTION} = "install" ]]; then
   login_tsb_admin tetrate ;
 
   export TSB_API_ENDPOINT=$(kubectl --context ${MP_CLUSTER_CONTEXT} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
-  
+  export TSB_INSTALL_REPO_URL=${INSTALL_REPO_URL}
+
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
@@ -87,13 +89,23 @@ if [[ ${ACTION} = "install" ]]; then
     #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#deploy-operators
     kubectl config use-context ${MP_CLUSTER_CONTEXT} ;
     login_tsb_admin tetrate ;
-    tctl install manifest cluster-operators --registry containers.dl.tetrate.io > ${CP_OUTPUT_DIR}/clusteroperators.yaml ;
+    tctl install manifest cluster-operators --registry ${INSTALL_REPO_URL} > ${CP_OUTPUT_DIR}/clusteroperators.yaml ;
 
     # Applying operator, secrets and control plane configuration
     kubectl --context ${CP_CLUSTER_CONTEXT} apply -f ${CP_OUTPUT_DIR}/clusteroperators.yaml ;
     kubectl --context ${CP_CLUSTER_CONTEXT} apply -f ${CP_OUTPUT_DIR}/controlplane-secrets.yaml ;
     while ! kubectl --context ${CP_CLUSTER_CONTEXT} get controlplanes.install.tetrate.io &>/dev/null; do sleep 1; done ;
     kubectl --context ${CP_CLUSTER_CONTEXT} apply -f ${CP_OUTPUT_DIR}/controlplane.yaml ;
+    print_info "Bootstrapped installation of tsb control plane in cluster ${CP_CLUSTER_NAME} (kubectl context ${CP_CLUSTER_CONTEXT})"
+    CP_INDEX=$((CP_INDEX+1))
+  done
+
+
+  CP_COUNT=$(get_cp_count)
+  CP_INDEX=0
+  while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
+    CP_CLUSTER_CONTEXT=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
+    print_info "Wait installation of tsb control plane in cluster ${CP_CLUSTER_NAME} to finish (kubectl context ${CP_CLUSTER_CONTEXT})"
 
     # Wait for the control and data plane to become available
     kubectl --context ${CP_CLUSTER_CONTEXT} wait deployment -n istio-system tsb-operator-control-plane --for condition=Available=True --timeout=600s ;

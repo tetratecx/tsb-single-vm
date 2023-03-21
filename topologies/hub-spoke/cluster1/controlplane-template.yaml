@@ -5,7 +5,7 @@ metadata:
   name: controlplane
   namespace: istio-system
 spec:
-  hub: containers.dl.tetrate.io
+  hub: $TSB_INSTALL_REPO_URL
   managementPlane:
     host: $TSB_API_ENDPOINT
     port: 8443

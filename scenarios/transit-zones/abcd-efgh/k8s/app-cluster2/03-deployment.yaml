@@ -22,7 +22,7 @@ spec:
       serviceAccountName: sa-app-c
       containers:
         - name: obs-tester
-          image: containers.dl.tetrate.io/obs-tester-server:1.0
+          image: $TSB_INSTALL_REPO_URL/obs-tester-server:1.0
           imagePullPolicy: IfNotPresent
           args:
             - '--log-output-level=all:debug'
@@ -70,7 +70,7 @@ spec:
       serviceAccountName: sa-app-d
       containers:
         - name: obs-tester
-          image: containers.dl.tetrate.io/obs-tester-server:1.0
+          image: $TSB_INSTALL_REPO_URL/obs-tester-server:1.0
           imagePullPolicy: IfNotPresent
           args:
             - '--log-output-level=all:debug'
@@ -118,7 +118,7 @@ spec:
       serviceAccountName: sa-app-e
       containers:
         - name: obs-tester
-          image: containers.dl.tetrate.io/obs-tester-server:1.0
+          image: $TSB_INSTALL_REPO_URL/obs-tester-server:1.0
           imagePullPolicy: IfNotPresent
           args:
             - '--log-output-level=all:debug'
@@ -166,7 +166,7 @@ spec:
       serviceAccountName: sa-app-f
       containers:
         - name: obs-tester
-          image: containers.dl.tetrate.io/obs-tester-server:1.0
+          image: $TSB_INSTALL_REPO_URL/obs-tester-server:1.0
           imagePullPolicy: IfNotPresent
           args:
             - '--log-output-level=all:debug'

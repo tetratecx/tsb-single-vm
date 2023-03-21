@@ -10,7 +10,7 @@ if ! [[ -f "${ENV_CONF}" ]] ; then
   exit 1
 fi
 
-if ! which jq ; then
+if ! which jq &>/dev/null ; then
   print_error "Package for json parsing jq is not installed, please run 'sudo apt-get install -y jq'"
   exit 2
 fi
@@ -128,29 +128,20 @@ function get_cp_zone_by_index {
 
 
 ### TSB Configuration ###
-
-function is_local_repo_enabled {
-  cat ${ENV_CONF} | jq -r ".tsb.local_repo.enabled"
+function is_install_repo_insecure_registry {
+  cat ${ENV_CONF} | jq -r ".tsb.install_repo.insecure_registry"
 }
 
-function is_private_repo_enabled {
-  cat ${ENV_CONF} | jq -r ".tsb.private_repo.enabled"
+function get_install_repo_password {
+  cat ${ENV_CONF} | jq -r ".tsb.install_repo.password"
 }
 
-function is_private_repo_insecure_registry {
-  cat ${ENV_CONF} | jq -r ".tsb.private_repo.insecure_registry"
+function get_install_repo_url {
+  cat ${ENV_CONF} | jq -r ".tsb.install_repo.url"
 }
 
-function get_private_repo_password {
-  cat ${ENV_CONF} | jq -r ".tsb.private_repo.password"
-}
-
-function get_private_repo_url {
-  cat ${ENV_CONF} | jq -r ".tsb.private_repo.url"
-}
-
-function get_private_repo_user {
-  cat ${ENV_CONF} | jq -r ".tsb.private_repo.user"
+function get_install_repo_user {
+  cat ${ENV_CONF} | jq -r ".tsb.install_repo.user"
 }
 
 function get_tetrate_repo_password {

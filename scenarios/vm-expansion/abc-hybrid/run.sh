@@ -6,6 +6,8 @@ source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
 
+INSTALL_REPO_URL=$(get_install_repo_url) ;
+
 # Login as admin into tsb
 #   args:
 #     (1) organization
@@ -115,6 +117,9 @@ function generate_vm_jwt_tokens {
 
 if [[ ${ACTION} = "deploy" ]]; then
 
+  # Set TSB_INSTALL_REPO_URL for envsubst of image repo
+  export TSB_INSTALL_REPO_URL=${INSTALL_REPO_URL}
+
   CERTS_BASE_DIR=$(get_certs_base_dir) ;
   MP_OUTPUT_DIR=$(get_mp_output_dir) ;
   mkdir -p ${MP_OUTPUT_DIR}/vm1 ;
@@ -154,7 +159,9 @@ if [[ ${ACTION} = "deploy" ]]; then
   fi
   kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/01-namespace.yaml ;
   kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/02-serviceaccount.yaml ;
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/03-deployment.yaml ;
+  mkdir -p ${ROOT_DIR}/output/mgmt-cluster/k8s ;
+  envsubst < ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/03-deployment.yaml > ${ROOT_DIR}/output/mgmt-cluster/k8s/03-deployment.yaml ;
+  kubectl --context mgmt-cluster-m1 apply -f ${ROOT_DIR}/output/mgmt-cluster/k8s/03-deployment.yaml ;
   kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/04-workload-group.yaml ;
   kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/05-service.yaml ;
   kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/06-onboarding-policy.yaml ;
@@ -207,6 +214,7 @@ if [[ ${ACTION} = "undeploy" ]]; then
   done
 
   # Delete kubernetes configuration in mgmt cluster
+  kubectl --context mgmt-cluster-m1 delete -f ${ROOT_DIR}/output/mgmt-cluster/k8s/03-deployment.yaml 2>/dev/null ;
   kubectl --context mgmt-cluster-m1 delete -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster 2>/dev/null ;
 
   offboard_vm "vm1" ${SCENARIO_ROOT_DIR}/vm/offboard-vm.sh ;

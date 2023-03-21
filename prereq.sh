@@ -8,9 +8,9 @@ ISTIOCTL_VERSION=$(get_istioctl_version) ;
 TSB_VERSION=$(get_tsb_version) ;
 K8S_VERSION=$(get_k8s_version) ;
 
-TSB_REPO_URL=$(get_tsb_repo_url) ;
-TSB_REPO_USER=$(get_tsb_repo_user) ;
-TSB_REPO_PW=$(get_tsb_repo_password) ;
+TSB_REPO_URL=$(get_tetrate_repo_url) ;
+TSB_REPO_USER=$(get_tetrate_repo_user) ;
+TSB_REPO_PW=$(get_tetrate_repo_password) ;
 
 
 if [[ ${ACTION} = "check" ]]; then
