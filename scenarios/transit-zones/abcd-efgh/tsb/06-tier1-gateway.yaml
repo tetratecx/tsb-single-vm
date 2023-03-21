@@ -98,7 +98,7 @@ metadata:
 spec:
   displayName: GatewayTransit2_G
   workloadSelector:
-    namespace: gateway-transit2-G
+    namespace: gateway-transit2-g
     labels:
       app: gw-transit2-g
   internalServers:
