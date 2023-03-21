@@ -41,17 +41,16 @@ if [[ ${ACTION} = "deploy" ]]; then
   login_tsb_admin tetrate ;
 
   # Deploy tsb cluster, organization-settings and tenant objects
-  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ; sleep 10 ;
-  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/02-organization-setting.yaml ;
-  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;
-
   # Wait for clusters to be onboarded to avoid race conditions
-  sleep 5 ;
+  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ;
+  sleep 10 ;
   wait_cluster_onboarded app-cluster1 ;
   wait_cluster_onboarded transit-cluster1 ;
   wait_cluster_onboarded transit-cluster2 ;
   wait_cluster_onboarded app-cluster2 ;
-  
+  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/02-organization-setting.yaml ;
+  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;
+
   # Generate tier1 and tier2 ingress certificates for the application
   generate_server_cert abcd demo.tetrate.io ;
   generate_server_cert efgh demo.tetrate.io ;
