@@ -24,6 +24,63 @@ spec:
   #          fqn: organizations/tetrate/tenants/prod-abc/workspaces/app-abc-ws/securitygroups/security-abc-group
 ---
 apiVersion: security.tsb.tetrate.io/v2
+kind: ServiceSecuritySetting
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  group: abcd-security-group
+  name: app-b-security-settings
+spec:
+  displayName: Service B Security Settings
+  service: ns-b/app-b.ns-b.svc.cluster.local
+  settings:
+    authenticationSettings:
+      trafficMode: REQUIRED
+    authorization:
+      mode: CUSTOM
+      serviceAccounts:
+      - ns-a/sa-app-a
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: ServiceSecuritySetting
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  group: abcd-security-group
+  name: app-c-security-settings
+spec:
+  displayName: Service C Security Settings
+  service: ns-c/app-c.ns-c.svc.cluster.local
+  settings:
+    authenticationSettings:
+      trafficMode: REQUIRED
+    authorization:
+      mode: CUSTOM
+      serviceAccounts:
+      - ns-b/sa-app-b
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: ServiceSecuritySetting
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  group: abcd-security-group
+  name: app-d-security-settings
+spec:
+  displayName: Service D Security Settings
+  service: ns-d/app-d.ns-d.svc.cluster.local
+  settings:
+    authenticationSettings:
+      trafficMode: REQUIRED
+    authorization:
+      mode: CUSTOM
+      serviceAccounts:
+      - ns-c/sa-app-c
+---
+apiVersion: security.tsb.tetrate.io/v2
 kind: SecuritySetting
 metadata:
   organization: tetrate
@@ -46,3 +103,60 @@ spec:
   #          fqn: organizations/tetrate/tenants/prod-abc/workspaces/app-abc-ws/securitygroups/security-abc-group
   #        to:
   #          fqn: organizations/tetrate/tenants/prod-abc/workspaces/app-abc-ws/securitygroups/security-abc-group
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: ServiceSecuritySetting
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  group: efgh-security-group
+  name: app-f-security-settings
+spec:
+  displayName: Service F Security Settings
+  service: ns-f/app-f.ns-f.svc.cluster.local
+  settings:
+    authenticationSettings:
+      trafficMode: REQUIRED
+    authorization:
+      mode: CUSTOM
+      serviceAccounts:
+      - ns-e/sa-app-e
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: ServiceSecuritySetting
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  group: efgh-security-group
+  name: app-g-security-settings
+spec:
+  displayName: Service G Security Settings
+  service: ns-g/app-g.ns-g.svc.cluster.local
+  settings:
+    authenticationSettings:
+      trafficMode: REQUIRED
+    authorization:
+      mode: CUSTOM
+      serviceAccounts:
+      - ns-f/sa-app-f
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: ServiceSecuritySetting
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  group: efgh-security-group
+  name: app-h-security-settings
+spec:
+  displayName: Service H Security Settings
+  service: ns-h/app-h.ns-h.svc.cluster.local
+  settings:
+    authenticationSettings:
+      trafficMode: REQUIRED
+    authorization:
+      mode: CUSTOM
+      serviceAccounts:
+      - ns-g/sa-app-g
