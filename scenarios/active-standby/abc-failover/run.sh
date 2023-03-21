@@ -26,9 +26,6 @@ function wait_cluster_onboarded {
   echo "Wait for cluster ${1} to be onboarded"
   while ! tctl experimental status cs ${1} | grep "Cluster onboarded" &>/dev/null ; do
     sleep 5
-    tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ;
-    tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/02-organization-setting.yaml ;
-    tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;
     echo -n "."
   done
   echo "DONE"
