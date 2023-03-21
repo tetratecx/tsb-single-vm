@@ -41,7 +41,7 @@ if [[ ${ACTION} = "deploy" ]]; then
   login_tsb_admin tetrate ;
 
   # Deploy tsb cluster, organization-settings and tenant objects
-  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ;
+  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ; sleep 10 ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/02-organization-setting.yaml ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;
 
