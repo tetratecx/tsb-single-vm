@@ -113,7 +113,7 @@ function sync_tsb_images {
       docker pull containers.dl.tetrate.io/obs-tester-server:1.0 ;
     fi
     if ! docker image inspect ${1}/obs-tester-server:1.0 &>/dev/null ; then
-      docker tag ${image} ${1}/obs-tester-server:1.0 ;
+      docker tag containers.dl.tetrate.io/obs-tester-server:1.0 ${1}/obs-tester-server:1.0 ;
     fi
     if ! curl -s -X GET ${1}/v2/obs-tester-server/tags/list | grep "1.0" &>/dev/null ; then
       docker push ${1}/obs-tester-server:1.0 ;
@@ -124,7 +124,7 @@ function sync_tsb_images {
       docker pull containers.dl.tetrate.io/netshoot ;
     fi
     if ! docker image inspect ${1}/netshoot &>/dev/null ; then
-      docker tag ${image} ${1}/netshoot ;
+      docker tag containers.dl.tetrate.io/netshoot ${1}/netshoot ;
     fi
     if ! curl -s -X GET ${1}/v2/netshoot/tags/list | grep "latest" &>/dev/null ; then
       docker push ${1}/netshoot ;
