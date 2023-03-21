@@ -94,7 +94,7 @@ metadata:
   tenant: prod
   workspace: efgh-ws
   group: efgh-gateway-group
-  name: gw-transit1-c
+  name: gw-transit2-g
 spec:
   displayName: GatewayTransit2_G
   workloadSelector:
