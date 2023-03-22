@@ -22,9 +22,11 @@ DONE
 # Wait for cluster to be onboarded
 #   args:
 #     (1) cluster name
+#     (2) cluster profile
 function wait_cluster_onboarded {
   echo "Wait for cluster ${1} to be onboarded"
   while ! tctl experimental status cs ${1} | grep "Cluster onboarded" &>/dev/null ; do
+    kubectl --context ${2} rollout restart deployment edge -n istio-system &>/dev/null ;
     sleep 5
     echo -n "."
   done
@@ -41,14 +43,13 @@ if [[ ${ACTION} = "deploy" ]]; then
   login_tsb_admin tetrate ;
 
   # Deploy tsb cluster, organization-settings and tenant objects
+  # Wait for clusters to be onboarded to avoid race conditions
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ;
+  sleep 5 ;
+  wait_cluster_onboarded active-cluster active-cluster-m2 ;
+  wait_cluster_onboarded standby-cluster standby-cluster-m3 ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/02-organization-setting.yaml ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;
-
-  # Wait for clusters to be onboarded to avoid race conditions
-  sleep 5 ;
-  wait_cluster_onboarded active-cluster ;
-  wait_cluster_onboarded standby-cluster ;
 
   # Generate tier1 and tier2 ingress certificates for the application
   generate_server_cert abc demo.tetrate.io ;
