@@ -10,3 +10,10 @@ images:
 resources:
   - resources/deployment.yaml
   - resources/loadbalancer.yaml
+configMapGenerator:
+  - name: servers.json
+    files:
+      - config/servers.json
+  - name: pgpass
+    files:
+      - config/pgpass

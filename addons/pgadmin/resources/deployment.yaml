@@ -23,9 +23,18 @@ spec:
               value: admin
             - name: PGADMIN_PORT
               value: "80"
+            - name: PGADMIN_SERVER_JSON_FILE
+              value: "/pgadmin4/servers.json"
           ports:
             - containerPort: 80
               name: pgadminport
+          volumeMounts:
+            - name: servers-json
+              subPath: servers.json
+              mountPath: /pgadmin4/servers.json
+            - name: pgpass
+              subPath: pgpass
+              mountPath: /pgadmin4/pgpass
           resources:
             limits:
               cpu: '1'
@@ -33,6 +42,13 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
+      volumes:
+        - name: servers-json
+          configMap:
+            name: servers.json
+        - name: pgpass
+          configMap:
+            name: pgpass
 ---
 apiVersion: v1
 kind: Service
