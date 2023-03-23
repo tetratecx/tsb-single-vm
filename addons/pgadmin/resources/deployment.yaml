@@ -34,7 +34,7 @@ spec:
               mountPath: /pgadmin4/servers.json
             - name: pgpass
               subPath: pgpass
-              mountPath: /pgpass
+              mountPath: /var/lib/pgadmin/storage/admin_tetrate.io/pgpass
           resources:
             limits:
               cpu: '1'
