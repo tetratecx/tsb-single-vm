@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: openldap-ui
-          image: wheelybird/ldap-user-manager
+          image: openldap-ui
           imagePullPolicy: IfNotPresent
           env:
             - name: LDAP_URI
