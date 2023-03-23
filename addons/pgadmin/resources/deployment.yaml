@@ -34,7 +34,7 @@ spec:
               mountPath: /pgadmin4/servers.json
             - name: pgpass
               subPath: pgpass
-              mountPath: /pgadmin4/pgpass
+              mountPath: /pgpass
           resources:
             limits:
               cpu: '1'

@@ -5,7 +5,7 @@
         "Group": "TSB",
         "Port": 5432,
         "Username": "tsb",
-        "PassFile": "/pgadmin4/pgpass",
+        "PassFile": "/pgpass",
         "Host": "postgres.tsb.svc.cluster.local",
         "SSLMode": "prefer",
         "MaintenanceDB": "postgres"
