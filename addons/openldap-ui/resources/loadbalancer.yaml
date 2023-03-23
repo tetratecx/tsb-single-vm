@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openldap-ui
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 18080
+  selector:
+    app: openldap-ui
+  type: LoadBalancer

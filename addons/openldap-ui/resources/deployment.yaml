@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openldap-ui
+spec:
+  selector:
+   matchLabels:
+    app: openldap-ui
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openldap-ui
+    spec:
+      containers:
+        - name: openldap-ui
+          image: wheelybird/ldap-user-manager
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: LDAP_URI
+              value: ldap://ldap.tsb.svc.cluster.local
+            - name: LDAP_BASE_DN
+              value: dc=tetrate,dc=io
+            - name: LDAP_REQUIRE_STARTTLS
+              value: "false"
+            - name: LDAP_ADMINS_GROUP
+              value: admins
+            - name: LDAP_ADMIN_BIND_DN
+              value: cn=admin,dc=tetrate,dc=io
+            - name: LDAP_ADMIN_BIND_PWD
+              value: admin
+            - name: LDAP_IGNORE_CERT_ERRORS
+              value: "true"
+            - name: NO_HTTPS
+              value: "true"
+            - name: PASSWORD_HASH
+              value: SSHA
+            - name: SERVER_HOSTNAME
+              value: localhost:18080
+          ports:
+            - containerPort: 18080
+              name: http
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openldap-ui-service
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 18080
+  selector:
+    app: openldap-ui
+  publishNotReadyAddresses: true
+  sessionAffinity: None
+  type: ClusterIP
