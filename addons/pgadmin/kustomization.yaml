@@ -4,9 +4,9 @@ namespace: tsb
 commonLabels:
   app: pgadmin
 images:
-  - name: pgadmin4
+  - name: pwless-pgadmin4
     newTag: "6.21"
-    newName: dpage/pgadmin4
+    newName: dcagatay/pwless-pgadmin4
 resources:
   - resources/deployment.yaml
   - resources/loadbalancer.yaml

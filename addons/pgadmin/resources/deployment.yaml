@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: pgadmin4
-          image: dcagatay/pwless-pgadmin4
+          image: pwless-pgadmin4
           imagePullPolicy: IfNotPresent
           env:
             - name: POSTGRES_USER
