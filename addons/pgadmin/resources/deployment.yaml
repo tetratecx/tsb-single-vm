@@ -18,7 +18,7 @@ spec:
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c"]
           args:
-            - mkdir -m 700 /var/lib/pgadmin/storage/admin_tetrate.io;
+            - mkdir -p -m 700 /var/lib/pgadmin/storage/admin_tetrate.io;
             - chown -R pgadmin:pgadmin /var/lib/pgadmin/storage/admin_tetrate.io;
             - cp -prv /pgadmin4/pgpass /var/lib/pgadmin/storage/admin_tetrate.io/;
             - chmod 600 /var/lib/pgadmin/storage/admin_tetrate.io/pgpass;
