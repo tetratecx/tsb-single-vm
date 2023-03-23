@@ -14,24 +14,19 @@ spec:
     spec:
       containers:
         - name: pgadmin4
-          image: dpage/pgadmin4
+          image: dcagatay/pwless-pgadmin4
           imagePullPolicy: IfNotPresent
-          command: ["/bin/sh", "-c"]
-          args:
-            - >
-              cp -f /pgadmin4/pgpass /var/lib/pgadmin/;
-              chmod 600 /var/lib/pgadmin/pgpass;
-              chown pgadmin:root /var/lib/pgadmin/pgpass;
-              /entrypoint.sh
           env:
-            - name: PGADMIN_DEFAULT_EMAIL
-              value: "admin@tetrate.io"
-            - name: PGADMIN_DEFAULT_PASSWORD
-              value: admin
-            - name: PGADMIN_PORT
-              value: "80"
-            - name: PGADMIN_SERVER_JSON_FILE
-              value: "/pgadmin4/servers.json"
+            - name: POSTGRES_USER
+              value: tsb
+            - name: POSTGRES_PASSWORD
+              value: tsb-postgres-password
+            - name: POSTGRES_HOST
+              value: postgres.tsb.svc.cluster.local
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DB
+              value: "tsb"
           ports:
             - containerPort: 80
               name: pgadminport
