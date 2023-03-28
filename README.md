@@ -174,11 +174,11 @@ Scenario documentation and screenshots are to be provided in the corresponding s
 
 | topology | scenario | description |
 |----------|----------|-------------|
-| [active-standby](./topologies/active-standby) | [abc-failover](./scenarios/abc-failover) | mgmt cluster as T1, active cluster with a-b-c, standby cluster as failover |
-| [hub-spoke](./topologies/hub-spoke) | [abc-def-ghi](./scenarios/abc-def-ghi) | mgmt cluster as multi-tenant T1, a-b-c d-e-f and g-h-i as seperate tenants |
-| [transit-zones](./topologies/transit-zones) | [abcd-efgh](./scenarios/abcd-efgh) | mgmt cluster and 2 app clusters and 2 transit cluster, ab-cd and ef-gh bidirectional cross transit |
-| [vm-expansion](./topologies/vm-expansion) | [abc-hybrid](./scenarios/abc-hybrid) | mgmt cluster as T1, a-b-c with a k8s only, b hybrid and c vm only
-| [vm-only](./topologies/vm-only) | [abc-vm](./scenarios/abc-vm) | mgmt cluster as T1, a-b-c as VM only |
+| [active-standby](./topologies/active-standby) | [abc-failover](./scenarios/active-standby/abc-failover) | mgmt cluster as T1, active cluster with a-b-c, standby cluster as failover |
+| [hub-spoke](./topologies/hub-spoke) | [abc-def-ghi](./scenarios/hub-spoke/abc-def-ghi) | mgmt cluster as multi-tenant T1, a-b-c d-e-f and g-h-i as seperate tenants |
+| [transit-zones](./topologies/transit-zones) | [abcd-efgh](./scenarios/transit-zones/abcd-efgh) | mgmt cluster and 2 app clusters and 2 transit cluster, ab-cd and ef-gh bidirectional cross transit |
+| [vm-expansion](./topologies/vm-expansion) | [abc-hybrid](./scenarios/vm-expansion/abc-hybrid) | mgmt cluster as T1, a-b-c with a k8s only, b hybrid and c vm only
+| [vm-only](./topologies/vm-only) | [abc-vm](./scenarios/vm-only/abc-vm) | mgmt cluster as T1, a-b-c as VM only |
 
 
 ## Usage
