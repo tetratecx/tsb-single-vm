@@ -18,7 +18,7 @@ To redruce traffic from cloudsmith, a local docker repository is implemented, wh
 
 In order to provide an abstraction and maximum flexibility, a distintion is made between a `topology` and a `scenario`. Anyone is encouraged to add extra topologies and scenario's as he/she sees fit. A scenario is depending on a topology, so keep that in mind once you start changing topologies already used by certain scenario's.
 
-In terms of memory constraints of the VM: a 64GB Ubuntu machine can support up to 5 TSB clusters to showcase a transit zone scenario. it takes around 15 minutes to spin those 5 TSB clusters up completely from scratch (infra / tsb config / application deployment). Spinning down is just a destruction of the VM.
+In terms of memory constraints of the VM: a 64GB Ubuntu machine can support up to 5 TSB clusters to showcase a transit zone scenario. it takes around 15 minutes to spin those 5 TSB clusters up completely from scratch (infra / tsb config / application deployment). Spinning down is just a destroy/stopping of the VM or a 'make clean' which takes 30 seconds.
 
 ## Configuration
 
