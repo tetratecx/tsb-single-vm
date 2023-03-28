@@ -227,6 +227,9 @@ A non-exhaustive list of to be implemented items include:
  - tsb training labs (https://github.com/tetrateio/tsb-labs) as a set of scenario's on a dedicated training topology
  - porting eshop-demo repo (https://github.com/tetrateio/eshop-demo/tree/main/docs) to here as well
  - more scenario's with real applications
+ - potentially add LXD support next to minikube/docker support
+ - add TF and/or cloudshell (glcoud/aws-cli/az-cli) to quickly bootstrap a fully prepped and ready VM on AWS/GCP/Azure
+ - add support for local MacOS (intel and arm chipset)
  - integrations, integrations, integrations:
     - gitops: fluxcd and argocd
     - cicd: jenkins
