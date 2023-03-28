@@ -193,6 +193,8 @@ All temporary files (configuration, certificates, etc) are stored in [output](./
 
 The `info` and `scenario-info` target give more information about the topology and scenario's being used (ip addresses, ssh commands, kubectl commands, useful curl commands, etc).
 
+> **Note:** all `makefile` targets are implemented to be idempotent, which means that you can run them once, or more, but the result should always be working. This means there is quite some code in the shell scripts that verifies if certain one-off actions are already done, and skips them if needed. Please take this into consideration when you add new scenario's.
+
 ## Repo structure and files
 
 This section is a brief description of the repo structure itself. What folder and files are used, and what are they doing.
@@ -217,4 +219,22 @@ This section is a brief description of the repo structure itself. What folder an
 |scenario.sh|script responsible for interacting with the `run.sh` file of your scenario|
 
 
+## TODOs
+
+A non-exhaustive list of to be implemented items include:
+ - none-demo TSB MP installation (ldap and oidc)
+ - rpm based vm onboarding support
+ - tsb training labs (https://github.com/tetrateio/tsb-labs) as a set of scenario's on a dedicated training topology
+ - porting eshop-demo repo (https://github.com/tetrateio/eshop-demo/tree/main/docs) to here as well
+ - more scenario's with real applications
+ - integrations, integrations, integrations:
+    - gitops: fluxcd and argocd
+    - cicd: jenkins
+    - authn/z: keycloack, ory
+    - telemetry: prometheus, etc
+    - ... 
+
+## Disclaimer
+
+This repo is purely used for demo/training/local usage purposes and not meant for production environments at all.
 
