@@ -10,7 +10,7 @@ The target audience for this repo includes:
  - Developers to quickly reproduce scenario's that go beyond just one cluster
  - Trainers and trainees, to have an isolated and easy to manage/clean-up environment.
 
-The environment is based on [minikube](https://minikube.sigs.k8s.io/docs/start), with docker as the underlying virtualization [driver](https://minikube.sigs.k8s.io/docs/drivers/docker). Currently, only a Linux based system is supported, as TSB images are not multi-arch yet.
+The environment is based on [minikube](https://minikube.sigs.k8s.io/docs/start), with docker as the underlying virtualization [driver](https://minikube.sigs.k8s.io/docs/drivers/docker). Currently, only a Linux x86 based systems are supported, as TSB images are not multi-arch yet (no support for MacOS on an M1 for example).
 
 The repo provides support to spin up any arbitrary number of minikube based kubernetes clusters and VM's. VM's are implemented as docker containers with systemd support, so that VM onboarding with our onboarding agent and JWK based attestation can be demo'ed. TBS is automatically installed on those minikube clusters, as per declarative configuration (more on that later).
 
