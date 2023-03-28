@@ -166,6 +166,8 @@ Current scenario's implemented on the avaible topologies all leverage our built-
 
 Scenario's should not limit themselves to demo applications only. One can also implement a scenario to demonstrate gitops, cicd, telemetry, rbac or other integrations. As long as the components are docker/k8s friendly and there is no hard-coded external dependency, anything is possible.
 
+Scenario documentation and screenshots are to be provided in the corresponding scenario folders (TODO).
+
 ## Usage
 
 After you have configured the necessary details in `env.json` as described above in [configuration](#configuration), you can spin-up the desired environment using `make`, which is self-documented.
@@ -223,6 +225,7 @@ This section is a brief description of the repo structure itself. What folder an
 ## TODOs
 
 A non-exhaustive list of to be implemented items include:
+ - add topology/scenario documentation and screenshots
  - none-demo TSB MP installation (ldap and oidc)
  - rpm based vm onboarding support
  - tsb training labs (https://github.com/tetrateio/tsb-labs) as a set of scenario's on a dedicated training topology
