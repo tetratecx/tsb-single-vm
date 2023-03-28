@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The purpose of this repo is to provide an isolated environmnent that allows to showcase TSB value add, without any external dependencies towards cloud provider services.
+The purpose of this repo is to provide an isolated environment that allows to showcase TSB value add, without any external dependencies towards cloud provider services. 
 
 The target audience for this repo includes:
  - Prospects that want to quickly dive into TSB, without too much internal administrative overhead (tooling, cloud access rights, etc)
@@ -17,6 +17,8 @@ The repo provides support to spin up any arbitrary number of minikube based kube
 To redruce traffic from cloudsmith, a local docker repository is implemented, which decreases traffic costs and speeds up TSB deployments.
 
 In order to provide an abstraction and maximum flexibility, a distintion is made between a `topology` and a `scenario`. Anyone is encouraged to add extra topologies and scenario's as he/she sees fit. A scenario is depending on a topology, so keep that in mind once you start changing topologies already used by certain scenario's.
+
+In terms of memory constraints of the VM: a 64GB Ubuntu machine can support up to 5 TSB clusters to showcase a transit zone scenario. it takes around 15 minutes to spin those 5 TSB clusters up completely from scratch (infra / tsb config / application deployment). Spinning down is just a destruction of the VM.
 
 ## Configuration
 
