@@ -49,7 +49,7 @@ scenarios
     └── abc-vm
 ```
 
-This a a short enumeration of the paramaters to be configured.
+A short enumeration of the paramaters to be configured:
 
 |parameter|type|description|
 |---------|----|-----------|
@@ -135,6 +135,8 @@ infra-template.json
 ```
 
 Take a look at the example template provided [here](./scenarios/infra-template.json) to see how this works.
+
+A short enumeration of the paramaters to be configured:
 
 |parameter|type|description|
 |---------|----|-----------|
