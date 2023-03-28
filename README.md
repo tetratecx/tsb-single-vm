@@ -228,6 +228,8 @@ A non-exhaustive list of to be implemented items include:
  - add topology/scenario documentation and screenshots
  - none-demo TSB MP installation (ldap and oidc)
  - rpm based vm onboarding support
+ - add support for helm/tf/pulimi to do the initial TSB mp/cp installation (currently `tctl` only)
+    - in a scenario you are already free to use whatever you want
  - tsb training labs (https://github.com/tetrateio/tsb-labs) as a set of scenario's on a dedicated training topology
  - porting eshop-demo repo (https://github.com/tetrateio/eshop-demo/tree/main/docs) to here as well
  - more scenario's with real applications
