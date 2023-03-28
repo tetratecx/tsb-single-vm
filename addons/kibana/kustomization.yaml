@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: tsb
+commonLabels:
+  app: kibana
+images:
+  - name: kibana
+    newTag: 7.8.1
+    newName: docker.elastic.co/kibana/kibana
+  - name: busybox
+    newTag: 1.31.1
+    newName: busybox
+resources:
+  - resources/deployment.yaml
+  - resources/loadbalancer.yaml
+configMapGenerator:
+  - name: kibana.yml
+    files:
+      - config/kibana.yml

@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: tsb
+commonLabels:
+  app: pgadmin
+images:
+  - name: pwless-pgadmin4
+    newTag: "6.21"
+    newName: dcagatay/pwless-pgadmin4
+resources:
+  - resources/deployment.yaml
+  - resources/loadbalancer.yaml

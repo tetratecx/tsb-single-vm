@@ -1,0 +1,5 @@
+server.host: 0.0.0.0
+elasticsearch.hosts:
+  - http://elasticsearch.tsb.svc.cluster.local:9200
+elasticsearch.username: "tsb"
+elasticsearch.password: "tsb-elastic-password"
