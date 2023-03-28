@@ -20,7 +20,7 @@ In order to provide an abstraction and maximum flexibility, a distintion is made
 
 ## Configuration
 
-In order to spin-up and environment, leveraging a certain topology and scenario, a top level JSON file `env.json` needs to be configured. An example (without actual TSB repo password) is provided [here](./env-template.json).
+In order to spin-up an environment, leveraging a certain topology and scenario, a top level JSON file `env.json` needs to be configured. An example (without actual TSB repo password) is provided [here](./env-template.json).
 
 The JSON files contains configuration data on the topology and scenario to be used. The topology and scenario names match exactly the name of the folders within the [scenario](./scenario) and [topology](./topology) folders.
 
