@@ -12,7 +12,7 @@ The target audience for this repo includes:
 
 The environment is based on [minikube](https://minikube.sigs.k8s.io/docs/start), with docker as the underlying virtualization [driver](https://minikube.sigs.k8s.io/docs/drivers/docker). Currently, only a Linux x86 based systems are supported, as TSB images are not multi-arch yet (no support for MacOS on an M1 for example).
 
-The repo provides support to spin up any arbitrary number of minikube based kubernetes clusters and VM's. VM's are implemented as docker containers with systemd support, so that VM onboarding with our onboarding agent and JWK based attestation can be demo'ed. TBS is automatically installed on those minikube clusters, as per declarative configuration (more on that later).
+The repo provides support to spin up any arbitrary number of minikube based kubernetes clusters and VM's. VM's are implemented as docker containers with systemd support, so that VM onboarding with our onboarding agent and JWK based attestation can be demo'ed. TSB is automatically installed on those minikube clusters, as per declarative configuration (more on that later).
 
 To redruce traffic from cloudsmith, a local docker repository is implemented, which decreases traffic costs and speeds up TSB deployments.
 
@@ -166,7 +166,7 @@ Scenario's are leveraging one available scenario. They will deploy TSB configura
 
 The "interface" to the rest of the system is a `run.sh` file which is invoked by the toplevel `makefile` system. It should contain a running hook (shell parameter) for `deploy` (deploymeny of your scenario), `undeploy` (clean-up scenario, bringing the system back to topology only) and `info` (information about the scenario in terms of ip address and useful commands to execute).
 
-Current scenario's implemented on the avaible topologies all leverage our built-in `obs-tester-server`. One can implement any application as one see fits useful.
+Current scenario's implemented on the available topologies all leverage our built-in `obs-tester-server`. One can implement any application as one see fits useful.
 
 Scenario's should not limit themselves to demo applications only. One can also implement a scenario to demonstrate gitops, cicd, telemetry, rbac or other integrations. As long as the components are docker/k8s friendly and there is no hard-coded external dependency, anything is possible.
 
