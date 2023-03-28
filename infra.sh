@@ -122,6 +122,12 @@ if [[ ${ACTION} = "up" ]]; then
     done
   fi
 
+  # Disable iptables docker isolation for cluster to private repo communication
+  # https://serverfault.com/questions/1102209/how-to-disable-docker-network-isolation
+  # https://serverfault.com/questions/830135/routing-among-different-docker-networks-on-the-same-host-machine 
+  echo "Flushing docker isolation iptable rules to allow ${CLUSTER_PROFILE} cluster to docker repo communication"
+  sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2
+
   ######################## cp clusters ########################
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
@@ -186,11 +192,11 @@ if [[ ${ACTION} = "up" ]]; then
     CP_INDEX=$((CP_INDEX+1))
   done
 
-  # When multiple docker networks are used (cp installs), we need to disable docker isolation for cross cluster connectivity
+  # Disable iptables docker isolation for cross cluster and cluster to private repo communication
   if [[ ${CP_COUNT} -gt 0 ]]; then
     # https://serverfault.com/questions/1102209/how-to-disable-docker-network-isolation
     # https://serverfault.com/questions/830135/routing-among-different-docker-networks-on-the-same-host-machine 
-    echo "Flushing docker isolation iptable rules to allow cross network communication"
+    echo "Flushing docker isolation iptable rules to allow cross cluster and cluster (${CLUSTER_PROFILE}) to docker repo communication"
     sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2
   fi
 
