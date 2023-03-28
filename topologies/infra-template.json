@@ -1,6 +1,4 @@
 {
-  "istioctl_version": "1.15.2",
-  "k8s_version": "1.24.9",
   "cp_clusters": [
     {
       "name": "active-cluster",
@@ -9,7 +7,8 @@
         {
           "image": "boeboe/tsb-ubuntu-vm:1.0.0",
           "name": "active-vm1"
-        },{
+        },
+        {
           "image": "boeboe/tsb-ubuntu-vm:1.0.0",
           "name": "active-vm2"
         }
@@ -32,6 +31,7 @@
       "zone": "zone2a"
     }
   ],
+  "k8s_version": "1.24.9",
   "mp_cluster": {
     "demo_profile": true,
     "name": "mgmt-cluster",

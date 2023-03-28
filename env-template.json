@@ -8,6 +8,7 @@
       "url": "192.168.48.2:5000",
       "user": ""
     },
+    "istio_version": "1.15.2",
     "tetrate_repo": {
       "password": "<TSB_REPO_APIKEY>",
       "url": "containers.dl.tetrate.io",

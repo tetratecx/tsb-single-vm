@@ -4,7 +4,7 @@ source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
 
 ACTION=${1}
-ISTIOCTL_VERSION=$(get_istioctl_version) ;
+ISTIOCTL_VERSION=$(get_tsb_istio_version) ;
 TSB_VERSION=$(get_tsb_version) ;
 K8S_VERSION=$(get_k8s_version) ;
 

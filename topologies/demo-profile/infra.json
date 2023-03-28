@@ -1,5 +1,4 @@
 {
-  "istioctl_version": "1.15.2",
   "k8s_version": "1.24.9",
   "cp_clusters": [],
   "mp_cluster": {

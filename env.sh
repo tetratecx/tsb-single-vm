@@ -42,10 +42,6 @@ fi
 
 ### Infra Configuration ###
 
-function get_istioctl_version {
-  cat ${TOPOLOGY_CONF} | jq -r ".istioctl_version"
-}
-
 function get_k8s_version {
   cat ${TOPOLOGY_CONF} | jq -r ".k8s_version"
 }
@@ -159,6 +155,11 @@ function get_tsb_version {
   cat ${ENV_CONF} | jq -r ".tsb.version"
 }
 
+function get_tsb_istio_version {
+  cat ${ENV_CONF} | jq -r ".tsb.istio_version"
+}
+
+
 ### Configuration and output directories ###
 function get_mp_config_dir {
   echo $(get_topology_dir)/$(get_mp_name)
@@ -182,7 +183,6 @@ function get_cp_output_dir {
 
 ### Parsing Tests
 #
-# get_istioctl_version;
 # get_k8s_version;
 # get_mp_minikube_profile;
 # get_mp_name;
@@ -217,6 +217,7 @@ function get_cp_output_dir {
 # get_tsb_repo_url;
 # get_tsb_repo_user;
 # get_tsb_version;
+# get_tsb_istio_version;
 
 # get_certs_base_dir;
 # get_mp_config_dir;
