@@ -171,7 +171,8 @@ Scenario's should not limit themselves to demo applications only. One can also i
 After you have configured the necessary details in `env.json` as described above in [configuration](#configuration), you can spin-up the desired environment using `make`, which is self-documented.
 
 ```console
-make
+# make
+
 help                           This help
 up                             Bring up full demo scenario
 prereq-check                   Check if prerequisites are installed
