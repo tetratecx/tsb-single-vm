@@ -196,7 +196,7 @@ if [[ ${ACTION} = "up" ]]; then
   if [[ ${CP_COUNT} -gt 0 ]]; then
     # https://serverfault.com/questions/1102209/how-to-disable-docker-network-isolation
     # https://serverfault.com/questions/830135/routing-among-different-docker-networks-on-the-same-host-machine 
-    echo "Flushing docker isolation iptable rules to allow cross cluster and cluster (${CLUSTER_PROFILE}) to docker repo communication"
+    echo "Flushing docker isolation iptable rules to allow cross cluster and ${CLUSTER_PROFILE} cluster to private docker repo communication"
     sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2
   fi
 
