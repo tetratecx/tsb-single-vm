@@ -115,7 +115,7 @@ Topologies are the infra-structure part of the repo, and are expressed in JSON f
 
 Topologies determine:
 - the names of your clusters (mapping to minikube profiles, k8s cluster contexts and docker networks)
-- how many kubernetes cluster you want
+- how many kubernetes clusters you want
 - how many tsb managementplane and controlplane clusters you want
 - the networking aspects of those clusters (in terms of region/zone)
 - the number of VMs you want, and where they are deployed
