@@ -63,6 +63,14 @@ function patch_oap_refresh_rate_cp {
   kubectl --context ${1} -n istio-system patch controlplanes controlplane --type merge --patch ${OAP_PATCH}
 }
 
+# Patch jwt token expiration and pruneInterval
+#   args:
+#     (1) cluster name
+function patch_jwt_token_expiration_mp {
+  TOKEN_PATCH='{"spec":{"tokenIssuer":{"jwt":{"expiration":"36000s","tokenPruneInterval":"36000s"}}}}'
+  kubectl --context ${1} -n tsb patch managementplanes managementplane --type merge --patch ${TOKEN_PATCH}
+}
+
 # Expose tsb gui with kubectl port-forward
 #   args:
 #     (1) cluster name
@@ -131,6 +139,7 @@ if [[ ${ACTION} = "install" ]]; then
   # Apply OAP patch for more real time update in the UI (Apache SkyWalking demo tweak)
   patch_oap_refresh_rate_mp ${MP_CLUSTER_CONTEXT} ;
   patch_oap_refresh_rate_cp ${MP_CLUSTER_CONTEXT} ;
+  patch_jwt_token_expiration_mp ${MP_CLUSTER_CONTEXT} ;
 
   # Demo mgmt plane secret extraction (need to connect application clusters to mgmt cluster)
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets (demo install)

@@ -21,11 +21,10 @@ DONE
 
 # Wait for cluster to be onboarded
 #   args:
-#     (1) cluster name
+#     (1) onboarding cluster name
 function wait_cluster_onboarded {
   echo "Wait for cluster ${1} to be onboarded"
   while ! tctl experimental status cs ${1} | grep "Cluster onboarded" &>/dev/null ; do
-    kubectl --context ${1} rollout restart deployment edge -n istio-system &>/dev/null ;
     sleep 5
     echo -n "."
   done

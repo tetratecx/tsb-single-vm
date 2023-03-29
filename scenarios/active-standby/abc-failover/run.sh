@@ -21,13 +21,11 @@ DONE
 
 # Wait for cluster to be onboarded
 #   args:
-#     (1) cluster name
+#     (1) onboarding cluster name
 function wait_cluster_onboarded {
   echo "Wait for cluster ${1} to be onboarded"
   while ! tctl experimental status cs ${1} | grep "Cluster onboarded" &>/dev/null ; do
-    kubectl --context ${1} rollout restart deployment edge -n istio-system &>/dev/null ;
-    kubectl --context ${1} wait deployment edge -n istio-system --for condition=Available=True --timeout=90s &>/dev/null ;
-    sleep 5
+    sleep 5 ;
     echo -n "."
   done
   echo "DONE"
@@ -130,9 +128,15 @@ fi
 
 if [[ ${ACTION} = "info" ]]; then
 
-  T1_GW_IP=$(kubectl --context mgmt-cluster get svc -n gateway-tier1 gw-tier1-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
-  INGRESS_ACTIVE_GW_IP=$(kubectl --context active-cluster get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
-  INGRESS_STANDBY_GW_IP=$(kubectl --context standby-cluster get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  while ! T1_GW_IP=$(kubectl --context mgmt-cluster get svc -n gateway-tier1 gw-tier1-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+    sleep 1;
+  done
+  while ! INGRESS_ACTIVE_GW_IP=$(kubectl --context active-cluster get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+    sleep 1;
+  done
+  while ! INGRESS_STANDBY_GW_IP=$(kubectl --context standby-cluster get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+    sleep 1;
+  done
 
   CERTS_BASE_DIR=$(get_certs_base_dir) ;
 

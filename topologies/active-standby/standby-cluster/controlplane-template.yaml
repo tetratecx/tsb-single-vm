@@ -21,6 +21,8 @@ spec:
     internalCertProvider:
       certManager:
         managed: INTERNAL
+    istio:
+      trustDomain: standby-cluster
     xcp:
       centralAuthMode: JWT
       kubeSpec:
@@ -35,3 +37,7 @@ spec:
             value:
               name: ENABLE_ENHANCED_EAST_WEST_ROUTING
               value: "true"
+          - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+            value:
+              name: CLUSTER_STATE_RESYNC_INTERVAL
+              value: "20s"
