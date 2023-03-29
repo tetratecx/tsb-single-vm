@@ -240,7 +240,7 @@ if [[ ${ACTION} = "info" ]]; then
   echo "****************************"
   echo
   echo "Traffic through Management Ingress Gateway"
-  print_command "curl -k -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${INGRESS_MGMT_GW_IP}\" --cacert ca.crt=certs/root-cert.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\""
+  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${INGRESS_MGMT_GW_IP}\" --cacert ca.crt=certs/root-cert.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\""
   echo
   exit 0
 fi
