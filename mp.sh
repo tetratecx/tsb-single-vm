@@ -92,7 +92,7 @@ if [[ ${ACTION} = "install" ]]; then
 
   MP_CLUSTER_CONTEXT=$(get_mp_name) ;
   MP_CLUSTER_NAME=$(get_mp_name) ;
-  print_info "Start installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME} (kubectl context ${MP_CLUSTER_CONTEXT})"
+  print_info "Start installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME}"
 
   # bootstrap cluster with self signed certificate that share a common root certificate
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#intermediate-istio-ca-certificates
@@ -141,7 +141,7 @@ if [[ ${ACTION} = "install" ]]; then
 
   expose_tsb_gui ${MP_CLUSTER_CONTEXT} ;
 
-  print_info "Finished installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME} (kubectl context ${MP_CLUSTER_CONTEXT})"
+  print_info "Finished installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME}"
   exit 0
 fi
 
@@ -149,7 +149,7 @@ if [[ ${ACTION} = "uninstall" ]]; then
 
   MP_CLUSTER_CONTEXT=$(get_mp_name) ;
   MP_CLUSTER_NAME=$(get_mp_name) ;
-  print_info "Start removing installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME} (kubectl context ${MP_CLUSTER_CONTEXT})"
+  print_info "Start removing installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME}"
 
   # Put operators to sleep
   for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
@@ -206,7 +206,7 @@ if [[ ${ACTION} = "uninstall" ]]; then
 
   sleep 10 ;
 
-  print_info "Finished removing installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME} (kubectl context ${MP_CLUSTER_CONTEXT})"
+  print_info "Finished removing installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME}"
   exit 0
 fi
 

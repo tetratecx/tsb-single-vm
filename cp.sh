@@ -47,7 +47,7 @@ if [[ ${ACTION} = "install" ]]; then
     CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
     CP_CONFIG_DIR=$(get_cp_config_dir ${CP_INDEX}) ;
     CP_OUTPUT_DIR=$(get_cp_output_dir ${CP_INDEX}) ;
-    print_info "Start installation of tsb control plane in cluster ${CP_CLUSTER_NAME} (kubectl context ${CP_CLUSTER_NAME})"
+    print_info "Start installation of tsb control plane in cluster ${CP_CLUSTER_NAME}"
 
     # Generate a service account private key for the active cluster
     #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets
@@ -95,7 +95,7 @@ if [[ ${ACTION} = "install" ]]; then
     kubectl --context ${CP_CLUSTER_NAME} apply -f ${CP_OUTPUT_DIR}/controlplane-secrets.yaml ;
     while ! kubectl --context ${CP_CLUSTER_NAME} get controlplanes.install.tetrate.io &>/dev/null; do sleep 1; done ;
     kubectl --context ${CP_CLUSTER_NAME} apply -f ${CP_OUTPUT_DIR}/controlplane.yaml ;
-    print_info "Bootstrapped installation of tsb control plane in cluster ${CP_CLUSTER_NAME} (kubectl context ${CP_CLUSTER_NAME})"
+    print_info "Bootstrapped installation of tsb control plane in cluster ${CP_CLUSTER_NAME}"
     CP_INDEX=$((CP_INDEX+1))
   done
 
@@ -104,7 +104,7 @@ if [[ ${ACTION} = "install" ]]; then
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
     CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
-    print_info "Wait installation of tsb control plane in cluster ${CP_CLUSTER_NAME} to finish (kubectl context ${CP_CLUSTER_NAME})"
+    print_info "Wait installation of tsb control plane in cluster ${CP_CLUSTER_NAME} to finish"
 
     # Wait for the control and data plane to become available
     kubectl --context ${CP_CLUSTER_NAME} wait deployment -n istio-system tsb-operator-control-plane --for condition=Available=True --timeout=600s ;
@@ -116,7 +116,7 @@ if [[ ${ACTION} = "install" ]]; then
     # Apply OAP patch for more real time update in the UI (Apache SkyWalking demo tweak)
     patch_oap_refresh_rate_cp ${CP_CLUSTER_NAME} ;
 
-    print_info "Finished installation of tsb control plane in cluster ${CP_CLUSTER_NAME} (kubectl context ${CP_CLUSTER_NAME})"
+    print_info "Finished installation of tsb control plane in cluster ${CP_CLUSTER_NAME}"
     CP_INDEX=$((CP_INDEX+1))
   done
 
@@ -129,7 +129,7 @@ if [[ ${ACTION} = "uninstall" ]]; then
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
     CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
-    print_info "Start removing installation of tsb control plane in cluster ${CP_CLUSTER_NAME} (kubectl context ${CP_CLUSTER_NAME})"
+    print_info "Start removing installation of tsb control plane in cluster ${CP_CLUSTER_NAME}"
 
     # Put operators to sleep
     for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
@@ -186,7 +186,7 @@ if [[ ${ACTION} = "uninstall" ]]; then
 
     sleep 10 ;
 
-    print_info "Finished removing installation of tsb control plane in cluster ${CP_CLUSTER_NAME} (kubectl context ${CP_CLUSTER_NAME})"
+    print_info "Finished removing installation of tsb control plane in cluster ${CP_CLUSTER_NAME}"
     CP_INDEX=$((CP_INDEX+1))
   done
 
