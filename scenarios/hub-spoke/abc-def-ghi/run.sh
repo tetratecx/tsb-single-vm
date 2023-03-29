@@ -22,11 +22,10 @@ DONE
 # Wait for cluster to be onboarded
 #   args:
 #     (1) cluster name
-#     (2) cluster profile
 function wait_cluster_onboarded {
   echo "Wait for cluster ${1} to be onboarded"
   while ! tctl experimental status cs ${1} | grep "Cluster onboarded" &>/dev/null ; do
-    kubectl --context ${2} rollout restart deployment edge -n istio-system &>/dev/null ;
+    kubectl --context ${1} rollout restart deployment edge -n istio-system &>/dev/null ;
     sleep 5
     echo -n "."
   done
@@ -46,9 +45,9 @@ if [[ ${ACTION} = "deploy" ]]; then
   # Wait for clusters to be onboarded to avoid race conditions
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ;
   sleep 5 ;
-  wait_cluster_onboarded cluster1 cluster1-m2 ;
-  wait_cluster_onboarded cluster2 cluster2-m3 ;
-  wait_cluster_onboarded cluster3 cluster3-m4 ;
+  wait_cluster_onboarded cluster1 ;
+  wait_cluster_onboarded cluster2 ;
+  wait_cluster_onboarded cluster3 ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/02-organization-setting.yaml ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;
 
@@ -62,68 +61,68 @@ if [[ ${ACTION} = "deploy" ]]; then
   CERTS_BASE_DIR=$(get_certs_base_dir) ;
 
   # Deploy kubernetes objects in mgmt cluster
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/01-namespace.yaml ;
-  if ! kubectl --context mgmt-cluster-m1 get secret app-abc-cert -n gateway-tier1-abc &>/dev/null ; then
-    kubectl --context mgmt-cluster-m1 create secret generic app-abc-cert -n gateway-tier1-abc \
+  kubectl --context mgmt-cluster apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/01-namespace.yaml ;
+  if ! kubectl --context mgmt-cluster get secret app-abc-cert -n gateway-tier1-abc &>/dev/null ; then
+    kubectl --context mgmt-cluster create secret generic app-abc-cert -n gateway-tier1-abc \
       --from-file=tls.key=${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-key.pem \
       --from-file=tls.crt=${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-cert.pem \
       --from-file=ca.crt=${CERTS_BASE_DIR}/root-cert.pem ;
   fi
-  if ! kubectl --context mgmt-cluster-m1 get secret app-def-cert -n gateway-tier1-def &>/dev/null ; then
-    kubectl --context mgmt-cluster-m1 create secret generic app-def-cert -n gateway-tier1-def \
+  if ! kubectl --context mgmt-cluster get secret app-def-cert -n gateway-tier1-def &>/dev/null ; then
+    kubectl --context mgmt-cluster create secret generic app-def-cert -n gateway-tier1-def \
       --from-file=tls.key=${CERTS_BASE_DIR}/def/server.def.demo.tetrate.io-key.pem \
       --from-file=tls.crt=${CERTS_BASE_DIR}/def/server.def.demo.tetrate.io-cert.pem \
       --from-file=ca.crt=${CERTS_BASE_DIR}/root-cert.pem ;
   fi
-  if ! kubectl --context mgmt-cluster-m1 get secret app-ghi-cert -n gateway-tier1-ghi &>/dev/null ; then
-    kubectl --context mgmt-cluster-m1 create secret generic app-ghi-cert -n gateway-tier1-ghi \
+  if ! kubectl --context mgmt-cluster get secret app-ghi-cert -n gateway-tier1-ghi &>/dev/null ; then
+    kubectl --context mgmt-cluster create secret generic app-ghi-cert -n gateway-tier1-ghi \
       --from-file=tls.key=${CERTS_BASE_DIR}/ghi/server.ghi.demo.tetrate.io-key.pem \
       --from-file=tls.crt=${CERTS_BASE_DIR}/ghi/server.ghi.demo.tetrate.io-cert.pem \
       --from-file=ca.crt=${CERTS_BASE_DIR}/root-cert.pem ;
   fi
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/02-tier1-gateway.yaml ;
+  kubectl --context mgmt-cluster apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/02-tier1-gateway.yaml ;
 
   # Deploy kubernetes objects in cluster1
-  kubectl --context cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/01-namespace.yaml ;
-  if ! kubectl --context cluster1-m2 get secret app-abc-cert -n gateway-abc &>/dev/null ; then
-    kubectl --context cluster1-m2 create secret tls app-abc-cert -n gateway-abc \
+  kubectl --context cluster1 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/01-namespace.yaml ;
+  if ! kubectl --context cluster1 get secret app-abc-cert -n gateway-abc &>/dev/null ; then
+    kubectl --context cluster1 create secret tls app-abc-cert -n gateway-abc \
       --key ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-cert.pem ;
   fi
-  kubectl --context cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/02-service-account.yaml ;
+  kubectl --context cluster1 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/02-service-account.yaml ;
   mkdir -p ${ROOT_DIR}/output/cluster1/k8s ;
   envsubst < ${SCENARIO_ROOT_DIR}/k8s/cluster1/03-deployment.yaml > ${ROOT_DIR}/output/cluster1/k8s/03-deployment.yaml ;
-  kubectl --context cluster1-m2 apply -f ${ROOT_DIR}/output/cluster1/k8s/03-deployment.yaml ;
-  kubectl --context cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/04-service.yaml ;
-  kubectl --context cluster1-m2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/05-ingress-gateway.yaml ;
+  kubectl --context cluster1 apply -f ${ROOT_DIR}/output/cluster1/k8s/03-deployment.yaml ;
+  kubectl --context cluster1 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/04-service.yaml ;
+  kubectl --context cluster1 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster1/05-ingress-gateway.yaml ;
 
   # Deploy kubernetes objects in in cluster2
-  kubectl --context cluster2-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/01-namespace.yaml ;
-  if ! kubectl --context cluster2-m3 get secret app-def-cert -n gateway-def &>/dev/null ; then
-    kubectl --context cluster2-m3 create secret tls app-def-cert -n gateway-def \
+  kubectl --context cluster2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/01-namespace.yaml ;
+  if ! kubectl --context cluster2 get secret app-def-cert -n gateway-def &>/dev/null ; then
+    kubectl --context cluster2 create secret tls app-def-cert -n gateway-def \
       --key ${CERTS_BASE_DIR}/def/server.def.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/def/server.def.demo.tetrate.io-cert.pem ;
   fi
-  kubectl --context cluster2-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/02-service-account.yaml ;
+  kubectl --context cluster2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/02-service-account.yaml ;
   mkdir -p ${ROOT_DIR}/output/cluster2/k8s ;
   envsubst < ${SCENARIO_ROOT_DIR}/k8s/cluster2/03-deployment.yaml > ${ROOT_DIR}/output/cluster2/k8s/03-deployment.yaml ;
-  kubectl --context cluster2-m3 apply -f ${ROOT_DIR}/output/cluster2/k8s/03-deployment.yaml ;
-  kubectl --context cluster2-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/04-service.yaml ;
-  kubectl --context cluster2-m3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/05-ingress-gateway.yaml ;
+  kubectl --context cluster2 apply -f ${ROOT_DIR}/output/cluster2/k8s/03-deployment.yaml ;
+  kubectl --context cluster2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/04-service.yaml ;
+  kubectl --context cluster2 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster2/05-ingress-gateway.yaml ;
 
   # Deploy kubernetes objects in in cluster3
-  kubectl --context cluster3-m4 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/01-namespace.yaml ;
-  if ! kubectl --context cluster3-m4 get secret app-ghi-cert -n gateway-ghi &>/dev/null ; then
-    kubectl --context cluster3-m4 create secret tls app-ghi-cert -n gateway-ghi \
+  kubectl --context cluster3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/01-namespace.yaml ;
+  if ! kubectl --context cluster3 get secret app-ghi-cert -n gateway-ghi &>/dev/null ; then
+    kubectl --context cluster3 create secret tls app-ghi-cert -n gateway-ghi \
       --key ${CERTS_BASE_DIR}/ghi/server.ghi.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/ghi/server.ghi.demo.tetrate.io-cert.pem ;
   fi
-  kubectl --context cluster3-m4 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/02-service-account.yaml ;
+  kubectl --context cluster3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/02-service-account.yaml ;
   mkdir -p ${ROOT_DIR}/output/cluster3/k8s ;
   envsubst < ${SCENARIO_ROOT_DIR}/k8s/cluster3/03-deployment.yaml > ${ROOT_DIR}/output/cluster3/k8s/03-deployment.yaml ;
-  kubectl --context cluster3-m4 apply -f ${ROOT_DIR}/output/cluster3/k8s/03-deployment.yaml ;
-  kubectl --context cluster3-m4 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/04-service.yaml ;
-  kubectl --context cluster3-m4 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/05-ingress-gateway.yaml ;
+  kubectl --context cluster3 apply -f ${ROOT_DIR}/output/cluster3/k8s/03-deployment.yaml ;
+  kubectl --context cluster3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/04-service.yaml ;
+  kubectl --context cluster3 apply -f ${SCENARIO_ROOT_DIR}/k8s/cluster3/05-ingress-gateway.yaml ;
 
   # Deploy tsb objects
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/04-workspace.yaml ;
@@ -149,13 +148,13 @@ if [[ ${ACTION} = "undeploy" ]]; then
   done
 
   # Delete kubernetes configuration in mgmt, active and standby cluster
-  kubectl --context mgmt-cluster-m1 delete -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster 2>/dev/null ;
-  kubectl --context cluster1-m2 delete -f ${ROOT_DIR}/output/cluster1/k8s/03-deployment.yaml 2>/dev/null ;
-  kubectl --context cluster1-m2 delete -f ${SCENARIO_ROOT_DIR}/k8s/cluster1 2>/dev/null ;
-  kubectl --context cluster2-m3 delete -f ${ROOT_DIR}/output/cluster2/k8s/03-deployment.yaml 2>/dev/null ;
-  kubectl --context cluster2-m3 delete -f ${SCENARIO_ROOT_DIR}/k8s/cluster2 2>/dev/null ;
-  kubectl --context cluster3-m4 delete -f ${ROOT_DIR}/output/cluster3/k8s/03-deployment.yaml 2>/dev/null ;
-  kubectl --context cluster3-m4 delete -f ${SCENARIO_ROOT_DIR}/k8s/cluster3 2>/dev/null ;
+  kubectl --context mgmt-cluster delete -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster 2>/dev/null ;
+  kubectl --context cluster1 delete -f ${ROOT_DIR}/output/cluster1/k8s/03-deployment.yaml 2>/dev/null ;
+  kubectl --context cluster1 delete -f ${SCENARIO_ROOT_DIR}/k8s/cluster1 2>/dev/null ;
+  kubectl --context cluster2 delete -f ${ROOT_DIR}/output/cluster2/k8s/03-deployment.yaml 2>/dev/null ;
+  kubectl --context cluster2 delete -f ${SCENARIO_ROOT_DIR}/k8s/cluster2 2>/dev/null ;
+  kubectl --context cluster3 delete -f ${ROOT_DIR}/output/cluster3/k8s/03-deployment.yaml 2>/dev/null ;
+  kubectl --context cluster3 delete -f ${SCENARIO_ROOT_DIR}/k8s/cluster3 2>/dev/null ;
 
   exit 0
 fi
@@ -163,9 +162,9 @@ fi
 
 if [[ ${ACTION} = "info" ]]; then
 
-  ABC_T1_GW_IP=$(kubectl --context mgmt-cluster-m1 get svc -n gateway-tier1-abc gw-tier1-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
-  DEF_T1_GW_IP=$(kubectl --context mgmt-cluster-m1 get svc -n gateway-tier1-def gw-tier1-def --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
-  GHI_T1_GW_IP=$(kubectl --context mgmt-cluster-m1 get svc -n gateway-tier1-ghi gw-tier1-ghi --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  ABC_T1_GW_IP=$(kubectl --context mgmt-cluster get svc -n gateway-tier1-abc gw-tier1-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  DEF_T1_GW_IP=$(kubectl --context mgmt-cluster get svc -n gateway-tier1-def gw-tier1-def --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  GHI_T1_GW_IP=$(kubectl --context mgmt-cluster get svc -n gateway-tier1-ghi gw-tier1-ghi --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
 
   CERTS_BASE_DIR=$(get_certs_base_dir) ;
 

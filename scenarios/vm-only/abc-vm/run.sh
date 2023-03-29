@@ -149,38 +149,38 @@ if [[ ${ACTION} = "deploy" ]]; then
   export JWKS_VM3=$(cat ${MP_OUTPUT_DIR}/vm3/sample-jwt-issuer.jwks | tr '\n' ' ' | tr -d ' ')
   export JWKS_VM4=$(cat ${MP_OUTPUT_DIR}/vm4/sample-jwt-issuer.jwks | tr '\n' ' ' | tr -d ' ')
   envsubst < ${SCENARIO_ROOT_DIR}/patch/onboarding-vm-patch-template.yaml > ${MP_OUTPUT_DIR}/onboarding-vm-patch.yaml ;
-  kubectl --context mgmt-cluster-m1 -n istio-system patch controlplanes controlplane --patch-file ${MP_OUTPUT_DIR}/onboarding-vm-patch.yaml --type merge ;
+  kubectl --context mgmt-cluster -n istio-system patch controlplanes controlplane --patch-file ${MP_OUTPUT_DIR}/onboarding-vm-patch.yaml --type merge ;
 
   # Deploy kubernetes objects in mgmt cluster
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/01-namespace.yaml ;
-  if ! kubectl --context mgmt-cluster-m1 get secret app-abc-cert -n gateway-abc &>/dev/null ; then
-    kubectl --context mgmt-cluster-m1 create secret tls app-abc-cert -n gateway-abc \
+  kubectl --context mgmt-cluster apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/01-namespace.yaml ;
+  if ! kubectl --context mgmt-cluster get secret app-abc-cert -n gateway-abc &>/dev/null ; then
+    kubectl --context mgmt-cluster create secret tls app-abc-cert -n gateway-abc \
       --key ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-cert.pem ;
   fi
-  if ! kubectl --context mgmt-cluster-m1 get secret vm-onboarding -n istio-system &>/dev/null ; then
-    kubectl --context mgmt-cluster-m1 create secret tls vm-onboarding -n istio-system \
+  if ! kubectl --context mgmt-cluster get secret vm-onboarding -n istio-system &>/dev/null ; then
+    kubectl --context mgmt-cluster create secret tls vm-onboarding -n istio-system \
       --key ${CERTS_BASE_DIR}/vm-onboarding/server.vm-onboarding.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/vm-onboarding/server.vm-onboarding.demo.tetrate.io-cert.pem ;
   fi
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/01-namespace.yaml ;
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/02-serviceaccount.yaml ;
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/03-workload-group.yaml ;
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/04-service.yaml ;
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/05-onboarding-policy.yaml ;
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/06-sidecar.yaml ;
-  kubectl --context mgmt-cluster-m1 apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/07-ingress-gateway.yaml ;
+  kubectl --context mgmt-cluster apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/01-namespace.yaml ;
+  kubectl --context mgmt-cluster apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/02-serviceaccount.yaml ;
+  kubectl --context mgmt-cluster apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/03-workload-group.yaml ;
+  kubectl --context mgmt-cluster apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/04-service.yaml ;
+  kubectl --context mgmt-cluster apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/05-onboarding-policy.yaml ;
+  kubectl --context mgmt-cluster apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/06-sidecar.yaml ;
+  kubectl --context mgmt-cluster apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster/07-ingress-gateway.yaml ;
 
   # Get vm gateway external load balancer ip address
   echo "Getting vm gateway exernal load balancer ip address"
-  while ! VM_GW_IP=$(kubectl --context mgmt-cluster-m1 get svc -n istio-system vmgateway --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+  while ! VM_GW_IP=$(kubectl --context mgmt-cluster get svc -n istio-system vmgateway --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
     echo -n "."
   done
   echo "DONE"
 
   # Wait for onboarding-plane and onboarding-repository to be ready
-  kubectl --context mgmt-cluster-m1 wait deployment -n istio-system onboarding-plane --for condition=Available=True --timeout=600s ;
-  kubectl --context mgmt-cluster-m1 wait deployment -n istio-system onboarding-repository --for condition=Available=True --timeout=600s ;
+  kubectl --context mgmt-cluster wait deployment -n istio-system onboarding-plane --for condition=Available=True --timeout=600s ;
+  kubectl --context mgmt-cluster wait deployment -n istio-system onboarding-repository --for condition=Available=True --timeout=600s ;
 
   # Onboard vms
   export TSB_VM_ONBOARDING_ENDPOINT=${VM_GW_IP}
@@ -220,7 +220,7 @@ if [[ ${ACTION} = "undeploy" ]]; then
   done
 
   # Delete kubernetes configuration in mgmt cluster
-  kubectl --context mgmt-cluster-m1 delete -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster 2>/dev/null ;
+  kubectl --context mgmt-cluster delete -f ${SCENARIO_ROOT_DIR}/k8s/mgmt-cluster 2>/dev/null ;
 
   offboard_vm "vm1" ${SCENARIO_ROOT_DIR}/vm/offboard-vm.sh ;
   offboard_vm "vm2" ${SCENARIO_ROOT_DIR}/vm/offboard-vm.sh ;
@@ -233,7 +233,7 @@ fi
 
 if [[ ${ACTION} = "info" ]]; then
 
-  INGRESS_MGMT_GW_IP=$(kubectl --context mgmt-cluster-m1 get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  INGRESS_MGMT_GW_IP=$(kubectl --context mgmt-cluster get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
 
   echo "****************************"
   echo "*** ABC Traffic Commands ***"
