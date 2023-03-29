@@ -229,12 +229,14 @@ if [[ ${ACTION} = "info" ]]; then
 
   INGRESS_MGMT_GW_IP=$(kubectl --context mgmt-cluster get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
 
+  CERTS_BASE_DIR=$(get_certs_base_dir) ;
+
   echo "****************************"
   echo "*** ABC Traffic Commands ***"
   echo "****************************"
   echo
   echo "Traffic through Management Ingress Gateway"
-  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${INGRESS_MGMT_GW_IP}\" --cacert ca.crt=certs/root-cert.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\""
+  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${INGRESS_MGMT_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\""
   echo
   exit 0
 fi
