@@ -54,7 +54,8 @@ if [[ ${ACTION} = "check" ]]; then
     echo "Failed to list docker containers, check if you have proper docker permissions and docker daemon is running"
     exit 5
   fi
-  
+
+  print_info "Prerequisites checks OK. You have configured scenario \"$(get_scenario)\" on topology \"$(get_topology)\""
   exit 0
 fi
 

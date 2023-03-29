@@ -153,6 +153,13 @@ if [[ ${ACTION} = "info" ]]; then
   echo "EFGH Traffic through T1 Gateway"
   print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"efgh.demo.tetrate.io:443:${EFGH_T1_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem \"https://efgh.demo.tetrate.io/proxy/app-f.ns-f/proxy/app-g.ns-g/proxy/app-h.ns-h\""
   echo
+  echo "All at once in a loop"
+  print_command "while true ; do
+  curl -v -H \"X-B3-Sampled: 1\" --resolve \"abcd.demo.tetrate.io:443:${ABCD_T1_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem \"https://abcd.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c/proxy/app-d.ns-d\"
+  curl -v -H \"X-B3-Sampled: 1\" --resolve \"efgh.demo.tetrate.io:443:${EFGH_T1_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem \"https://efgh.demo.tetrate.io/proxy/app-f.ns-f/proxy/app-g.ns-g/proxy/app-h.ns-h\"
+  sleep 1 ;
+done"
+  echo
   exit 0
 fi
 
