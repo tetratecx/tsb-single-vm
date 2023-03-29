@@ -48,10 +48,6 @@ function get_k8s_version {
 
 ###### MP Cluster ######
 
-function get_mp_minikube_profile {
-  echo $(cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.name")-m1
-}
-
 function get_mp_name {
   cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.name"
 }
@@ -82,11 +78,6 @@ function get_mp_zone {
 
 function get_cp_count {
   cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[].name" | wc -l | tr -d ' '
-}
-
-function get_cp_minikube_profile_by_index {
-  i=${1}
-  echo $(cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].name")-m$((i+2))
 }
 
 function get_cp_name_by_index {
@@ -184,7 +175,6 @@ function get_cp_output_dir {
 ### Parsing Tests
 #
 # get_k8s_version;
-# get_mp_minikube_profile;
 # get_mp_name;
 # get_mp_region;
 # get_mp_vm_count;
@@ -210,8 +200,6 @@ function get_cp_output_dir {
 # get_cp_vm_image_by_index 1 1;
 # get_cp_region_by_index 1;
 # get_cp_zone_by_index 1;
-# get_cp_minikube_profile_by_index 0;
-# get_cp_minikube_profile_by_index 1;
 
 # get_tsb_repo_password;
 # get_tsb_repo_url;

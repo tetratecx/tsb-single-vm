@@ -14,7 +14,7 @@ INSTALL_REPO_USER=$(get_install_repo_user) ;
 
 # Patch deployment still using dockerhub: tsb/ratelimit-redis
 #   args:
-#     (1) cluster kubeconfig context
+#     (1) cluster name
 function patch_dockerhub_dep_redis {
   while ! kubectl --context ${1} -n tsb set image deployment/ratelimit-redis redis=${INSTALL_REPO_URL}/redis:7.0.5-alpine &>/dev/null;
   do
@@ -25,7 +25,7 @@ function patch_dockerhub_dep_redis {
 
 # Patch deployment still using dockerhub: istio-system/ratelimit-server
 #   args:
-#     (1) cluster kubeconfig context
+#     (1) cluster name
 function patch_dockerhub_dep_ratelimit {
   while ! kubectl --context ${1} -n istio-system set image deployment/ratelimit-server ratelimit=${INSTALL_REPO_URL}/ratelimit:5e9a43f9 &>/dev/null;
   do
@@ -36,7 +36,7 @@ function patch_dockerhub_dep_ratelimit {
 
 # Login as admin into tsb
 #   args:
-#     (1) cluster kubeconfig context
+#     (1) cluster name
 #     (2) organization
 function login_tsb_admin {
   kubectl config use-context ${1} ;
@@ -49,7 +49,7 @@ DONE
 
 # Patch OAP refresh rate of management plane
 #   args:
-#     (1) cluster kubeconfig context
+#     (1) cluster name
 function patch_oap_refresh_rate_mp {
   OAP_PATCH='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}'
   kubectl --context ${1} -n tsb patch managementplanes managementplane --type merge --patch ${OAP_PATCH}
@@ -57,15 +57,23 @@ function patch_oap_refresh_rate_mp {
 
 # Patch OAP refresh rate of control plane
 #   args:
-#     (1) cluster kubeconfig context
+#     (1) cluster name
 function patch_oap_refresh_rate_cp {
   OAP_PATCH='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}'
   kubectl --context ${1} -n istio-system patch controlplanes controlplane --type merge --patch ${OAP_PATCH}
 }
 
+# Patch jwt token expiration and pruneInterval
+#   args:
+#     (1) cluster name
+function patch_jwt_token_expiration_mp {
+  TOKEN_PATCH='{"spec":{"tokenIssuer":{"jwt":{"expiration":"36000s","tokenPruneInterval":"36000s"}}}}'
+  kubectl --context ${1} -n tsb patch managementplanes managementplane --type merge --patch ${TOKEN_PATCH}
+}
+
 # Expose tsb gui with kubectl port-forward
 #   args:
-#     (1) cluster kubeconfig context
+#     (1) cluster name
 function expose_tsb_gui {
   if ! [[ -f "/etc/systemd/system/tsb-gui.service" ]] ; then
     sudo tee /etc/systemd/system/tsb-gui.service << EOF
@@ -90,9 +98,9 @@ EOF
 
 if [[ ${ACTION} = "install" ]]; then
 
-  MP_CLUSTER_CONTEXT=$(get_mp_minikube_profile) ;
+  MP_CLUSTER_CONTEXT=$(get_mp_name) ;
   MP_CLUSTER_NAME=$(get_mp_name) ;
-  print_info "Start installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME} (kubectl context ${MP_CLUSTER_CONTEXT})"
+  print_info "Start installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME}"
 
   # bootstrap cluster with self signed certificate that share a common root certificate
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#intermediate-istio-ca-certificates
@@ -131,6 +139,7 @@ if [[ ${ACTION} = "install" ]]; then
   # Apply OAP patch for more real time update in the UI (Apache SkyWalking demo tweak)
   patch_oap_refresh_rate_mp ${MP_CLUSTER_CONTEXT} ;
   patch_oap_refresh_rate_cp ${MP_CLUSTER_CONTEXT} ;
+  patch_jwt_token_expiration_mp ${MP_CLUSTER_CONTEXT} ;
 
   # Demo mgmt plane secret extraction (need to connect application clusters to mgmt cluster)
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets (demo install)
@@ -141,15 +150,15 @@ if [[ ${ACTION} = "install" ]]; then
 
   expose_tsb_gui ${MP_CLUSTER_CONTEXT} ;
 
-  print_info "Finished installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME} (kubectl context ${MP_CLUSTER_CONTEXT})"
+  print_info "Finished installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME}"
   exit 0
 fi
 
 if [[ ${ACTION} = "uninstall" ]]; then
 
-  MP_CLUSTER_CONTEXT=$(get_mp_minikube_profile) ;
+  MP_CLUSTER_CONTEXT=$(get_mp_name) ;
   MP_CLUSTER_NAME=$(get_mp_name) ;
-  print_info "Start removing installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME} (kubectl context ${MP_CLUSTER_CONTEXT})"
+  print_info "Start removing installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME}"
 
   # Put operators to sleep
   for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
@@ -206,14 +215,14 @@ if [[ ${ACTION} = "uninstall" ]]; then
 
   sleep 10 ;
 
-  print_info "Finished removing installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME} (kubectl context ${MP_CLUSTER_CONTEXT})"
+  print_info "Finished removing installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME}"
   exit 0
 fi
 
 
 if [[ ${ACTION} = "reset" ]]; then
 
-  MP_CLUSTER_CONTEXT=$(get_mp_minikube_profile) ;
+  MP_CLUSTER_CONTEXT=$(get_mp_name) ;
 
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin ${MP_CLUSTER_CONTEXT} tetrate ;

@@ -19,7 +19,7 @@ MINIKUBE_OPTS="--driver docker --insecure-registry 192.168.48.0/24"
 
 # Configure metallb start and end IP
 #   args:
-#     (1) minikube profile name
+#     (1) cluster name
 #     (2) start ip
 #     (3) end ip
 function configure_metallb {
@@ -33,7 +33,7 @@ DONE
 
 # Patch for minikube metallb addon dependencies to docker.io
 #   args:
-#     (1) minikube profile name
+#     (1) cluster name
 function patch_metallb_pull_repo {
   CONTROLLER_PATCH='{"spec":{"template":{"spec":{"containers":[{"name":"controller","image":"quay.io/metallb/controller:v0.9.6"}]}}}}'
   SPEAKER_PATCH='{"spec":{"template":{"spec":{"containers":[{"name":"speaker","image":"quay.io/metallb/speaker:v0.9.6"}]}}}}'
@@ -46,7 +46,7 @@ function patch_metallb_pull_repo {
 
 # Configure minikube clusters to have access to docker repo containing tsb images
 #   args:
-#     (1) minikube profile name
+#     (1) cluster name
 function configure_docker_access {
   if ! [[ ${INSTALL_REPO_INSECURE_REGISTRY} == "true" ]]; then
     minikube --profile ${1} ssh -- docker login ${INSTALL_REPO_URL} --username ${INSTALL_REPO_USER} --password ${INSTALL_REPO_PW} &>/dev/null ;
@@ -64,129 +64,127 @@ function configure_docker_access {
 if [[ ${ACTION} = "up" ]]; then
 
   ######################## mp cluster ########################
-  CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
-  DOCKER_NET=$(get_mp_name) ; 
-  CLUSTER_REGION=$(get_mp_region) ;
-  CLUSTER_ZONE=$(get_mp_zone) ;
-  VM_COUNT=$(get_mp_vm_count) ;
+  MP_CLUSTER_NAME=$(get_mp_name) ;
+  MP_CLUSTER_REGION=$(get_mp_region) ;
+  MP_CLUSTER_ZONE=$(get_mp_zone) ;
+  MP_VM_COUNT=$(get_mp_vm_count) ;
 
   # Start minikube profile for the management cluster
-  if minikube profile list 2>/dev/null | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
-    echo "Minikube management cluster profile ${CLUSTER_PROFILE} already running"
+  if minikube profile list 2>/dev/null | grep ${MP_CLUSTER_NAME} | grep "Running" &>/dev/null ; then
+    echo "Minikube management cluster profile ${MP_CLUSTER_NAME} already running"
   else
-    print_info "Starting minikube management cluster profile ${CLUSTER_PROFILE}"
-    minikube start --kubernetes-version=v${K8S_VERSION} --profile ${CLUSTER_PROFILE} --network ${DOCKER_NET} ${MINIKUBE_OPTS} ;
+    print_info "Starting minikube management cluster profile ${MP_CLUSTER_NAME}"
+    minikube start --kubernetes-version=v${K8S_VERSION} --profile ${MP_CLUSTER_NAME} --network ${MP_CLUSTER_NAME} ${MINIKUBE_OPTS} ;
   fi
 
   # Extract the docker network subnet (default 192.168.49.0/24) for the management cluster
-  DOCKER_NET_SUBNET=$(docker network inspect ${DOCKER_NET} --format '{{(index .IPAM.Config 0).Subnet}}' | awk -F '.' '{ print $1"."$2"."$3;}')
+  MP_DOCKER_SUBNET=$(docker network inspect ${MP_CLUSTER_NAME} --format '{{(index .IPAM.Config 0).Subnet}}' | awk -F '.' '{ print $1"."$2"."$3;}')
 
   # Configure and enable metallb in the management cluster
-  if minikube --profile ${CLUSTER_PROFILE} addons list | grep "metallb" | grep "enabled" &>/dev/null ; then
-    echo "Minikube management cluster profile ${CLUSTER_PROFILE} metallb addon already enabled"
+  if minikube --profile ${MP_CLUSTER_NAME} addons list | grep "metallb" | grep "enabled" &>/dev/null ; then
+    echo "Minikube management cluster profile ${MP_CLUSTER_NAME} metallb addon already enabled"
   else
-    configure_metallb ${CLUSTER_PROFILE} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_STARTIP} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_ENDIP} ;
-    minikube --profile ${CLUSTER_PROFILE} addons enable metallb ;
-    patch_metallb_pull_repo ${CLUSTER_PROFILE} ;
+    configure_metallb ${MP_CLUSTER_NAME} ${MP_DOCKER_SUBNET}.${CLUSTER_METALLB_STARTIP} ${MP_DOCKER_SUBNET}.${CLUSTER_METALLB_ENDIP} ;
+    minikube --profile ${MP_CLUSTER_NAME} addons enable metallb ;
+    patch_metallb_pull_repo ${MP_CLUSTER_NAME} ;
   fi  
 
   # Make sure minikube has access to docker repo containing tsb images
-  configure_docker_access ${CLUSTER_PROFILE} ;
+  configure_docker_access ${MP_CLUSTER_NAME} ;
 
   # Add nodes labels for locality based routing (region and zone)
-  if ! kubectl --context ${CLUSTER_PROFILE} get nodes ${CLUSTER_PROFILE} --show-labels | grep "topology.kubernetes.io/region=${CLUSTER_REGION}" &>/dev/null ; then
-    kubectl --context ${CLUSTER_PROFILE} label node ${CLUSTER_PROFILE} topology.kubernetes.io/region=${CLUSTER_REGION} --overwrite=true ;
+  if ! kubectl --context ${MP_CLUSTER_NAME} get nodes ${MP_CLUSTER_NAME} --show-labels | grep "topology.kubernetes.io/region=${MP_CLUSTER_REGION}" &>/dev/null ; then
+    kubectl --context ${MP_CLUSTER_NAME} label node ${MP_CLUSTER_NAME} topology.kubernetes.io/region=${MP_CLUSTER_REGION} --overwrite=true ;
   fi
-  if ! kubectl --context ${CLUSTER_PROFILE} get nodes ${CLUSTER_PROFILE} --show-labels | grep "topology.kubernetes.io/zone=${CLUSTER_ZONE}" &>/dev/null ; then
-    kubectl --context ${CLUSTER_PROFILE} label node ${CLUSTER_PROFILE} topology.kubernetes.io/zone=${CLUSTER_ZONE} --overwrite=true ;
+  if ! kubectl --context ${MP_CLUSTER_NAME} get nodes ${MP_CLUSTER_NAME} --show-labels | grep "topology.kubernetes.io/zone=${MP_CLUSTER_ZONE}" &>/dev/null ; then
+    kubectl --context ${MP_CLUSTER_NAME} label node ${MP_CLUSTER_NAME} topology.kubernetes.io/zone=${MP_CLUSTER_ZONE} --overwrite=true ;
   fi
 
   # Spin up vms that belong to the management cluster
-  if [[ ${VM_COUNT} -eq 0 ]] ; then
-    echo "Skipping vm start-up: no vms attached to management cluster ${CLUSTER_PROFILE}"
+  if [[ ${MP_VM_COUNT} -eq 0 ]] ; then
+    echo "Skipping vm start-up: no vms attached to management cluster ${MP_CLUSTER_NAME}"
   else
-    VM_INDEX=0
-    while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
-      VM_IMAGE=$(get_mp_vm_image_by_index ${VM_INDEX}) ;
-      VM_NAME=$(get_mp_vm_name_by_index ${VM_INDEX}) ;
+    MP_VM_INDEX=0
+    while [[ ${MP_VM_INDEX} -lt ${MP_VM_COUNT} ]]; do
+      VM_IMAGE=$(get_mp_vm_image_by_index ${MP_VM_INDEX}) ;
+      VM_NAME=$(get_mp_vm_name_by_index ${MP_VM_INDEX}) ;
       if docker ps --filter "status=running" | grep ${VM_NAME} &>/dev/null ; then
-        echo "Do nothing, vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} is already running"
+        echo "Do nothing, vm ${VM_NAME} for management cluster ${MP_CLUSTER_NAME} is already running"
       elif docker ps --filter "status=exited" | grep ${VM_NAME} &>/dev/null ; then
-        print_info "Going to start vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} again"
+        print_info "Going to start vm ${VM_NAME} for management cluster ${MP_CLUSTER_NAME} again"
         docker start ${VM_NAME} ;
       else
-        print_info "Going to start vm ${VM_NAME} for management cluster ${CLUSTER_PROFILE} for the first time"
-        docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --hostname ${VM_NAME} --name ${VM_NAME} ${VM_IMAGE} ;
+        print_info "Going to start vm ${VM_NAME} for management cluster ${MP_CLUSTER_NAME} for the first time"
+        docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${MP_CLUSTER_NAME} --hostname ${VM_NAME} --name ${VM_NAME} ${VM_IMAGE} ;
       fi
-      VM_INDEX=$((VM_INDEX+1))
+      MP_VM_INDEX=$((MP_VM_INDEX+1))
     done
   fi
 
   # Disable iptables docker isolation for cluster to private repo communication
   # https://serverfault.com/questions/1102209/how-to-disable-docker-network-isolation
   # https://serverfault.com/questions/830135/routing-among-different-docker-networks-on-the-same-host-machine 
-  echo "Flushing docker isolation iptable rules to allow ${CLUSTER_PROFILE} cluster to docker repo communication"
+  echo "Flushing docker isolation iptable rules to allow ${MP_CLUSTER_NAME} cluster to docker repo communication"
   sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2
 
   ######################## cp clusters ########################
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
-    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
-    DOCKER_NET=$(get_cp_name_by_index ${CP_INDEX}) ;
-    CLUSTER_REGION=$(get_cp_region_by_index ${CP_INDEX}) ;
-    CLUSTER_ZONE=$(get_cp_zone_by_index ${CP_INDEX}) ;
-    VM_COUNT=$(get_cp_vm_count_by_index ${CP_INDEX}) ;
+    CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
+    CP_CLUSTER_REGION=$(get_cp_region_by_index ${CP_INDEX}) ;
+    CP_CLUSTER_ZONE=$(get_cp_zone_by_index ${CP_INDEX}) ;
+    CP_VM_COUNT=$(get_cp_vm_count_by_index ${CP_INDEX}) ;
   
     # Start minikube profile for this application cluster
-    if minikube profile list 2>/dev/null | grep ${CLUSTER_PROFILE} | grep "Running" &>/dev/null ; then
-      echo "Minikube application cluster profile ${CLUSTER_PROFILE} already running"
+    if minikube profile list 2>/dev/null | grep ${CP_CLUSTER_NAME} | grep "Running" &>/dev/null ; then
+      echo "Minikube application cluster profile ${CP_CLUSTER_NAME} already running"
     else
-      print_info "Starting minikube application cluster profile ${CLUSTER_PROFILE}"
-      minikube start --kubernetes-version=v${K8S_VERSION} --profile ${CLUSTER_PROFILE} --network ${DOCKER_NET} ${MINIKUBE_OPTS};
+      print_info "Starting minikube application cluster profile ${CP_CLUSTER_NAME}"
+      minikube start --kubernetes-version=v${K8S_VERSION} --profile ${CP_CLUSTER_NAME} --network ${CP_CLUSTER_NAME} ${MINIKUBE_OPTS};
     fi
 
     # Extract the docker network subnet (default 192.168.49.0/24) for this application cluster
-    DOCKER_NET_SUBNET=$(docker network inspect ${DOCKER_NET} --format '{{(index .IPAM.Config 0).Subnet}}' | awk -F '.' '{ print $1"."$2"."$3;}')
+    CP_DOCKER_SUBNET=$(docker network inspect ${CP_CLUSTER_NAME} --format '{{(index .IPAM.Config 0).Subnet}}' | awk -F '.' '{ print $1"."$2"."$3;}')
 
     # Configure and enable metallb in this application cluster
-    if minikube --profile ${CLUSTER_PROFILE} addons list | grep "metallb" | grep "enabled" &>/dev/null ; then
-      echo "Minikube application cluster profile ${CLUSTER_PROFILE} metallb addon already enabled"
+    if minikube --profile ${CP_CLUSTER_NAME} addons list | grep "metallb" | grep "enabled" &>/dev/null ; then
+      echo "Minikube application cluster profile ${CP_CLUSTER_NAME} metallb addon already enabled"
     else
-      configure_metallb ${CLUSTER_PROFILE} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_STARTIP} ${DOCKER_NET_SUBNET}.${CLUSTER_METALLB_ENDIP} ;
-      minikube --profile ${CLUSTER_PROFILE} addons enable metallb ;
-      patch_metallb_pull_repo ${CLUSTER_PROFILE} ;
+      configure_metallb ${CP_CLUSTER_NAME} ${CP_DOCKER_SUBNET}.${CLUSTER_METALLB_STARTIP} ${CP_DOCKER_SUBNET}.${CLUSTER_METALLB_ENDIP} ;
+      minikube --profile ${CP_CLUSTER_NAME} addons enable metallb ;
+      patch_metallb_pull_repo ${CP_CLUSTER_NAME} ;
     fi  
 
     # Make sure minikube has access to docker repo containing tsb images
-    configure_docker_access ${CLUSTER_PROFILE} ;
+    configure_docker_access ${CP_CLUSTER_NAME} ;
 
     # Add nodes labels for locality based routing (region and zone)
-    if ! kubectl --context ${CLUSTER_PROFILE} get nodes ${CLUSTER_PROFILE} --show-labels | grep "topology.kubernetes.io/region=${CLUSTER_REGION}" &>/dev/null ; then
-      kubectl --context ${CLUSTER_PROFILE} label node ${CLUSTER_PROFILE} topology.kubernetes.io/region=${CLUSTER_REGION} --overwrite=true ;
+    if ! kubectl --context ${CP_CLUSTER_NAME} get nodes ${CP_CLUSTER_NAME} --show-labels | grep "topology.kubernetes.io/region=${CP_CLUSTER_REGION}" &>/dev/null ; then
+      kubectl --context ${CP_CLUSTER_NAME} label node ${CP_CLUSTER_NAME} topology.kubernetes.io/region=${CP_CLUSTER_REGION} --overwrite=true ;
     fi
-    if ! kubectl --context ${CLUSTER_PROFILE} get nodes ${CLUSTER_PROFILE} --show-labels | grep "topology.kubernetes.io/zone=${CLUSTER_ZONE}" &>/dev/null ; then
-      kubectl --context ${CLUSTER_PROFILE} label node ${CLUSTER_PROFILE} topology.kubernetes.io/zone=${CLUSTER_ZONE} --overwrite=true ;
+    if ! kubectl --context ${CP_CLUSTER_NAME} get nodes ${CP_CLUSTER_NAME} --show-labels | grep "topology.kubernetes.io/zone=${CP_CLUSTER_ZONE}" &>/dev/null ; then
+      kubectl --context ${CP_CLUSTER_NAME} label node ${CP_CLUSTER_NAME} topology.kubernetes.io/zone=${CP_CLUSTER_ZONE} --overwrite=true ;
     fi
 
     # Spin up vms that belong to this application cluster
-    if [[ ${VM_COUNT} -eq 0 ]] ; then
-      echo "Skipping vm start-up: no vms attached to application cluster ${CLUSTER_PROFILE}"
+    if [[ ${CP_VM_COUNT} -eq 0 ]] ; then
+      echo "Skipping vm start-up: no vms attached to application cluster ${CP_CLUSTER_NAME}"
     else
-      VM_INDEX=0
-      while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
-        VM_IMAGE=$(get_cp_vm_image_by_index ${CP_INDEX} ${VM_INDEX}) ;
-        VM_NAME=$(get_cp_vm_name_by_index ${CP_INDEX} ${VM_INDEX}) ;
+      CP_VM_INDEX=0
+      while [[ ${CP_VM_INDEX} -lt ${CP_VM_COUNT} ]]; do
+        VM_IMAGE=$(get_cp_vm_image_by_index ${CP_INDEX} ${CP_VM_INDEX}) ;
+        VM_NAME=$(get_cp_vm_name_by_index ${CP_INDEX} ${CP_VM_INDEX}) ;
         if docker ps --filter "status=running" | grep ${VM_NAME} &>/dev/null ; then
-          echo "Do nothing, vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} is already running"
+          echo "Do nothing, vm ${VM_NAME} for application cluster ${CP_CLUSTER_NAME} is already running"
         elif docker ps --filter "status=exited" | grep ${VM_NAME} &>/dev/null ; then
-          print_info "Going to start vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} again"
+          print_info "Going to start vm ${VM_NAME} for application cluster ${CP_CLUSTER_NAME} again"
           docker start ${VM_NAME} ;
         else
-          print_info "Going to start vm ${VM_NAME} for application cluster ${CLUSTER_PROFILE} for the first time"
-          docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${DOCKER_NET} --hostname ${VM_NAME} --name ${VM_NAME} ${VM_IMAGE} ;
+          print_info "Going to start vm ${VM_NAME} for application cluster ${CP_CLUSTER_NAME} for the first time"
+          docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${CP_CLUSTER_NAME} --hostname ${VM_NAME} --name ${VM_NAME} ${VM_IMAGE} ;
         fi
-        VM_INDEX=$((VM_INDEX+1))
+        CP_VM_INDEX=$((CP_VM_INDEX+1))
       done
     fi
     CP_INDEX=$((CP_INDEX+1))
@@ -196,7 +194,7 @@ if [[ ${ACTION} = "up" ]]; then
   if [[ ${CP_COUNT} -gt 0 ]]; then
     # https://serverfault.com/questions/1102209/how-to-disable-docker-network-isolation
     # https://serverfault.com/questions/830135/routing-among-different-docker-networks-on-the-same-host-machine 
-    echo "Flushing docker isolation iptable rules to allow cross cluster and ${CLUSTER_PROFILE} cluster to private docker repo communication"
+    echo "Flushing docker isolation iptable rules to allow cross cluster and ${CP_CLUSTER_NAME} cluster to private docker repo communication"
     sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2
   fi
 
@@ -207,30 +205,29 @@ fi
 if [[ ${ACTION} = "down" ]]; then
 
   # Stop minikube profiles
-  CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
-  print_info "Going to stop minikube management cluster profile ${CLUSTER_PROFILE}"
-  minikube stop --profile ${CLUSTER_PROFILE} 2>/dev/null ;
+  MP_CLUSTER_NAME=$(get_mp_name) ;
+  print_info "Going to stop minikube management cluster profile ${MP_CLUSTER_NAME}"
+  minikube stop --profile ${MP_CLUSTER_NAME} 2>/dev/null ;
 
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
-    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
-    print_info "Going to stop minikube application cluster profile ${CLUSTER_PROFILE}"
-    minikube stop --profile ${CLUSTER_PROFILE} 2>/dev/null ;
+    CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
+    print_info "Going to stop minikube application cluster profile ${CP_CLUSTER_NAME}"
+    minikube stop --profile ${CP_CLUSTER_NAME} 2>/dev/null ;
     CP_INDEX=$((CP_INDEX+1))
   done
 
   # Management plane VMs
-  VM_COUNT=$(get_mp_vm_count) ;
-  if ! [[ ${VM_COUNT} -eq 0 ]] ; then
-    CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
-    VM_INDEX=0
-    while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
-      DOCKER_NET=$(get_mp_name) ;
-      VM_NAME=$(get_mp_vm_name_by_index ${VM_INDEX}) ;
-      print_info "Going to stop vm ${VM_NAME} attached to management cluster ${CLUSTER_PROFILE}"
+  MP_VM_COUNT=$(get_mp_vm_count) ;
+  if ! [[ ${MP_VM_COUNT} -eq 0 ]] ; then
+    MP_CLUSTER_NAME=$(get_mp_name) ;
+    MP_VM_INDEX=0
+    while [[ ${MP_VM_INDEX} -lt ${MP_VM_COUNT} ]]; do
+      VM_NAME=$(get_mp_vm_name_by_index ${MP_VM_INDEX}) ;
+      print_info "Going to stop vm ${VM_NAME} attached to management cluster ${MP_CLUSTER_NAME}"
       docker stop ${VM_NAME} ;
-      VM_INDEX=$((VM_INDEX+1))
+      MP_VM_INDEX=$((MP_VM_INDEX+1))
     done
   fi
 
@@ -238,16 +235,15 @@ if [[ ${ACTION} = "down" ]]; then
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
-    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
-    DOCKER_NET=$(get_cp_name_by_index ${CP_INDEX}) ;
-    VM_COUNT=$(get_cp_vm_count_by_index ${CP_INDEX}) ;
-    if ! [[ ${VM_COUNT} -eq 0 ]] ; then
-      VM_INDEX=0
-      while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
-        VM_NAME=$(get_cp_vm_name_by_index ${CP_INDEX} ${VM_INDEX}) ;
-        print_info "Going to stop vm ${VM_NAME} attached to application cluster ${CLUSTER_PROFILE}"
+    CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
+    CP_VM_COUNT=$(get_cp_vm_count_by_index ${CP_INDEX}) ;
+    if ! [[ ${CP_VM_COUNT} -eq 0 ]] ; then
+      CP_VM_INDEX=0
+      while [[ ${CP_VM_INDEX} -lt ${CP_VM_COUNT} ]]; do
+        VM_NAME=$(get_cp_vm_name_by_index ${CP_INDEX} ${CP_VM_INDEX}) ;
+        print_info "Going to stop vm ${VM_NAME} attached to application cluster ${CP_CLUSTER_NAME}"
         docker stop ${VM_NAME} ;
-        VM_INDEX=$((VM_INDEX+1))
+        CP_VM_INDEX=$((CP_VM_INDEX+1))
       done
     fi
     CP_INDEX=$((CP_INDEX+1))
@@ -259,45 +255,41 @@ fi
 
 if [[ ${ACTION} = "info" ]]; then
 
-  CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
-  CLUSTER_NAME=$(get_mp_name) ;
-  TSB_API_ENDPOINT=$(kubectl --context ${CLUSTER_PROFILE} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  MP_CLUSTER_NAME=$(get_mp_name) ;
+  TSB_API_ENDPOINT=$(kubectl --context ${MP_CLUSTER_NAME} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
 
   print_info "Minikube profiles:"
   minikube profile list ;
   echo ""
 
-  print_info "Management plane cluster ${CLUSTER_NAME}:"
+  print_info "Management plane cluster ${MP_CLUSTER_NAME}:"
   echo "TSB GUI: https://${TSB_API_ENDPOINT}:8443 (admin/admin)"
   echo "TSB GUI (port-fowarded): https://$(curl -s ifconfig.me):8443 (admin/admin)"
-  print_command "kubectl --context ${CLUSTER_PROFILE} get pods -A"
+  print_command "kubectl --context ${MP_CLUSTER_NAME} get pods -A"
 
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
-    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
-    CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
+    CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
     echo ""
-    print_info "Control plane cluster ${CLUSTER_NAME}:"
-    print_command "kubectl --context ${CLUSTER_PROFILE} get pods -A"
+    print_info "Control plane cluster ${CP_CLUSTER_NAME}:"
+    print_command "kubectl --context ${CP_CLUSTER_NAME} get pods -A"
     CP_INDEX=$((CP_INDEX+1))
   done
 
   # Management plane VMs
-  VM_COUNT=$(get_mp_vm_count) ;
-  if ! [[ ${VM_COUNT} -eq 0 ]] ; then
-    CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
-    CLUSTER_NAME=$(get_mp_name) ;
+  MP_VM_COUNT=$(get_mp_vm_count) ;
+  if ! [[ ${MP_VM_COUNT} -eq 0 ]] ; then
+    MP_CLUSTER_NAME=$(get_mp_name) ;
     echo ""
-    print_info "VMs attached to management cluster ${CLUSTER_NAME}:"
-    VM_INDEX=0
-    while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
-      DOCKER_NET=$(get_mp_name) ;
-      VM_NAME=$(get_mp_vm_name_by_index ${VM_INDEX}) ;
+    print_info "VMs attached to management cluster ${MP_CLUSTER_NAME}:"
+    MP_VM_INDEX=0
+    while [[ ${MP_VM_INDEX} -lt ${MP_VM_COUNT} ]]; do
+      VM_NAME=$(get_mp_vm_name_by_index ${MP_VM_INDEX}) ;
       VM_IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${VM_NAME}) ;
       echo "${VM_NAME} has ip address ${VM_IP}"
       print_command "ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${VM_IP}"
-    VM_INDEX=$((VM_INDEX+1))
+    MP_VM_INDEX=$((MP_VM_INDEX+1))
     done
   fi
 
@@ -305,20 +297,18 @@ if [[ ${ACTION} = "info" ]]; then
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
-    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
-    CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
-    DOCKER_NET=$(get_cp_name_by_index ${CP_INDEX}) ;
-    VM_COUNT=$(get_cp_vm_count_by_index ${CP_INDEX}) ;
-    if ! [[ ${VM_COUNT} -eq 0 ]] ; then
+    CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
+    CP_VM_COUNT=$(get_cp_vm_count_by_index ${CP_INDEX}) ;
+    if ! [[ ${CP_VM_COUNT} -eq 0 ]] ; then
       echo ""
-      print_info "VMs attached to application cluster ${CLUSTER_NAME}:"
-      VM_INDEX=0
-      while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
-        VM_NAME=$(get_cp_vm_name_by_index ${CP_INDEX} ${VM_INDEX}) ;
+      print_info "VMs attached to application cluster ${CP_CLUSTER_NAME}:"
+      CP_VM_INDEX=0
+      while [[ ${CP_VM_INDEX} -lt ${CP_VM_COUNT} ]]; do
+        VM_NAME=$(get_cp_vm_name_by_index ${CP_INDEX} ${CP_VM_INDEX}) ;
         VM_IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${VM_NAME}) ;
         echo "${VM_NAME} has ip address ${VM_IP}"
         print_command "ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${VM_IP}"
-        VM_INDEX=$((VM_INDEX+1))
+        CP_VM_INDEX=$((CP_VM_INDEX+1))
       done
     fi
     CP_INDEX=$((CP_INDEX+1))
@@ -330,30 +320,30 @@ fi
 if [[ ${ACTION} = "clean" ]]; then
 
   # Delete minikube profiles
-  CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
-  print_info "Going to delete minikube management cluster profile ${CLUSTER_PROFILE}"
-  minikube delete --profile ${CLUSTER_PROFILE} 2>/dev/null ;
+  MP_CLUSTER_NAME=$(get_mp_name) ;
+  print_info "Going to delete minikube management cluster profile ${MP_CLUSTER_NAME}"
+  minikube delete --profile ${MP_CLUSTER_NAME} 2>/dev/null ;
 
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
-    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
-    print_info "Going to delete minikube application cluster profile ${CLUSTER_PROFILE}"
-    minikube delete --profile ${CLUSTER_PROFILE} 2>/dev/null ;
+    CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
+    print_info "Going to delete minikube application cluster profile ${CP_CLUSTER_NAME}"
+    minikube delete --profile ${CP_CLUSTER_NAME} 2>/dev/null ;
     CP_INDEX=$((CP_INDEX+1))
   done
 
   # Management plane VMs
-  VM_COUNT=$(get_mp_vm_count) ;
-  if ! [[ ${VM_COUNT} -eq 0 ]] ; then
-    CLUSTER_PROFILE=$(get_mp_minikube_profile) ;
-    VM_INDEX=0
-    while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
-      VM_NAME=$(get_mp_vm_name_by_index ${VM_INDEX}) ;
-      print_info "Going to delete vm ${VM_NAME} attached to management cluster ${CLUSTER_PROFILE}"
+  MP_VM_COUNT=$(get_mp_vm_count) ;
+  if ! [[ ${MP_VM_COUNT} -eq 0 ]] ; then
+    MP_CLUSTER_NAME=$(get_mp_name) ;
+    MP_VM_INDEX=0
+    while [[ ${MP_VM_INDEX} -lt ${MP_VM_COUNT} ]]; do
+      VM_NAME=$(get_mp_vm_name_by_index ${MP_VM_INDEX}) ;
+      print_info "Going to delete vm ${VM_NAME} attached to management cluster ${MP_CLUSTER_NAME}"
       docker stop ${VM_NAME} ;
       docker rm ${VM_NAME} ;
-      VM_INDEX=$((VM_INDEX+1))
+      MP_VM_INDEX=$((MP_VM_INDEX+1))
     done
   fi
 
@@ -361,29 +351,29 @@ if [[ ${ACTION} = "clean" ]]; then
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
-    CLUSTER_PROFILE=$(get_cp_minikube_profile_by_index ${CP_INDEX}) ;
-    VM_COUNT=$(get_cp_vm_count_by_index ${CP_INDEX}) ;
-    if ! [[ ${VM_COUNT} -eq 0 ]] ; then
-      VM_INDEX=0
-      while [[ ${VM_INDEX} -lt ${VM_COUNT} ]]; do
-        VM_NAME=$(get_cp_vm_name_by_index ${CP_INDEX} ${VM_INDEX}) ;
-        print_info "Going to delete vm ${VM_NAME} attached to application cluster ${CLUSTER_PROFILE}"
+    CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
+    CP_VM_COUNT=$(get_cp_vm_count_by_index ${CP_INDEX}) ;
+    if ! [[ ${CP_VM_COUNT} -eq 0 ]] ; then
+      CP_VM_INDEX=0
+      while [[ ${CP_VM_INDEX} -lt ${CP_VM_COUNT} ]]; do
+        VM_NAME=$(get_cp_vm_name_by_index ${CP_INDEX} ${CP_VM_INDEX}) ;
+        print_info "Going to delete vm ${VM_NAME} attached to application cluster ${CP_CLUSTER_NAME}"
         docker stop ${VM_NAME} ;
         docker rm ${VM_NAME} ;
-        VM_INDEX=$((VM_INDEX+1))
+        CP_VM_INDEX=$((CP_VM_INDEX+1))
       done
     fi
     CP_INDEX=$((CP_INDEX+1))
   done
 
   # Docker networks
-  MP_DOCKER_NET=$(get_mp_name) ;
-  docker network rm ${MP_DOCKER_NET} 2>/dev/null ;
+  MP_CLUSTER_NAME=$(get_mp_name) ;
+  docker network rm ${MP_CLUSTER_NAME} 2>/dev/null ;
   CP_COUNT=$(get_cp_count)
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
-    CP_DOCKER_NET=$(get_cp_name_by_index ${CP_INDEX}) ;
-    docker network rm ${CP_DOCKER_NET} 2>/dev/null ;
+    CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
+    docker network rm ${CP_CLUSTER_NAME} 2>/dev/null ;
     CP_INDEX=$((CP_INDEX+1))
   done
   echo "All docker networks deleted"
