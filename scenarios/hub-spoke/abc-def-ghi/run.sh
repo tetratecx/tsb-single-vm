@@ -182,11 +182,11 @@ if [[ ${ACTION} = "info" ]]; then
   echo
   echo "All at once in a loop"
   print_command "while true ; do
-      curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${ABC_T1_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem --cert ${CERTS_BASE_DIR}/abc/client.abc.demo.tetrate.io-cert.pem --key ${CERTS_BASE_DIR}/abc/client.abc.demo.tetrate.io-key.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\" ;
-      curl -v -H \"X-B3-Sampled: 1\" --resolve \"def.demo.tetrate.io:443:${DEF_T1_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem --cert ${CERTS_BASE_DIR}/def/client.def.demo.tetrate.io-cert.pem --key ${CERTS_BASE_DIR}/def/client.def.demo.tetrate.io-key.pem \"https://def.demo.tetrate.io/proxy/app-e.ns-e/proxy/app-f.ns-f\" ;
-      curl -v -H \"X-B3-Sampled: 1\" --resolve \"ghi.demo.tetrate.io:443:${GHI_T1_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem --cert ${CERTS_BASE_DIR}/ghi/client.ghi.demo.tetrate.io-cert.pem --key ${CERTS_BASE_DIR}/ghi/client.ghi.demo.tetrate.io-key.pem \"https://ghi.demo.tetrate.io/proxy/app-h.ns-h/proxy/app-i.ns-i\" ;
-      sleep 1 ;
-    done"
+  curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${ABC_T1_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem --cert ${CERTS_BASE_DIR}/abc/client.abc.demo.tetrate.io-cert.pem --key ${CERTS_BASE_DIR}/abc/client.abc.demo.tetrate.io-key.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\" ;
+  curl -v -H \"X-B3-Sampled: 1\" --resolve \"def.demo.tetrate.io:443:${DEF_T1_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem --cert ${CERTS_BASE_DIR}/def/client.def.demo.tetrate.io-cert.pem --key ${CERTS_BASE_DIR}/def/client.def.demo.tetrate.io-key.pem \"https://def.demo.tetrate.io/proxy/app-e.ns-e/proxy/app-f.ns-f\" ;
+  curl -v -H \"X-B3-Sampled: 1\" --resolve \"ghi.demo.tetrate.io:443:${GHI_T1_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem --cert ${CERTS_BASE_DIR}/ghi/client.ghi.demo.tetrate.io-cert.pem --key ${CERTS_BASE_DIR}/ghi/client.ghi.demo.tetrate.io-key.pem \"https://ghi.demo.tetrate.io/proxy/app-h.ns-h/proxy/app-i.ns-i\" ;
+  sleep 1 ;
+done"
   echo
   exit 0
 fi
