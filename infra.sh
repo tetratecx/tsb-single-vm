@@ -256,6 +256,14 @@ fi
 if [[ ${ACTION} = "info" ]]; then
 
   MP_CLUSTER_NAME=$(get_mp_name) ;
+  if ! kubectl config get-contexts ${MP_CLUSTER_NAME} &>/dev/null ; then
+    kubectl config get-contexts ;
+    minikube profile list ;
+    docker ps ;
+    print_error "No kubernetes context \"${MP_CLUSTER_NAME}\" found... topology in configured env.json is not running." ;
+    exit 0
+  fi  
+
   TSB_API_ENDPOINT=$(kubectl --context ${MP_CLUSTER_NAME} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
 
   print_info "Minikube profiles:"
