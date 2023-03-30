@@ -98,7 +98,6 @@ EOF
 
 if [[ ${ACTION} = "install" ]]; then
 
-  MP_CLUSTER_CONTEXT=$(get_mp_name) ;
   MP_CLUSTER_NAME=$(get_mp_name) ;
   print_info "Start installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME}"
 
@@ -107,11 +106,11 @@ if [[ ${ACTION} = "install" ]]; then
   generate_istio_cert ${MP_CLUSTER_NAME} ;
   CERTS_BASE_DIR=$(get_certs_base_dir) ;
 
-  if ! kubectl --context ${MP_CLUSTER_CONTEXT} get ns istio-system &>/dev/null; then
-    kubectl --context ${MP_CLUSTER_CONTEXT} create ns istio-system ; 
+  if ! kubectl --context ${MP_CLUSTER_NAME} get ns istio-system &>/dev/null; then
+    kubectl --context ${MP_CLUSTER_NAME} create ns istio-system ;
   fi
-  if ! kubectl --context ${MP_CLUSTER_CONTEXT} -n istio-system get secret cacerts &>/dev/null; then
-    kubectl --context ${MP_CLUSTER_CONTEXT} create secret generic cacerts -n istio-system \
+  if ! kubectl --context ${MP_CLUSTER_NAME} -n istio-system get secret cacerts &>/dev/null; then
+    kubectl --context ${MP_CLUSTER_NAME} create secret generic cacerts -n istio-system \
       --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/ca-cert.pem \
       --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/ca-key.pem \
       --from-file=${CERTS_BASE_DIR}/${MP_CLUSTER_NAME}/root-cert.pem \
@@ -119,36 +118,36 @@ if [[ ${ACTION} = "install" ]]; then
   fi
   
   # start patching deployments that depend on dockerhub asynchronously
-  patch_dockerhub_dep_redis ${MP_CLUSTER_CONTEXT} &
-  patch_dockerhub_dep_ratelimit ${MP_CLUSTER_CONTEXT} &
+  patch_dockerhub_dep_redis ${MP_CLUSTER_NAME} &
+  patch_dockerhub_dep_ratelimit ${MP_CLUSTER_NAME} &
 
   # install tsb management plane using the demo profile
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/demo-installation
   #   NOTE: the demo profile deploys both the mgmt plane AND the ctrl plane in a demo cluster!
-  kubectl config use-context ${MP_CLUSTER_CONTEXT} ;
+  kubectl config use-context ${MP_CLUSTER_NAME} ;
   tctl install demo --registry ${INSTALL_REPO_URL} --admin-password admin ;
 
   # Wait for the management, control and data plane to become available
-  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n tsb tsb-operator-management-plane --for condition=Available=True --timeout=600s ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n istio-system tsb-operator-control-plane --for condition=Available=True --timeout=600s ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n istio-gateway tsb-operator-data-plane --for condition=Available=True --timeout=600s ;
-  while ! kubectl --context ${MP_CLUSTER_CONTEXT} get deployment -n istio-system edge &>/dev/null; do sleep 1; done ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} wait deployment -n istio-system edge --for condition=Available=True --timeout=600s ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} get pods -A ;
+  kubectl --context ${MP_CLUSTER_NAME} wait deployment -n tsb tsb-operator-management-plane --for condition=Available=True --timeout=600s ;
+  kubectl --context ${MP_CLUSTER_NAME} wait deployment -n istio-system tsb-operator-control-plane --for condition=Available=True --timeout=600s ;
+  kubectl --context ${MP_CLUSTER_NAME} wait deployment -n istio-gateway tsb-operator-data-plane --for condition=Available=True --timeout=600s ;
+  while ! kubectl --context ${MP_CLUSTER_NAME} get deployment -n istio-system edge &>/dev/null; do sleep 1; done ;
+  kubectl --context ${MP_CLUSTER_NAME} wait deployment -n istio-system edge --for condition=Available=True --timeout=600s ;
+  kubectl --context ${MP_CLUSTER_NAME} get pods -A ;
 
   # Apply OAP patch for more real time update in the UI (Apache SkyWalking demo tweak)
-  patch_oap_refresh_rate_mp ${MP_CLUSTER_CONTEXT} ;
-  patch_oap_refresh_rate_cp ${MP_CLUSTER_CONTEXT} ;
-  patch_jwt_token_expiration_mp ${MP_CLUSTER_CONTEXT} ;
+  patch_oap_refresh_rate_mp ${MP_CLUSTER_NAME} ;
+  patch_oap_refresh_rate_cp ${MP_CLUSTER_NAME} ;
+  patch_jwt_token_expiration_mp ${MP_CLUSTER_NAME} ;
 
   # Demo mgmt plane secret extraction (need to connect application clusters to mgmt cluster)
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets (demo install)
   MP_OUTPUT_DIR=$(get_mp_output_dir) ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} get -n istio-system secret mp-certs -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/mp-certs.pem ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} get -n istio-system secret es-certs -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/es-certs.pem ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} get -n istio-system secret xcp-central-ca-bundle -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/xcp-central-ca-certs.pem ;
+  kubectl --context ${MP_CLUSTER_NAME} get -n istio-system secret mp-certs -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/mp-certs.pem ;
+  kubectl --context ${MP_CLUSTER_NAME} get -n istio-system secret es-certs -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/es-certs.pem ;
+  kubectl --context ${MP_CLUSTER_NAME} get -n istio-system secret xcp-central-ca-bundle -o jsonpath='{.data.ca\.crt}' | base64 --decode > ${MP_OUTPUT_DIR}/xcp-central-ca-certs.pem ;
 
-  expose_tsb_gui ${MP_CLUSTER_CONTEXT} ;
+  expose_tsb_gui ${MP_CLUSTER_NAME} ;
 
   print_info "Finished installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME}"
   exit 0
@@ -156,61 +155,60 @@ fi
 
 if [[ ${ACTION} = "uninstall" ]]; then
 
-  MP_CLUSTER_CONTEXT=$(get_mp_name) ;
   MP_CLUSTER_NAME=$(get_mp_name) ;
   print_info "Start removing installation of tsb demo management/control plane in cluster ${MP_CLUSTER_NAME}"
 
   # Put operators to sleep
   for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
-    kubectl --context ${MP_CLUSTER_CONTEXT} get deployments -n ${NS} -o custom-columns=:metadata.name \
-      | grep operator | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} scale deployment {} -n ${NS} --replicas=0 ; 
+    kubectl --context ${MP_CLUSTER_NAME} get deployments -n ${NS} -o custom-columns=:metadata.name \
+      | grep operator | xargs -I {} kubectl --context ${MP_CLUSTER_NAME} scale deployment {} -n ${NS} --replicas=0 ; 
   done
 
   sleep 5 ;
 
   # Clean up namespace specific resources
   for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
-    kubectl --context ${MP_CLUSTER_CONTEXT} get deployments -n ${NS} -o custom-columns=:metadata.name \
-      | grep operator | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete deployment {} -n ${NS} --timeout=10s --wait=false ;
+    kubectl --context ${MP_CLUSTER_NAME} get deployments -n ${NS} -o custom-columns=:metadata.name \
+      | grep operator | xargs -I {} kubectl --context ${MP_CLUSTER_NAME} delete deployment {} -n ${NS} --timeout=10s --wait=false ;
     sleep 5 ;
-    kubectl --context ${MP_CLUSTER_CONTEXT} delete --all deployments -n ${NS} --timeout=10s --wait=false ;
-    kubectl --context ${MP_CLUSTER_CONTEXT} delete --all jobs -n ${NS} --timeout=10s --wait=false ;
-    kubectl --context ${MP_CLUSTER_CONTEXT} delete --all statefulset -n ${NS} --timeout=10s --wait=false ;
-    kubectl --context ${MP_CLUSTER_CONTEXT} get deployments -n ${NS} -o custom-columns=:metadata.name \
-      | grep operator | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} patch deployment {} -n ${NS} --type json \
+    kubectl --context ${MP_CLUSTER_NAME} delete --all deployments -n ${NS} --timeout=10s --wait=false ;
+    kubectl --context ${MP_CLUSTER_NAME} delete --all jobs -n ${NS} --timeout=10s --wait=false ;
+    kubectl --context ${MP_CLUSTER_NAME} delete --all statefulset -n ${NS} --timeout=10s --wait=false ;
+    kubectl --context ${MP_CLUSTER_NAME} get deployments -n ${NS} -o custom-columns=:metadata.name \
+      | grep operator | xargs -I {} kubectl --context ${MP_CLUSTER_NAME} patch deployment {} -n ${NS} --type json \
       --patch='[ { "op": "remove", "path": "/metadata/finalizers" } ]' ;
-    kubectl --context ${MP_CLUSTER_CONTEXT} delete --all deployments -n ${NS} --timeout=10s --wait=false ;
+    kubectl --context ${MP_CLUSTER_NAME} delete --all deployments -n ${NS} --timeout=10s --wait=false ;
     sleep 5 ;
-    kubectl --context ${MP_CLUSTER_CONTEXT} delete namespace ${NS} --timeout=10s --wait=false ;
+    kubectl --context ${MP_CLUSTER_NAME} delete namespace ${NS} --timeout=10s --wait=false ;
   done 
 
   # Clean up cluster wide resources
-  kubectl --context ${MP_CLUSTER_CONTEXT} get mutatingwebhookconfigurations -o custom-columns=:metadata.name \
-    | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete mutatingwebhookconfigurations {}  --timeout=10s --wait=false ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
-    | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete crd {} --timeout=10s --wait=false ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} get validatingwebhookconfigurations -o custom-columns=:metadata.name \
-    | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete validatingwebhookconfigurations {} --timeout=10s --wait=false ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} get clusterrole -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tsb\|xcp" \
-    | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete clusterrole {} --timeout=10s --wait=false ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} get clusterrolebinding -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tsb\|xcp" \
-    | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete clusterrolebinding {} --timeout=10s --wait=false ;
+  kubectl --context ${MP_CLUSTER_NAME} get mutatingwebhookconfigurations -o custom-columns=:metadata.name \
+    | xargs -I {} kubectl --context ${MP_CLUSTER_NAME} delete mutatingwebhookconfigurations {}  --timeout=10s --wait=false ;
+  kubectl --context ${MP_CLUSTER_NAME} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+    | xargs -I {} kubectl --context ${MP_CLUSTER_NAME} delete crd {} --timeout=10s --wait=false ;
+  kubectl --context ${MP_CLUSTER_NAME} get validatingwebhookconfigurations -o custom-columns=:metadata.name \
+    | xargs -I {} kubectl --context ${MP_CLUSTER_NAME} delete validatingwebhookconfigurations {} --timeout=10s --wait=false ;
+  kubectl --context ${MP_CLUSTER_NAME} get clusterrole -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tsb\|xcp" \
+    | xargs -I {} kubectl --context ${MP_CLUSTER_NAME} delete clusterrole {} --timeout=10s --wait=false ;
+  kubectl --context ${MP_CLUSTER_NAME} get clusterrolebinding -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tsb\|xcp" \
+    | xargs -I {} kubectl --context ${MP_CLUSTER_NAME} delete clusterrolebinding {} --timeout=10s --wait=false ;
 
   # Cleanup custom resource definitions
-  kubectl --context ${MP_CLUSTER_CONTEXT} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
-    | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete crd {} --timeout=10s --wait=false ;
+  kubectl --context ${MP_CLUSTER_NAME} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+    | xargs -I {} kubectl --context ${MP_CLUSTER_NAME} delete crd {} --timeout=10s --wait=false ;
   sleep 5 ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
-    | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} patch crd {} --type json --patch='[ { "op": "remove", "path": "/metadata/finalizers" } ]' ;
+  kubectl --context ${MP_CLUSTER_NAME} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+    | xargs -I {} kubectl --context ${MP_CLUSTER_NAME} patch crd {} --type json --patch='[ { "op": "remove", "path": "/metadata/finalizers" } ]' ;
   sleep 5 ;
-  kubectl --context ${MP_CLUSTER_CONTEXT} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
-    | xargs -I {} kubectl --context ${MP_CLUSTER_CONTEXT} delete crd {} --timeout=10s --wait=false ;
+  kubectl --context ${MP_CLUSTER_NAME} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+    | xargs -I {} kubectl --context ${MP_CLUSTER_NAME} delete crd {} --timeout=10s --wait=false ;
 
   # Clean up pending finalizer namespaces
   for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
-    kubectl --context ${MP_CLUSTER_CONTEXT} get namespace ${NS} -o json \
+    kubectl --context ${MP_CLUSTER_NAME} get namespace ${NS} -o json \
       | tr -d "\n" | sed "s/\"finalizers\": \[[^]]\+\]/\"finalizers\": []/" \
-      | kubectl --context ${MP_CLUSTER_CONTEXT} replace --raw /api/v1/namespaces/${NS}/finalize -f - ;
+      | kubectl --context ${MP_CLUSTER_NAME} replace --raw /api/v1/namespaces/${NS}/finalize -f - ;
   done
 
   sleep 10 ;
@@ -222,18 +220,18 @@ fi
 
 if [[ ${ACTION} = "reset" ]]; then
 
-  MP_CLUSTER_CONTEXT=$(get_mp_name) ;
+  MP_CLUSTER_NAME=$(get_mp_name) ;
 
   # Login again as tsb admin in case of a session time-out
-  login_tsb_admin ${MP_CLUSTER_CONTEXT} tetrate ;
+  login_tsb_admin ${MP_CLUSTER_NAME} tetrate ;
 
   # Remove all TSB configuration objects
-  kubectl config use-context ${MP_CLUSTER_CONTEXT} ;
+  kubectl config use-context ${MP_CLUSTER_NAME} ;
   tctl get all --org tetrate --tenant prod | tctl delete -f - ;
 
   # Remove all TSB kubernetes installation objects
-  kubectl --context ${MP_CLUSTER_CONTEXT} get -A egressgateways.install.tetrate.io,ingressgateways.install.tetrate.io,tier1gateways.install.tetrate.io -o yaml \
-   | kubectl --context ${MP_CLUSTER_CONTEXT} delete -f - ;
+  kubectl --context ${MP_CLUSTER_NAME} get -A egressgateways.install.tetrate.io,ingressgateways.install.tetrate.io,tier1gateways.install.tetrate.io -o yaml \
+   | kubectl --context ${MP_CLUSTER_NAME} delete -f - ;
 
   exit 0
 fi
