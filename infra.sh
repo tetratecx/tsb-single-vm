@@ -86,7 +86,7 @@ if [[ ${ACTION} = "up" ]]; then
   else
     configure_metallb ${MP_CLUSTER_NAME} ${MP_DOCKER_SUBNET}.${CLUSTER_METALLB_STARTIP} ${MP_DOCKER_SUBNET}.${CLUSTER_METALLB_ENDIP} ;
     minikube --profile ${MP_CLUSTER_NAME} addons enable metallb ;
-    patch_metallb_pull_repo ${MP_CLUSTER_NAME} ;
+    # patch_metallb_pull_repo ${MP_CLUSTER_NAME} ;
   fi  
 
   # Make sure minikube has access to docker repo containing tsb images
@@ -153,7 +153,7 @@ if [[ ${ACTION} = "up" ]]; then
     else
       configure_metallb ${CP_CLUSTER_NAME} ${CP_DOCKER_SUBNET}.${CLUSTER_METALLB_STARTIP} ${CP_DOCKER_SUBNET}.${CLUSTER_METALLB_ENDIP} ;
       minikube --profile ${CP_CLUSTER_NAME} addons enable metallb ;
-      patch_metallb_pull_repo ${CP_CLUSTER_NAME} ;
+      # patch_metallb_pull_repo ${CP_CLUSTER_NAME} ;
     fi  
 
     # Make sure minikube has access to docker repo containing tsb images

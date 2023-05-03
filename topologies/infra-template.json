@@ -31,7 +31,7 @@
       "zone": "zone2a"
     }
   ],
-  "k8s_version": "1.24.9",
+  "k8s_version": "1.25.9",
   "mp_cluster": {
     "demo_profile": true,
     "name": "mgmt-cluster",
