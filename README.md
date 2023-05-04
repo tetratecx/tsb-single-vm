@@ -234,6 +234,19 @@ This section is a brief description of the repo structure itself. What folder an
 |repo.sh|helper scripts for local repo spinup and/or local/private repo syncing from TSB cloudsmith repo|
 |scenario.sh|script responsible for interacting with the `run.sh` file of your scenario|
 
+## Troubleshooting
+
+### Known issues
+
+In case one of the cluster fails to bootstrap all pods correctly with the error "too many open files", modify the following settings (on Ubuntu) in the file `/etc/sysctl.conf` and add these lines:
+
+```
+fs.inotify.max_user_watches = 524288
+fs.inotify.max_user_instances = 512
+```
+
+> **Reference:**  https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files
+
 
 ## TODOs
 
