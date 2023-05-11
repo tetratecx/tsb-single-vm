@@ -35,8 +35,8 @@ if [[ ${ACTION} = "check" ]]; then
   # check if docker registry is available and credentials valid
   echo "Checking if docker repo is reachable and credentials valid"
   if echo ${TSB_REPO_URL} | grep ":" &>/dev/null ; then
-    TSB_REPO_URL_HOST=$(echo $TSB_REPO_URL_BIS | tr ":" "\n" | head -1)
-    TSB_REPO_URL_PORT=$(echo $TSB_REPO_URL_BIS | tr ":" "\n" | tail -1)
+    TSB_REPO_URL_HOST=$(echo ${TSB_REPO_URL} | tr ":" "\n" | head -1)
+    TSB_REPO_URL_PORT=$(echo ${TSB_REPO_URL} | tr ":" "\n" | tail -1)
   else
     TSB_REPO_URL_HOST=${TSB_REPO_URL}
     TSB_REPO_URL_PORT=443
