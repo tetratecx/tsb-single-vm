@@ -118,8 +118,8 @@ if [[ ${ACTION} = "install" ]]; then
   fi
   
   # start patching deployments that depend on dockerhub asynchronously
-  # patch_dockerhub_dep_redis ${MP_CLUSTER_NAME} &
-  # patch_dockerhub_dep_ratelimit ${MP_CLUSTER_NAME} &
+  patch_dockerhub_dep_redis ${MP_CLUSTER_NAME} &
+  patch_dockerhub_dep_ratelimit ${MP_CLUSTER_NAME} &
 
   # install tsb management plane using the demo profile
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/demo-installation
