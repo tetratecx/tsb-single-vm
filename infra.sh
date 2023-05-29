@@ -31,19 +31,6 @@ function configure_metallb {
 DONE
 }
 
-# Patch for minikube metallb addon dependencies to docker.io
-#   args:
-#     (1) cluster name
-function patch_metallb_pull_repo {
-  CONTROLLER_PATCH='{"spec":{"template":{"spec":{"containers":[{"name":"controller","image":"quay.io/metallb/controller:v0.9.6"}]}}}}'
-  SPEAKER_PATCH='{"spec":{"template":{"spec":{"containers":[{"name":"speaker","image":"quay.io/metallb/speaker:v0.9.6"}]}}}}'
-
-  while ! kubectl --context ${1} -n metallb-system get deployment controller ; do sleep 1 ; done
-  kubectl --context ${1} -n metallb-system patch deployment controller --patch ${CONTROLLER_PATCH} ;
-  while ! kubectl --context ${1} -n metallb-system get daemonset speaker ; do sleep 1 ; done
-  kubectl --context ${1} -n metallb-system patch daemonset speaker --patch ${SPEAKER_PATCH} ;
-}
-
 # Configure minikube clusters to have access to docker repo containing tsb images
 #   args:
 #     (1) cluster name
@@ -86,7 +73,6 @@ if [[ ${ACTION} = "up" ]]; then
   else
     configure_metallb ${MP_CLUSTER_NAME} ${MP_DOCKER_SUBNET}.${CLUSTER_METALLB_STARTIP} ${MP_DOCKER_SUBNET}.${CLUSTER_METALLB_ENDIP} ;
     minikube --profile ${MP_CLUSTER_NAME} addons enable metallb ;
-    # patch_metallb_pull_repo ${MP_CLUSTER_NAME} ;
   fi  
 
   # Make sure minikube has access to docker repo containing tsb images
@@ -153,7 +139,6 @@ if [[ ${ACTION} = "up" ]]; then
     else
       configure_metallb ${CP_CLUSTER_NAME} ${CP_DOCKER_SUBNET}.${CLUSTER_METALLB_STARTIP} ${CP_DOCKER_SUBNET}.${CLUSTER_METALLB_ENDIP} ;
       minikube --profile ${CP_CLUSTER_NAME} addons enable metallb ;
-      # patch_metallb_pull_repo ${CP_CLUSTER_NAME} ;
     fi  
 
     # Make sure minikube has access to docker repo containing tsb images

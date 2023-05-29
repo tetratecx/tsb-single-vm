@@ -1,0 +1,35 @@
+{
+  "cp_clusters": [],
+  "istioctl_version": "1.15.2",
+  "k8s_version": "1.24.9",
+  "mp_cluster": {
+    "config": {
+      "elastic": {
+        "password": "tsb-elastic-password",
+        "port": "9200",
+        "username": "tsb",
+        "version": "7"
+      },
+      "ldap": {
+        "bind_dn": "cn=admin,dc=tetrate,dc=io",
+        "bind_password": "admin",
+        "port": "389"
+      },
+      "postgres": {
+        "db_name": "tsb",
+        "password": "tsb-postgres-password",
+        "port": "5432",
+        "username": "tsb"
+      },
+      "tsb": {
+        "admin_password": "admin",
+        "organization": "tetrate"
+      }
+    },
+    "demo_profile": false,
+    "name": "mgmt-cluster",
+    "region": "region1",
+    "vms": [],
+    "zone": "zone1a"
+  }
+}
