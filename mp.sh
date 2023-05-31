@@ -16,7 +16,7 @@ INSTALL_REPO_USER=$(get_install_repo_user) ;
 #   args:
 #     (1) cluster name
 function patch_dockerhub_dep_redis {
-  while ! kubectl --context ${1} -n tsb set image deployment/ratelimit-redis redis=${INSTALL_REPO_URL}/redis:7.0.5-alpine &>/dev/null;
+  while ! kubectl --context ${1} -n tsb set image deployment/ratelimit-redis redis=${INSTALL_REPO_URL}/redis:7.0.7-alpine3.17 &>/dev/null;
   do
     sleep 1 ;
   done
@@ -27,7 +27,7 @@ function patch_dockerhub_dep_redis {
 #   args:
 #     (1) cluster name
 function patch_dockerhub_dep_ratelimit {
-  while ! kubectl --context ${1} -n istio-system set image deployment/ratelimit-server ratelimit=${INSTALL_REPO_URL}/ratelimit:5e9a43f9 &>/dev/null;
+  while ! kubectl --context ${1} -n istio-system set image deployment/ratelimit-server ratelimit=${INSTALL_REPO_URL}/ratelimit:f28024e3 &>/dev/null;
   do
     sleep 1 ;
   done
