@@ -15,7 +15,7 @@ TSB_REPO_PW=$(get_tetrate_repo_password) ;
 
 if [[ ${ACTION} = "check" ]]; then
 
-  DEPENDENCIES=( tctl minikube expect docker kubectl jq awk curl nc )
+  DEPENDENCIES=( tctl minikube kind k3d expect docker kubectl jq awk curl nc )
 
   # check necessary dependencies are installed
   echo "Checking if all software dependencies installed : ok"
@@ -87,6 +87,19 @@ if [[ ${ACTION} = "install" ]]; then
   chmod +x /tmp/minikube ;
   sudo install /tmp/minikube /usr/local/bin/minikube ;
   rm -f /tmp/minikube ;
+
+  echo "Installing kind"
+  curl -Lo /tmp/kind "https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64" ;
+  chmod +x /tmp/kind ;
+  sudo install /tmp/kind /usr/local/bin/kind ;
+  rm -f /tmp/kind ;
+
+  echo "Installing k3d"
+  latest_k3d_release=$(curl --silent https://api.github.com/repos/k3d-io/k3d/releases/latest | grep -i "tag_name" | awk -F '"' '{print $4}')
+  curl -Lo /tmp/k3d "https://github.com/k3d-io/k3d/releases/download/${latest_k3d_release}/k3d-linux-amd64" ;
+  chmod +x /tmp/k3d ;
+  sudo install /tmp/k3d /usr/local/bin/k3d ;
+  rm -f /tmp/k3d ;
 
   echo "Installing istioctl"
   curl -Lo /tmp/istioctl.tar.gz "https://github.com/istio/istio/releases/download/${ISTIOCTL_VERSION}/istioctl-${ISTIOCTL_VERSION}-linux-amd64.tar.gz" ;
