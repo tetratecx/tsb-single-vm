@@ -42,6 +42,10 @@ fi
 
 ### Infra Configuration ###
 
+function get_k8s_provider {
+  cat ${TOPOLOGY_CONF} | jq -r ".k8s_provider"
+}
+
 function get_k8s_version {
   cat ${TOPOLOGY_CONF} | jq -r ".k8s_version"
 }

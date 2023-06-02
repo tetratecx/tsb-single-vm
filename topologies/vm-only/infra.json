@@ -1,6 +1,7 @@
 {
-  "k8s_version": "1.25.9",
   "cp_clusters": [],
+  "k8s_provider": "minikube",
+  "k8s_version": "1.25.9",
   "mp_cluster": {
     "demo_profile": true,
     "name": "mgmt-cluster",
@@ -9,13 +10,16 @@
       {
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",
         "name": "vm1"
-      },{
+      },
+      {
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",
         "name": "vm2"
-      },{
+      },
+      {
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",
         "name": "vm3"
-      },{
+      },
+      {
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",
         "name": "vm4"
       }

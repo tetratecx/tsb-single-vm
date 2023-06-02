@@ -31,6 +31,7 @@
       "zone": "zone2a"
     }
   ],
+  "k8s_provider": "minikube",
   "k8s_version": "1.25.9",
   "mp_cluster": {
     "demo_profile": true,

@@ -1,6 +1,7 @@
 {
-  "k8s_version": "1.25.9",
   "cp_clusters": [],
+  "k8s_provider": "minikube",
+  "k8s_version": "1.25.9",
   "mp_cluster": {
     "demo_profile": true,
     "name": "mgmt-cluster",
