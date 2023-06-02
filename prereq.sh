@@ -122,6 +122,8 @@ if [[ ${ACTION} = "install" ]]; then
 source <(kubectl completion bash)
 source <(istioctl completion bash)
 source <(minikube completion bash)
+source <(kind completion bash)
+source <(k3d completion bash)
 complete -F __start_kubectl k
 alias k=kubectl
 END

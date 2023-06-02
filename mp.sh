@@ -75,8 +75,7 @@ function patch_jwt_token_expiration_mp {
 #   args:
 #     (1) cluster name
 function expose_tsb_gui {
-  if ! [[ -f "/etc/systemd/system/tsb-gui.service" ]] ; then
-    sudo tee /etc/systemd/system/tsb-gui.service << EOF
+  sudo tee /etc/systemd/system/tsb-gui.service << EOF
 [Unit]
 Description=TSB GUI Exposure
 
@@ -87,7 +86,6 @@ Restart=always
 [Install]
 WantedBy=multi-user.target
 EOF
-  fi
 
   sudo systemctl enable tsb-gui ;
   sudo systemctl start tsb-gui ;
