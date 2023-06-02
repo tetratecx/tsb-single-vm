@@ -10,7 +10,7 @@ spec:
   displayName: GatewayTier1_Group
   namespaceSelector:
     names:
-      - "demo/gateway-tier1"
+      - "mgmt-cluster/gateway-tier1"
   configMode: BRIDGED
 ---
 apiVersion: gateway.tsb.tetrate.io/v2

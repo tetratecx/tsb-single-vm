@@ -121,9 +121,9 @@ if [[ ${ACTION} = "install" ]]; then
 
   # install tsb management plane using the demo profile
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/demo-installation
-  #   NOTE: the demo profile deploys both the mgmt plane AND the ctrl plane in a demo cluster!
+  #   NOTE: the demo profile deploys both the mgmt plane AND the ctrl plane!
   kubectl config use-context ${MP_CLUSTER_NAME} ;
-  tctl install demo --registry ${INSTALL_REPO_URL} --admin-password admin ;
+  tctl install demo --cluster ${MP_CLUSTER_NAME} --registry ${INSTALL_REPO_URL} --admin-password admin ;
 
   # Wait for the management, control and data plane to become available
   kubectl --context ${MP_CLUSTER_NAME} wait deployment -n tsb tsb-operator-management-plane --for condition=Available=True --timeout=600s ;

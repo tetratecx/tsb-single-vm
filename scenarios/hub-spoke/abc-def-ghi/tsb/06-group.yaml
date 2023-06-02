@@ -10,7 +10,7 @@ spec:
   displayName: GatewayT1_Group_ABC
   namespaceSelector:
     names:
-      - "demo/gateway-tier1-abc"
+      - "mgmt-cluster/gateway-tier1-abc"
   configMode: BRIDGED
 ---
 apiVersion: gateway.tsb.tetrate.io/v2
@@ -24,7 +24,7 @@ spec:
   displayName: GatewayT1_Group_DEF
   namespaceSelector:
     names:
-      - "demo/gateway-tier1-def"
+      - "mgmt-cluster/gateway-tier1-def"
   configMode: BRIDGED
 ---
 apiVersion: gateway.tsb.tetrate.io/v2
@@ -38,7 +38,7 @@ spec:
   displayName: GatewayT1_Group_GHI
   namespaceSelector:
     names:
-      - "demo/gateway-tier1-ghi"
+      - "mgmt-cluster/gateway-tier1-ghi"
   configMode: BRIDGED
 ---
 apiVersion: gateway.tsb.tetrate.io/v2
