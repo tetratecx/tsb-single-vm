@@ -40,7 +40,9 @@ function patch_remove_affinity_mp {
     sleep 1 ;
   done
   for tsb_component in apiServer collector frontEnvoy iamServer mpc ngac oap webUI ; do
-    kubectl patch managementplane managementplane -n tsb --type=json -p="[{'op': 'replace', 'path': '/spec/components/${tsb_component}/kubeSpec/deployment/affinity/podAntiAffinity/requiredDuringSchedulingIgnoredDuringExecution/0/labelSelector/matchExpressions/0/key', 'value': 'platform.tsb.tetrate.io/demo-dummy'}]" &>/dev/null;
+    kubectl patch managementplane managementplane -n tsb --type=json \
+      -p="[{'op': 'replace', 'path': '/spec/components/${tsb_component}/kubeSpec/deployment/affinity/podAntiAffinity/requiredDuringSchedulingIgnoredDuringExecution/0/labelSelector/matchExpressions/0/key', 'value': 'platform.tsb.tetrate.io/demo-dummy'}]" \
+      &>/dev/null;
   done
   echo "Managementplane tsb/managementplane sucessfully patched"
 }
