@@ -1,6 +1,6 @@
 {
   "cp_clusters": [],
-  "k8s_provider": "minikube",
+  "k8s_provider": "k3s",
   "k8s_version": "1.25.9",
   "mp_cluster": {
     "demo_profile": true,

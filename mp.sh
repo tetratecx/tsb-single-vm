@@ -16,8 +16,7 @@ INSTALL_REPO_USER=$(get_install_repo_user) ;
 #   args:
 #     (1) cluster name
 function patch_dockerhub_dep_redis {
-  while ! kubectl --context ${1} -n tsb set image deployment/ratelimit-redis redis=${INSTALL_REPO_URL}/redis:7.0.7-alpine3.17 &>/dev/null;
-  do
+  while ! kubectl --context ${1} -n tsb set image deployment/ratelimit-redis redis=${INSTALL_REPO_URL}/redis:7.0.7-alpine3.17 &>/dev/null; do
     sleep 1 ;
   done
   echo "Deployment tsb/ratelimit-redis sucessfully patched"
@@ -27,11 +26,23 @@ function patch_dockerhub_dep_redis {
 #   args:
 #     (1) cluster name
 function patch_dockerhub_dep_ratelimit {
-  while ! kubectl --context ${1} -n istio-system set image deployment/ratelimit-server ratelimit=${INSTALL_REPO_URL}/ratelimit:f28024e3 &>/dev/null;
-  do
+  while ! kubectl --context ${1} -n istio-system set image deployment/ratelimit-server ratelimit=${INSTALL_REPO_URL}/ratelimit:b3562caa &>/dev/null; do
     sleep 1 ;
   done
   echo "Deployment istio-system/ratelimit-server sucessfully patched"
+}
+
+# Patch affinity rules of management plane (demo only!)
+#   args:
+#     (1) cluster name
+function patch_remove_affinity_mp {
+  while ! kubectl --context ${1} -n tsb get managementplane managementplane &>/dev/null; do
+    sleep 1 ;
+  done
+  for tsb_component in apiServer collector frontEnvoy iamServer mpc ngac oap webUI ; do
+    kubectl patch managementplane managementplane -n tsb --type=json -p="[{'op': 'replace', 'path': '/spec/components/${tsb_component}/kubeSpec/deployment/affinity/podAntiAffinity/requiredDuringSchedulingIgnoredDuringExecution/0/labelSelector/matchExpressions/0/key', 'value': 'platform.tsb.tetrate.io/demo-dummy'}]" &>/dev/null;
+  done
+  echo "Managementplane tsb/managementplane sucessfully patched"
 }
 
 # Login as admin into tsb
@@ -118,6 +129,7 @@ if [[ ${ACTION} = "install" ]]; then
   # start patching deployments that depend on dockerhub asynchronously
   patch_dockerhub_dep_redis ${MP_CLUSTER_NAME} &
   patch_dockerhub_dep_ratelimit ${MP_CLUSTER_NAME} &
+  patch_remove_affinity_mp ${MP_CLUSTER_NAME} &
 
   # install tsb management plane using the demo profile
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/demo-installation
