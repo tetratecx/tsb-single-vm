@@ -4,7 +4,7 @@
   "k8s_version": "1.25.9",
   "mp_cluster": {
     "demo_profile": true,
-    "name": "mgmt-cluster",
+    "name": "demo-cluster",
     "region": "region1",
     "vms": [],
     "zone": "zone1a"
