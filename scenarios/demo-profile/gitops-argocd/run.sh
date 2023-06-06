@@ -41,7 +41,7 @@ function start_gitea {
       --env USER_UID="1000" \
       --env USER_GID="1000" \
       --hostname "gitea" \
-      --publish 3000:3000 --publish 2222:22 \
+      --publish 3000:3000 --publish 2222:2222 \
       --name "gitea" \
       --network ${docker_network} \
       --restart always \
