@@ -9,7 +9,7 @@ source ${SCENARIO_ROOT_DIR}/gitlab-api.sh
 
 INSTALL_REPO_URL=$(get_install_repo_url) ;
 
-GITEA_HOME="/tmp/gitea"
+GITEA_HOME="${ROOT_DIR}/output/gitea"
 GITEA_CONFIG="${SCENARIO_ROOT_DIR}/gitea/app.ini"
 GITEA_VERSION="1.19"
 
