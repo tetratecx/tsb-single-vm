@@ -1,4 +1,4 @@
-# Helper functions to start, stop and remove gitea
+# Helper functions to start, stop and remove gitea (a lightweight git server)
 #
 
 # Some colors

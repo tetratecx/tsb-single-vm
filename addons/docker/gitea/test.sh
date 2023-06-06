@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Test script to test infra and api functions for gitea (a lightweight git server)
+#
 TEST_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 
 source ${TEST_DIR}/api.sh

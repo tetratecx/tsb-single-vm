@@ -1,4 +1,4 @@
-# Helper functions to manage gitea
+# Helper functions to manage gitea (a lightweight git server)
 #
 
 # Some colors
