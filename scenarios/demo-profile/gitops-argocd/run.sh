@@ -212,11 +212,11 @@ if [[ ${ACTION} = "deploy" ]]; then
   fi
   
   argocd --insecure cluster add demo-cluster --yes ;
-  argocd --insecure app create tsb-admin --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/tsb-admin.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
-  argocd --insecure app create app-abc --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path k8s --dest-server https://kubernetes.default.svc ;
-  argocd --insecure app create app-abc-tsb --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
-  argocd --insecure app create app-openapi --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-openapi.git --path k8s --dest-server https://kubernetes.default.svc ;
-  argocd --insecure app create app-openapi-tsb --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-openapi.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
+  argocd --insecure app create tsb-admin --upsert --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/tsb-admin.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
+  argocd --insecure app create app-abc --upsert --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path k8s --dest-server https://kubernetes.default.svc ;
+  argocd --insecure app create app-abc-tsb --upsert --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
+  argocd --insecure app create app-openapi --upsert --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-openapi.git --path k8s --dest-server https://kubernetes.default.svc ;
+  argocd --insecure app create app-openapi-tsb --upsert --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-openapi.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
 
   argocd --insecure app set tsb-admin --sync-policy automated ;
   argocd --insecure app set app-abc --sync-policy automated ;

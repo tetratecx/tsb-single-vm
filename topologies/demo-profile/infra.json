@@ -1,4 +1,5 @@
 {
+  "addons": [ "argocd", "gitea" ],
   "cp_clusters": [],
   "k8s_provider": "k3s",
   "k8s_version": "1.25.9",
