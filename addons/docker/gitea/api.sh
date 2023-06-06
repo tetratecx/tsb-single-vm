@@ -1,4 +1,5 @@
 # Helper functions to manage gitea (a lightweight git server)
+# API Docs at https://try.gitea.io/api/swagger#
 #
 
 # Some colors
@@ -123,7 +124,7 @@ function gitea_delete_repo {
   fi
 }
 
-# Get gitlab project full path list
+# Get gitea project full path list
 #   args:
 #     (1) api url
 #     (2) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
@@ -134,4 +135,82 @@ function gitea_get_repos_full_name_list {
   curl --fail --silent --request GET --user "${basic_auth}" \
     --header 'Content-Type: application/json' \
     --url "${base_url}/api/v1/repos/search?limit=100" | jq -r '.data[].full_name'
+}
+
+# Get gitea organization
+#   args:
+#     (1) api url
+#     (2) organization name
+#     (3) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
+#   returns:
+#     - 0 : if organization exists (prints returned json)
+#     - 1 : if organization does not exist
+function gitea_has_org {
+  [[ -z "${1}" ]] && print_error "Please provide api url as 1st argument" && return 2 || local base_url="${1}" ;
+  [[ -z "${2}" ]] && print_error "Please provide organization name as 2nd argument" && return 2 || local org_name="${2}" ;
+  [[ -z "${4}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${4}" ;
+
+  if result=$(curl --fail --silent --request GET --user "${basic_auth}" \
+                --header 'Content-Type: application/json' \
+                --url "${base_url}/api/v1/orgs/${org_name}" 2>/dev/null); then
+    echo ${result} | jq ;
+  else
+    return 1 ;
+  fi
+}
+
+# Create gitea organization
+#   args:
+#     (1) api url
+#     (2) organization name
+#     (3) organization description
+#     (4) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
+function gitea_create_org {
+  [[ -z "${1}" ]] && print_error "Please provide api url as 1st argument" && return 2 || local base_url="${1}" ;
+  [[ -z "${2}" ]] && print_error "Please provide organization name as 2nd argument" && return 2 || local org_name="${2}" ;
+  [[ -z "${3}" ]] && print_error "Please provide organization description as 3th argument" && return 2 || local org_description="${3}" ;
+  [[ -z "${4}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${4}" ;
+
+  if $(gitea_has_org "${base_url}" "${org_name}" "${basic_auth}" &>/dev/null); then
+    echo "Gitea organization '${org_name}' already exists"
+  else
+    curl --fail --silent --request POST --user "${basic_auth}" \
+      --header 'Content-Type: application/json' \
+      --url "${base_url}/api/v1/orgs" \
+      -d "{ \"name\": \"${org_name}\", \"username\": \"${org_name}\", \"description\": \"${org_description}\", \"visibility\": \"public\"}" | jq ;
+    print_info "Created organization '${org_name}' with username '${org_name}'"
+  fi
+}
+
+# Delete gitea organization
+#   args:
+#     (1) api url
+#     (2) organization name
+#     (3) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
+function gitea_delete_org {
+  [[ -z "${1}" ]] && print_error "Please provide api url as 1st argument" && return 2 || local base_url="${1}" ;
+  [[ -z "${2}" ]] && print_error "Please provide organization name as 2nd argument" && return 2 || local org_name="${2}" ;
+  [[ -z "${3}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${3}" ;
+
+  if $(gitea_has_org "${base_url}" "${org_name}" "${basic_auth}" &>/dev/null); then
+    curl --fail --silent --request DELETE --user "${basic_auth}" \
+      --header 'Content-Type: application/json' \
+      --url "${base_url}/api/v1/orgs/${org_name}" | jq ;
+    print_info "Deleted gitea organization '${org_name}'"
+  else
+    echo "Gitea organization '${org_name}' does not exists"
+  fi
+}
+
+# Get gitea organization list
+#   args:
+#     (1) api url
+#     (2) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
+function gitea_get_org_list {
+  [[ -z "${1}" ]] && print_error "Please provide api url as 1st argument" && return 2 || local base_url="${1}" ;
+  [[ -z "${2}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${2}" ;
+
+  curl --fail --silent --request GET --user "${basic_auth}" \
+    --header 'Content-Type: application/json' \
+    --url "${base_url}/api/v1/orgs?limit=100" | jq -r '.[].name'
 }
