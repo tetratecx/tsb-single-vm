@@ -97,6 +97,17 @@ function initialize_gitea {
   output=$(docker exec --user git -it gitea gitea admin user create --username "${GITEA_ADMIN_USER}" --password "${GITEA_ADMIN_PASSWORD}" --email "${GITEA_ADMIN_USER}@local" --admin --access-token) ;
 }
 
+# Wait for gitea api to be ready
+#   args:
+#     (1) gitea api url
+function wait_gitea_api_ready {
+  [[ -z "${1}" ]] && echo "Please provide gitea api url as 1st argument" && return 2 || local base_url="${1}" ;
+  echo "Waiting for gitea rest api to become ready"
+  while out=$(gitea_get_version "${base_url}" "${GITEA_ADMIN_USER}" "${GITEA_ADMIN_PASSWORD}" &>/dev/null); do
+    echo -n "." ; sleep 1 ;
+  done
+}
+
 # Create and sync gitea repositories
 function create_and_sync_gitea_repos {
   mkdir -p ${GITEA_REPOS_TEMPDIR}
@@ -159,6 +170,7 @@ if [[ ${ACTION} = "deploy" ]]; then
   start_gitea "demo-cluster" "${GITEA_HOME}" ;
   GITLAB_HTTP_URL=$(get_gitea_http_url) ;
   initialize_gitea "${GITEA_HOME}" ;
+  wait_gitea_api_ready "${GITLAB_HTTP_URL}" ;
   create_and_sync_gitea_repos ;
   sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2 ;
 

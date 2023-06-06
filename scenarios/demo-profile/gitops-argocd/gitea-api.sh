@@ -3,6 +3,22 @@
 # Helper functions for gitea API actions
 #
 
+
+# Get gitlab version
+#   args:
+#     (1) gitea api url
+#     (2) gitea username
+#     (3) gitea password
+function gitea_get_version {
+  [[ -z "${1}" ]] && echo "Please provide gitea api url as 1st argument" && return 2 || local base_url="${1}" ;
+  [[ -z "${2}" ]] && echo "Please provide gitea username as 2nd argument" && return 2 || local username="${2}" ;
+  [[ -z "${3}" ]] && echo "Please provide gitea password as 3rd argument" && return 2 || local password="${3}" ;
+
+  curl --fail --silent --request GET --user "${username}:${password}" \
+    --header 'Content-Type: application/json' \
+    --url "${base_url}/api/v1/version"
+}
+
 # Create gitea repository
 #   args:
 #     (1) gitea api url
@@ -56,7 +72,7 @@ function gitea_get_repos_full_name_list {
   [[ -z "${2}" ]] && echo "Please provide gitea username as 2nd argument" && return 2 || local username="${2}" ;
   [[ -z "${3}" ]] && echo "Please provide gitea password as 3rd argument" && return 2 || local password="${3}" ;
 
-  curl --silent --request GET --user "${username}:${password}" \
+  curl --fail --silent --request GET --user "${username}:${password}" \
     --header 'Content-Type: application/json' \
     --url "${base_url}/api/v1/repos/search?limit=100" | jq -r '.data[].full_name'
 }
