@@ -61,7 +61,7 @@ function get_mp_region {
 }
 
 function get_mp_vm_count {
-  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.vms[].name" | wc -l | tr -d ' '
+  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.vms | length"
 }
 
 function get_mp_vm_image_by_index {
@@ -81,7 +81,7 @@ function get_mp_zone {
 ###### CP Clusters ######
 
 function get_cp_count {
-  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[].name" | wc -l | tr -d ' '
+  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters | length"
 }
 
 function get_cp_name_by_index {
@@ -92,7 +92,7 @@ function get_cp_name_by_index {
 function get_cp_vm_count_by_index {
   i=${1}
   j=${2}
-  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].vms[].name" | wc -l | tr -d ' '
+  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].vms | length"
 }
 
 function get_cp_vm_image_by_index {
