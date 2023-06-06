@@ -168,9 +168,9 @@ if [[ ${ACTION} = "deploy" ]]; then
 
   # Start gitea server in demo-cluster network
   start_gitea "demo-cluster" "${GITEA_HOME}" ;
-  GITLAB_HTTP_URL=$(get_gitea_http_url) ;
+  GITEA_HTTP_URL=$(get_gitea_http_url) ;
   initialize_gitea "${GITEA_HOME}" ;
-  wait_gitea_api_ready "${GITLAB_HTTP_URL}" ;
+  wait_gitea_api_ready "${GITEA_HTTP_URL}" ;
   create_and_sync_gitea_repos ;
   sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2 ;
 
@@ -212,8 +212,8 @@ if [[ ${ACTION} = "deploy" ]]; then
   fi
   
   argocd --insecure cluster add demo-cluster --yes ;
-  argocd app create app-abc --repo ${GITLAB_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path k8s --dest-server https://kubernetes.default.svc ;
-  argocd app create app-abc-tsb --repo ${GITLAB_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
+  argocd --insecure app create app-abc --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path k8s --dest-server https://kubernetes.default.svc ;
+  argocd --insecure app create app-abc-tsb --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
 
   exit 0
 fi
