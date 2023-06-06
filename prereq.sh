@@ -15,7 +15,7 @@ TSB_REPO_PW=$(get_tetrate_repo_password) ;
 
 if [[ ${ACTION} = "check" ]]; then
 
-  DEPENDENCIES=( tctl minikube kind k3d expect docker docker-compose kubectl jq awk curl nc argocd )
+  DEPENDENCIES=( tctl minikube kind k3d expect docker kubectl jq awk curl nc argocd )
 
   # check necessary dependencies are installed
   echo "Checking if all software dependencies installed : ok"
