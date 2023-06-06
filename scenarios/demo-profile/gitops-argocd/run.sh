@@ -97,7 +97,7 @@ function initialize_gitea {
 
   cat <<EOF | docker exec --user git --interactive gitea sh
 sleep 5 ; whoami ;
-result=`/app/gitea/gitea admin user create --username "${GITEA_ADMIN_USER}" --password "${GITEA_ADMIN_PASSWORD}" --email "${GITEA_ADMIN_USER}@local" --admin --access-token` ;
+result=`gitea admin user create --username "${GITEA_ADMIN_USER}" --password "${GITEA_ADMIN_PASSWORD}" --email "${GITEA_ADMIN_USER}@local" --admin --access-token` ;
 echo ${result} | awk '{ print $NF }' > /data/gitea/conf/${GITEA_ADMIN_USER}.token ;
 echo ${result} > /data/gitea/conf/${GITEA_ADMIN_USER}.token.bis ;
 sleep 5 ;
