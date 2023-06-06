@@ -16,9 +16,9 @@ GITEA_VERSION="1.19"
 GITEA_ADMIN_USER="gitea-admin"
 GITEA_ADMIN_PASSWORD="gitea-admin"
 
-GITEA_REPOS_DIR=${SCENARIO_ROOT_DIR}/repositories
-GITEA_REPOS_TEMPDIR=/tmp/repositories
-GITEA_REPOS_CONFIG=${GITEA_REPOSITORIES_DIR}/repos.json
+GITEA_REPOS_DIR="${SCENARIO_ROOT_DIR}/repositories"
+GITEA_REPOS_TEMPDIR="/tmp/repositories"
+GITEA_REPOS_CONFIG="${GITEA_REPOS_DIR}/repos.json"
 
 
 # Start gitea server
