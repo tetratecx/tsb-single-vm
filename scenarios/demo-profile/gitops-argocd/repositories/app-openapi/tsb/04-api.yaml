@@ -33,7 +33,7 @@ spec:
             - other:
                 group: engineering
         x-tsb-redirect:
-          uri: /proxy/app2.internal
+          uri: /proxy/app2.demo.tetrate.io
       /proxy/{service}:
         parameters:
           - name: service

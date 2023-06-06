@@ -249,19 +249,42 @@ if [[ ${ACTION} = "info" ]]; then
   ARGOCD_IP=$(kubectl --context demo-cluster -n argocd get svc argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ;
   print_info "ArgoCD web ui running at https://${ARGOCD_IP}" ;
 
-  while ! INGRESS_GW_IP=$(kubectl --context demo-cluster get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+  while ! APPABC_INGRESS_GW_IP=$(kubectl --context demo-cluster get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+    sleep 1;
+  done
+  while ! APP1_INGRESS_GW_IP=$(kubectl --context demo-cluster get svc -n app1 app1-ingress --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+    sleep 1;
+  done
+  while ! APP2_INGRESS_GW_IP=$(kubectl --context demo-cluster get svc -n app2 app2-ingress --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
     sleep 1;
   done
 
-  print_info "****************************"
-  print_info "*** ABC Traffic Commands ***"
-  print_info "****************************"
+  # Example JWT tokens to be used in the different examples.
+  # The following tokens are generated with the following JWKS:
+  # {"keys":[{"kid":"18102303-6b9b-40dc-9bf0-cedca433914d","kty":"oct","alg":"HS256","k":"c2lnbmluZy1rZXk="}]}
+  # Claims: sub=ignasi, aud=demo, group=engineering, iss=http://jwt.tetrate.io, exp=2034-06-11
+  ENG_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiZGVtbyJdLCJleHAiOjIwMzM1OTkxNDksImdyb3VwIjoiZW5naW5lZXJpbmciLCJpYXQiOjE2NzM1OTkxNDksImlzcyI6Imh0dHA6Ly9qd3QudGV0cmF0ZS5pbyIsInN1YiI6ImlnbmFzaSJ9.ptOmyLr2p6Ftd4AvIeHGxkndCsVVatlgxv-XlPro4Jo
+  # Claims: sub=bart, aud=demo, group=field, iss=http://jwt.tetrate.io, exp=2034-06-11
+  FIELD_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiZGVtbyJdLCJleHAiOjIwMzM1OTkyMDMsImdyb3VwIjoiZmllbGQiLCJpYXQiOjE2NzM1OTkyMDMsImlzcyI6Imh0dHA6Ly9qd3QudGV0cmF0ZS5pbyIsInN1YiI6ImJhcnQifQ.HQeEzDyP5ODgs3WUDQHvJKRG5gZ2_1fb8G7qpBkZFSg
+
+  print_info "************************"
+  print_info "*** Traffic Commands ***"
+  print_info "************************"
   echo
-  echo "Traffic to Ingress Gateway"
-  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:80:${INGRESS_GW_IP}\" \"http://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\""
+  echo "Traffic to Application ABC"
+  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:80:${APPABC_INGRESS_GW_IP}\" \"http://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\""
+  echo "Traffic to Application App1"
+  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"app1.demo.tetrate.io:80:${APP1_INGRESS_GW_IP}\" \"http://app1.demo.tetrate.io\""
+  echo "Traffic to Application App1 with field token"
+  print_command "curl -v -H \"X-B3-Sampled: 1\" -H \"Authorization: Bearer ${FIELD_TOKEN}\" --resolve \"app1.demo.tetrate.io:80:${APP1_INGRESS_GW_IP}\" \"http://app1.demo.tetrate.io/eng\""
+  echo "Traffic to Application App1 with eng token"
+  print_command "curl -v -H \"X-B3-Sampled: 1\" -H \"Authorization: Bearer ${ENG_TOKEN}\" --resolve \"app1.demo.tetrate.io:80:${APP1_INGRESS_GW_IP}\" \"http://app1.demo.tetrate.io/eng\""
+  echo "Traffic to Application App2"
+  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"app2.demo.tetrate.io:80:${APP2_INGRESS_GW_IP}\" \"http://app2.demo.tetrate.io\""
+  echo
   echo "All at once in a loop"
   print_command "while true ; do
-  curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:80:${INGRESS_GW_IP}\" \"http://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\"
+  curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:80:${APPABC_INGRESS_GW_IP}\" \"http://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\"
   sleep 1 ;
 done"
   echo
