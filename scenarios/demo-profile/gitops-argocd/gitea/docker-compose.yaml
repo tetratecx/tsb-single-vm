@@ -1,0 +1,45 @@
+version: "3"
+
+networks:
+  demo-cluster:
+    external: false
+
+services:
+  gitea:
+    image: gitea/gitea:1.19
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=mysql
+      - GITEA__database__HOST=db:3306
+      - GITEA__database__NAME=gitea
+      - GITEA__database__USER=gitea
+      - GITEA__database__PASSWD=gitea
+      - GITEA__security__SECRET_KEY=0123456789
+      - GITEA__security__INTERNAL_TOKEN=0123456789
+    restart: always
+    networks:
+      - demo-cluster
+    volumes:
+      - /tmp/gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      - "2222:22"
+    depends_on:
+      - mysql-db
+
+  mysql-db:
+    image: mysql:8
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=gitea
+      - MYSQL_USER=gitea
+      - MYSQL_PASSWORD=gitea
+      - MYSQL_DATABASE=gitea
+    networks:
+      - demo-cluster
+    volumes:
+      - /tmp/mysql:/var/lib/mysql
