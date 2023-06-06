@@ -200,7 +200,7 @@ DONE
 if [[ ${ACTION} = "deploy" ]]; then
 
   # Start gitlab server in demo-cluster network
-  start_gitea "${GITLAB_NETWORK}" "${GITEA_HOME}" ;
+  start_gitea "demo-cluster" "${GITEA_HOME}" ;
   GITLAB_HTTP_URL=$(get_gitea_http_url) ;
   initialize_gitea "${GITEA_HOME}" ;
   exit
