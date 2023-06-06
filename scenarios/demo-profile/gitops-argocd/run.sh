@@ -128,7 +128,7 @@ function create_and_sync_gitea_repos {
     mkdir -p ${GITEA_REPOS_TEMPDIR}
     cd ${GITEA_REPOS_TEMPDIR}
     rm -rf ${GITEA_REPOS_TEMPDIR}/${repo_name}
-    git clone ${gitea_http_url_creds}/gitea-admin/${repo_name}.git
+    git clone ${gitea_http_url_creds}/${GITEA_ADMIN_USER}/${repo_name}.git
 
     print_info "Going add, commit and push new code to repo '${repo_name}'"
     cd ${GITEA_REPOS_TEMPDIR}/${repo_name}
@@ -196,8 +196,8 @@ if [[ ${ACTION} = "deploy" ]]; then
   fi
   
   argocd --insecure cluster add demo-cluster --yes ;
-  argocd app create app-abc --repo ${GITLAB_HTTP_URL}/root/app-abc.git --path k8s --dest-server https://kubernetes.default.svc ;
-  argocd app create app-abc-tsb --repo ${GITLAB_HTTP_URL}/root/app-abc.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
+  argocd app create app-abc --repo ${GITLAB_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path k8s --dest-server https://kubernetes.default.svc ;
+  argocd app create app-abc-tsb --repo ${GITLAB_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
   sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2 ;
 
   exit 0
