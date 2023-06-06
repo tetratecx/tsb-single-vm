@@ -88,47 +88,39 @@ function add_insecure_registry {
   fi
 }
 
+# Sync a given image to given repository
+#
+function sync_single_image {
+  local target_repo = $1
+  local image = $2
+
+  local image_without_repo=$(echo ${image} | sed "s|containers.dl.tetrate.io/||")
+  local image_name=$(echo ${image_without_repo} | awk -F: '{print $1}')
+  local image_tag=$(echo ${image_without_repo} | awk -F: '{print $2}')
+
+  if ! docker image inspect ${image} &>/dev/null ; then
+    docker pull ${image} ;
+  fi
+  if ! docker image inspect ${target_repo}/${image_without_repo} &>/dev/null ; then
+    docker tag ${image} ${target_repo}/${image_without_repo} ;
+  fi
+  if ! curl -s -X GET ${target_repo}/v2/${image_name}/tags/list | grep "${image_tag}" &>/dev/null ; then
+    docker push ${target_repo}/${image_without_repo} ;
+  fi
+}
+
 # Sync tsb docker images locally (if not yet available)
-#   args:
-#     (1) repo endpoint
 function sync_tsb_images {
+    local target_repo = $1
+
     # Sync all tsb images locally
     for image in `tctl install image-sync --just-print --raw --accept-eula 2>/dev/null` ; do
-      image_without_repo=$(echo ${image} | sed "s|containers.dl.tetrate.io/||")
-      image_name=$(echo ${image_without_repo} | awk -F: '{print $1}')
-      image_tag=$(echo ${image_without_repo} | awk -F: '{print $2}')
-      if ! docker image inspect ${image} &>/dev/null ; then
-        docker pull ${image} ;
-      fi
-      if ! docker image inspect ${1}/${image_without_repo} &>/dev/null ; then
-        docker tag ${image} ${1}/${image_without_repo} ;
-      fi
-      if ! curl -s -X GET ${1}/v2/${image_name}/tags/list | grep "${image_tag}" &>/dev/null ; then
-        docker push ${1}/${image_without_repo} ;
-      fi
+      sync_single_image ${target_repo} ${image}
     done
 
-    # Sync image for application deployment
-    if ! docker image inspect containers.dl.tetrate.io/obs-tester-server:1.0 &>/dev/null ; then
-      docker pull containers.dl.tetrate.io/obs-tester-server:1.0 ;
-    fi
-    if ! docker image inspect ${1}/obs-tester-server:1.0 &>/dev/null ; then
-      docker tag containers.dl.tetrate.io/obs-tester-server:1.0 ${1}/obs-tester-server:1.0 ;
-    fi
-    if ! curl -s -X GET ${1}/v2/obs-tester-server/tags/list | grep "1.0" &>/dev/null ; then
-      docker push ${1}/obs-tester-server:1.0 ;
-    fi
-    
-    # Sync image for debugging
-    if ! docker image inspect containers.dl.tetrate.io/netshoot &>/dev/null ; then
-      docker pull containers.dl.tetrate.io/netshoot ;
-    fi
-    if ! docker image inspect ${1}/netshoot &>/dev/null ; then
-      docker tag containers.dl.tetrate.io/netshoot ${1}/netshoot ;
-    fi
-    if ! curl -s -X GET ${1}/v2/netshoot/tags/list | grep "latest" &>/dev/null ; then
-      docker push ${1}/netshoot ;
-    fi
+    # Sync images for application deployment and debugging
+    sync_single_image ${target_repo} "containers.dl.tetrate.io/obs-tester-server:1.0"
+    sync_single_image ${target_repo} "containers.dl.tetrate.io/netshoot:latest"
 
     print_info "All tsb images synced and available in the local repo"
 }
