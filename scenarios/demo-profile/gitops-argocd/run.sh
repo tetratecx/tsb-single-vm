@@ -94,15 +94,9 @@ function initialize_gitea {
   while ! $(ls ${data_folder}/gitea/conf &>/dev/null); do echo -n "." ; sleep 1 ; done
   cp ${GITEA_CONFIG} ${data_folder}/gitea/conf/ ;
   docker restart gitea ;
-
-  cat <<EOF | docker exec --user git --interactive gitea sh
-sleep 5 ; whoami ;
-result=`gitea admin user create --username "${GITEA_ADMIN_USER}" --password "${GITEA_ADMIN_PASSWORD}" --email "${GITEA_ADMIN_USER}@local" --admin --access-token` ;
-echo ${result} | awk '{ print $6 }' > /data/gitea/conf/${GITEA_ADMIN_USER}.token ;
-echo ${result} > /data/gitea/conf/${GITEA_ADMIN_USER}.token.bis ;
-sleep 5 ;
-EOF
-
+  output=$(docker exec --user git -it gitea gitea admin user create --username "${GITEA_ADMIN_USER}" --password "${GITEA_ADMIN_PASSWORD}" --email "${GITEA_ADMIN_USER}@local" --admin --access-token) ;
+  echo ${output} | awk '{ print $6 }' ;
+  echo ">>>>> ${output} <<<<<" ;
 }
 
 # Get local gitlab docker endpoint
