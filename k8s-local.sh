@@ -8,7 +8,7 @@
 # MetalLB original deployment yaml files
 #  - https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml
 #  - https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml
-# Patched: removed PodSecurityPolicy (depricated)
+# Patched: removed PodSecurityPolicy (deprecated)
 METALLB_INSTALL_YAML=addons/k8s/metallb/resources/metallb-0.12.1.yaml
 
 # MetalLB configmap configuration ready for envsubst
@@ -186,7 +186,7 @@ function get_apiserver_url {
   echo "https://${kubeapi_ip}:6443" ;
 }
 
-# Get kubernetes cluster apiserver address
+# Deploy metallb
 #   args:
 #     (1) cluster name
 #     (2) docker network name
