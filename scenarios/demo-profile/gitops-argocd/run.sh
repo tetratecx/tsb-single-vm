@@ -5,7 +5,7 @@ ACTION=${2}
 source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
-source ${SCENARIO_ROOT_DIR}/gitlab-api.sh
+source ${SCENARIO_ROOT_DIR}/gitea-api.sh
 
 INSTALL_REPO_URL=$(get_install_repo_url) ;
 
@@ -16,12 +16,12 @@ GITEA_VERSION="1.19"
 GITEA_ADMIN_USER="gitea-admin"
 GITEA_ADMIN_PASSWORD="gitea-admin"
 
-GITLAB_REPOSITORIES_DIR=${SCENARIO_ROOT_DIR}/repositories
-GITLAB_REPOSITORIES_TEMPDIR=/tmp/repositories
-GITLAB_PROJECTS_CONFIG=${GITLAB_REPOSITORIES_DIR}/projects.json
+GITEA_REPOS_DIR=${SCENARIO_ROOT_DIR}/repositories
+GITEA_REPOS_TEMPDIR=/tmp/repositories
+GITEA_REPOS_CONFIG=${GITEA_REPOSITORIES_DIR}/repos.json
 
 
-# Start gitlab server
+# Start gitea server
 #   args:
 #     (1) docker network
 #     (2) data folder
@@ -78,7 +78,7 @@ function get_gitea_http_url {
 
 # Get local gitea http endpoint with credentials
 function get_gitea_http_url_with_credentials {
-  if ! IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' gitlab-ee  2>/dev/null ); then
+  if ! IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' gitea  2>/dev/null ); then
     print_error "Local gitea container not running" ; 
     exit 1 ;
   fi
@@ -95,86 +95,45 @@ function initialize_gitea {
   cp ${GITEA_CONFIG} ${data_folder}/gitea/conf/ ;
   docker restart gitea ; sleep 5 ;
   output=$(docker exec --user git -it gitea gitea admin user create --username "${GITEA_ADMIN_USER}" --password "${GITEA_ADMIN_PASSWORD}" --email "${GITEA_ADMIN_USER}@local" --admin --access-token) ;
-  echo ${output} | awk '{ print $6 }' ;
-  echo ">>>>> ${output} <<<<<" ;
 }
 
-# Get local gitlab docker endpoint
-#   args:
-#     (1) container name
-function get_gitlab_docker_endpoint {
-  [[ -z "${1}" ]] && echo "Please provide container name as 1st argument" && return 2 || local container_name="${1}" ;
+# Create and sync gitea repositories
+function create_and_sync_gitea_repos {
+  mkdir -p ${GITEA_REPOS_TEMPDIR}
 
-  if ! IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' gitlab-ee  2>/dev/null ); then
-    print_error "Local gitlab container not running" ; 
-    exit 1 ;
-  fi
-  echo "${IP}:${GITLAB_DOCKER_PORT}" ;
-}
+  local gitea_http_url=$(get_gitea_http_url)
+  local gitea_http_url_creds=$(get_gitea_http_url_with_credentials)
 
-# Add local docker repo as docker insecure registry
-#   args:
-#     (1) repo endpoint
-function add_insecure_registry {
-  [[ -z "${1}" ]] && echo "Please provide repo endpoint as 1st argument" && return 2 || local repo_endpoint="${1}" ;
-
-  local docker_json="{\"insecure-registries\" : [\"http://${repo_endpoint}\"]}"   
-  # In case no local docker configuration file yet, create new from scratch
-  if [[ ! -f /etc/docker/daemon.json ]]; then
-    sudo sh -c "echo '${docker_json}' > /etc/docker/daemon.json"
-    sudo systemctl restart docker 
-    print_info "Insecure registry configured"
-  elif cat /etc/docker/daemon.json | grep ${repo_endpoint} &>/dev/null; then
-    print_info "Insecure registry already configured"
-  else
-    print_warning "File /etc/docker/daemon.json already exists"
-    print_warning "Please merge ${docker_json} manually and restart docker with 'sudo systemctl restart docker'"
-    exit 1
-  fi
-}
-
-
-# Create and sync gitlab repositories
-#   args:
-#     (1) container name
-function create_and_sync_gitlab_repos {
-  [[ -z "${1}" ]] && echo "Please provide container name as 1st argument" && return 2 || local container_name="${1}" ;
-
-  mkdir -p ${GITLAB_REPOSITORIES_TEMPDIR}
-
-  local gitlab_http_url=$(get_gitlab_http_url gitlab-ee)
-  local gitlab_http_url_creds=$(get_gitlab_http_url_with_credentials gitlab-ee)
-
-  # Project creation using Gitlab REST APIs
-  local project_count=$(jq '. | length' ${GITLAB_PROJECTS_CONFIG})
-  local existing_project_full_path_list=$(gitlab_get_projects_full_path_list ${gitlab_http_url} ${GITLAB_ROOT_TOKEN})
+  # Project creation using gitea REST APIs
+  local project_count=$(jq '. | length' ${GITEA_REPOS_CONFIG})
+  local existing_project_full_name_list=$(gitea_get_repos_full_name_list "${gitea_http_url}" "${GITEA_ADMIN_USER}" "${GITEA_ADMIN_PASSWORD}")
   for ((project_index=0; project_index<${project_count}; project_index++)); do
-    local project_description=$(jq -r '.['${project_index}'].description' ${GITLAB_PROJECTS_CONFIG})
-    local project_name=$(jq -r '.['${project_index}'].name' ${GITLAB_PROJECTS_CONFIG})
+    local project_description=$(jq -r '.['${project_index}'].description' ${GITEA_REPOS_CONFIG})
+    local project_name=$(jq -r '.['${project_index}'].name' ${GITEA_REPOS_CONFIG})
 
-    if $(echo ${existing_project_full_path_list} | grep "${project_name}" &>/dev/null); then
-      print_info "Gitlab project '${project_name}' already exists"
+    if $(echo ${existing_project_full_name_list} | grep "${project_name}" &>/dev/null); then
+      print_info "Gitea project '${project_name}' already exists"
     else
-      print_info "Going to create gitlab project '${project_name}'"
-      gitlab_create_project ${gitlab_http_url} ${GITLAB_ROOT_TOKEN} ${project_name} "${project_description}" "false" ;
+      print_info "Going to create gitea project '${project_name}'"
+      gitea_create_repo "${gitea_http_url}" "${GITEA_ADMIN_USER}" "${GITEA_ADMIN_PASSWORD}" "${project_name}" "${project_description}" ;
     fi
   done
 
   # Repo synchronization using git clone, add, commit and push
-  local repo_count=$(jq '. | length' ${GITLAB_PROJECTS_CONFIG})
+  local repo_count=$(jq '. | length' ${GITEA_REPOS_CONFIG})
   for ((repo_index=0; repo_index<${repo_count}; repo_index++)); do
-    local repo_name=$(jq -r '.['${repo_index}'].name' ${GITLAB_PROJECTS_CONFIG})
+    local repo_name=$(jq -r '.['${repo_index}'].name' ${GITEA_REPOS_CONFIG})
 
-    print_info "Going to git clone repo '${repo_name}' to ${GITLAB_REPOSITORIES_TEMPDIR}/${repo_name}"
-    mkdir -p ${GITLAB_REPOSITORIES_TEMPDIR}
-    cd ${GITLAB_REPOSITORIES_TEMPDIR}
-    rm -rf ${GITLAB_REPOSITORIES_TEMPDIR}/${repo_name}
-    git clone ${gitlab_http_url_creds}/root/${repo_name}.git
+    print_info "Going to git clone repo '${repo_name}' to ${GITEA_REPOS_TEMPDIR}/${repo_name}"
+    mkdir -p ${GITEA_REPOS_TEMPDIR}
+    cd ${GITEA_REPOS_TEMPDIR}
+    rm -rf ${GITEA_REPOS_TEMPDIR}/${repo_name}
+    git clone ${gitea_http_url_creds}/gitea-admin/${repo_name}.git
 
     print_info "Going add, commit and push new code to repo '${repo_name}'"
-    cd ${GITLAB_REPOSITORIES_TEMPDIR}/${repo_name}
-    rm -rf ${GITLAB_REPOSITORIES_TEMPDIR}/${repo_name}/*
-    cp -a ${GITLAB_REPOSITORIES_DIR}/${repo_name}/. ${GITLAB_REPOSITORIES_TEMPDIR}/${repo_name}
+    cd ${GITEA_REPOS_TEMPDIR}/${repo_name}
+    rm -rf ${GITEA_REPOS_TEMPDIR}/${repo_name}/*
+    cp -a ${GITEA_REPOS_DIR}/${repo_name}/. ${GITEA_REPOS_TEMPDIR}/${repo_name}
     git add -A
     git commit -m "This is an automated commit"
     git push -u origin main
@@ -196,15 +155,11 @@ DONE
 
 if [[ ${ACTION} = "deploy" ]]; then
 
-  # Start gitlab server in demo-cluster network
+  # Start gitea server in demo-cluster network
   start_gitea "demo-cluster" "${GITEA_HOME}" ;
   GITLAB_HTTP_URL=$(get_gitea_http_url) ;
   initialize_gitea "${GITEA_HOME}" ;
-  exit
-  GITLAB_DOCKER_ENDPOINT=$(get_gitlab_docker_endpoint ${GITLAB_CONTAINER_NAME}) ;
-  add_insecure_registry ${GITLAB_DOCKER_ENDPOINT} ;
-  gitlab_set_root_api_token ${GITLAB_CONTAINER_NAME} ${GITLAB_HTTP_URL} ${GITLAB_ROOT_TOKEN} ;
-  create_and_sync_gitlab_repos ${GITLAB_CONTAINER_NAME} ;
+  create_and_sync_gitea_repos ;
 
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
@@ -251,8 +206,7 @@ fi
 
 if [[ ${ACTION} = "undeploy" ]]; then
 
-  # Remove gitlab server
-  # remove_gitlab "${GITLAB_HOME}" ;
+  # Remove gitea server
   remove_gitea "${GITEA_HOME}" ;
 
   # Remove argocd
