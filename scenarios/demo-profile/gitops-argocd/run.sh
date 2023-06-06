@@ -93,7 +93,7 @@ function initialize_gitea {
 
   while ! $(ls ${data_folder}/gitea/conf &>/dev/null); do sleep 1 ; done
   cp ${GITEA_CONFIG} ${data_folder}/gitea/conf/ ;
-  docker exec --it gitea bash -c "killall -SIGHUP gitea"
+  docker exec -it gitea bash -c "killall -SIGHUP gitea"
   cat <<EOF | docker exec --user git --interactive gitea bash
 sleep 5 ;
 result=$(/app/gitea/gitea admin user create --username "${GITEA_ADMIN_USER}" --password "${GITEA_ADMIN_PASSWORD}" --email "${GITEA_ADMIN_USER}@local" --admin --access-token) ;
