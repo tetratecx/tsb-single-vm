@@ -91,7 +91,7 @@ function get_gitea_http_url_with_credentials {
 function initialize_gitea {
   [[ -z "${1}" ]] && echo "Please provide data folder as 1st argument" && return 2 || local data_folder="${1}" ;
 
-  while ! $(ls ${data_folder}/gitea/conf &>/dev/null); do sleep 1 ; done
+  while ! $(ls ${data_folder}/gitea/conf &>/dev/null); do echo -n "." ; sleep 1 ; done
   cp ${GITEA_CONFIG} ${data_folder}/gitea/conf/ ;
   docker restart gitea ;
 
