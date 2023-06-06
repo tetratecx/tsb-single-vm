@@ -128,7 +128,7 @@ function gitea_get_http_url {
 #     (5) admin password (optional, default 'gitea-admin')
 function gitea_bootstrap_server {
   [[ -z "${1}" ]] && print_error "Please provide config file as 1st argument" && return 2 || local config_file="${1}" ;
-  [[ ! -f "${1}" ]] && print_error "Please provide valid config file location as 1st argument" && return 2 || local config_file="${1}" ;
+  [[ ! -f "${1}" ]] && print_error "Config file does not exist" && return 2 || local config_file="${1}" ;
   [[ -z "${2}" ]] && local container_name="gitea" || local container_name="${2}" ;
   [[ -z "${3}" ]] && local data_folder="/tmp/gitea" || local data_folder="${3}" ;
   [[ -z "${4}" ]] && local admin_user="gitea-admin" || local admin_user="${4}" ;
