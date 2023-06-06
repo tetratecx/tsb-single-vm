@@ -2,10 +2,11 @@
 apiVersion: security.tsb.tetrate.io/v2
 kind: SecuritySetting
 metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: app-a-ws
-  group: app-a-security-group
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-a-ws
+    tsb.tetrate.io/securityGroup: app-a-security-group
   name: ingress-to-a
 spec:
   authenticationSettings:
@@ -22,10 +23,11 @@ spec:
 apiVersion: security.tsb.tetrate.io/v2
 kind: SecuritySetting
 metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: app-b-ws
-  group: app-b-security-group
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-b-ws
+    tsb.tetrate.io/securityGroup: app-b-security-group
   name: a-to-b
 spec:
   authenticationSettings:
@@ -42,10 +44,11 @@ spec:
 apiVersion: security.tsb.tetrate.io/v2
 kind: SecuritySetting
 metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: app-c-ws
-  group: app-c-security-group
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-c-ws
+    tsb.tetrate.io/securityGroup: app-c-security-group
   name: b-to-c
 spec:
   authenticationSettings:

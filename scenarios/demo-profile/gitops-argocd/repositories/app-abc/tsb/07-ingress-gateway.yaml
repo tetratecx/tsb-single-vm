@@ -2,10 +2,11 @@
 apiVersion: gateway.tsb.tetrate.io/v2
 kind: IngressGateway
 metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: gw-abc-ws
-  group: gw-abc-group
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: gw-abc-ws
+    tsb.tetrate.io/gatewayGroup: gw-abc-group
   name: gw-ingress-abc
 spec:
   displayName: AppABC_IngressGW

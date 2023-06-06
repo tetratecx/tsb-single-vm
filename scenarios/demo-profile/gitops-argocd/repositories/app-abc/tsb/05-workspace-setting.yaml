@@ -1,10 +1,11 @@
 ---
-apiVersion: api.tsb.tetrate.io/v2
+apiVersion: tsb.tetrate.io/v2
 kind: WorkspaceSetting
 metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: app-a-ws
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-a-ws
   name: app-a-ws-setting
 spec:
   defaultEastWestGatewaySettings:
@@ -22,12 +23,13 @@ spec:
       - ns-b/*
       mode: CUSTOM
 ---
-apiVersion: api.tsb.tetrate.io/v2
+apiVersion: tsb.tetrate.io/v2
 kind: WorkspaceSetting
 metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: app-b-ws
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-b-ws
   name: app-b-ws-setting
 spec:
   defaultEastWestGatewaySettings:
@@ -45,12 +47,13 @@ spec:
       - ns-c/*
       mode: CUSTOM
 ---
-apiVersion: api.tsb.tetrate.io/v2
+apiVersion: tsb.tetrate.io/v2
 kind: WorkspaceSetting
 metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: app-c-ws
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-c-ws
   name: app-c-ws-setting
 spec:
   defaultEastWestGatewaySettings:

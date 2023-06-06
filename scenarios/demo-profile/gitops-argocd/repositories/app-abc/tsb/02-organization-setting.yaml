@@ -1,7 +1,8 @@
 ---
-apiVersion: api.tsb.tetrate.io/v2
+apiVersion: tsb.tetrate.io/v2
 kind: OrganizationSetting
 metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
   name: tetrate-settings
-  organization: tetrate
 spec: {}

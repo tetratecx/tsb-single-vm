@@ -1,10 +1,11 @@
 ---
 apiVersion: gateway.tsb.tetrate.io/v2
 kind: Group
-Metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: gw-abc-ws
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: gw-abc-ws
   name: gw-abc-group
 spec:
   displayName: GatewayABC_GatewayGroup
@@ -16,9 +17,10 @@ spec:
 apiVersion: traffic.tsb.tetrate.io/v2
 kind: Group
 metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: app-a-ws
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-a-ws
   name: app-a-traffic-group
 spec:
   displayName: AppA_TrafficGroup
@@ -30,9 +32,10 @@ spec:
 apiVersion: security.tsb.tetrate.io/v2
 kind: Group
 metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: app-a-ws
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-a-ws
   name: app-a-security-group
 spec:
   displayName: AppA_SecurityGroup
@@ -44,9 +47,10 @@ spec:
 apiVersion: traffic.tsb.tetrate.io/v2
 kind: Group
 metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: app-b-ws
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-b-ws
   name: app-b-traffic-group
 spec:
   displayName: AppB_TrafficGroup
@@ -58,9 +62,10 @@ spec:
 apiVersion: security.tsb.tetrate.io/v2
 kind: Group
 metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: app-b-ws
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-b-ws
   name: app-b-security-group
 spec:
   displayName: AppB_SecurityGroup
@@ -72,9 +77,10 @@ spec:
 apiVersion: traffic.tsb.tetrate.io/v2
 kind: Group
 metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: app-c-ws
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-c-ws
   name: app-c-traffic-group
 spec:
   displayName: AppC_TrafficGroup
@@ -86,9 +92,10 @@ spec:
 apiVersion: security.tsb.tetrate.io/v2
 kind: Group
 metadata:
-  organization: tetrate
-  tenant: prod
-  workspace: app-c-ws
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-c-ws
   name: app-c-security-group
 spec:
   displayName: AppC_SecurityGroup

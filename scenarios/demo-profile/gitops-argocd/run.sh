@@ -235,6 +235,36 @@ if [[ ${ACTION} = "deploy" ]]; then
   kubectl --context demo-cluster -n istio-system patch controlplane/controlplane --type merge --patch ${GITOPS_PATCH} ;
   tctl x gitops grant demo-cluster ;
 
+  # Install argocd
+  if $(kubectl --context demo-cluster get namespace argocd &>/dev/null) ; then
+    echo "Namespace 'argocd' already exists" ;
+  else
+    kubectl --context demo-cluster create namespace argocd ;
+  fi
+  kubectl --context demo-cluster apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml ;
+  kubectl --context demo-cluster patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}' ;
+  while ! ARGOCD_IP=$(kubectl --context demo-cluster -n argocd get svc argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+    sleep 1;
+  done
+
+  # Change argocd initias password if needed
+  INITIAL_ARGOCD_PW=$(argocd --insecure admin initial-password -n argocd | head -1) ;
+  if $(argocd --insecure login "${ARGOCD_IP}" --username admin --password "${INITIAL_ARGOCD_PW}" &>/dev/null); then
+    print_info "Going to change initial password of argocd admin user" ;
+    argocd --insecure account update-password --account admin --current-password "${INITIAL_ARGOCD_PW}" --new-password "admin123." ;
+  else
+    if $(argocd --insecure login "${ARGOCD_IP}" --username admin --password "admin123." &>/dev/null); then
+      print_info "Successfully logged in with argocd admin user and new password" ;
+    else
+      print_error "Failed to login with inital password and new password for argocd admin user" ;
+    fi
+  fi
+  
+  argocd --insecure cluster add demo-cluster --yes ;
+  argocd app create app-abc --repo ${GITLAB_HTTP_URL}/root/app-abc.git --path k8s --dest-server https://kubernetes.default.svc ;
+  argocd app create app-abc-tsb --repo ${GITLAB_HTTP_URL}/root/app-abc.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
+  sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2 ;
+
   exit 0
 fi
 
@@ -244,16 +274,23 @@ if [[ ${ACTION} = "undeploy" ]]; then
   # Remove gitlab server
   remove_gitlab "${GITLAB_CONTAINER_NAME}" ;
 
+  # Remove argocd
+  kubectl --context demo-cluster delete -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml ;
+  kubectl --context demo-cluster delete namespace argocd ;
+
   exit 0
 fi
 
 
 if [[ ${ACTION} = "info" ]]; then
 
-  GITLAB_HTTP_URL=$(get_gitlab_http_url ${GITLAB_CONTAINER_NAME})
-  print_info "Gogs git server web ui running at ${GITLAB_HTTP_URL}" ;
+  GITLAB_HTTP_URL=$(get_gitlab_http_url ${GITLAB_CONTAINER_NAME}) ;
+  print_info "Gitlab server web ui running at ${GITLAB_HTTP_URL}" ;
 
-  while ! INGRESS_GW_IP=$(kubectl --context active-cluster get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+  ARGOCD_IP=$(kubectl --context demo-cluster -n argocd get svc argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ;
+  print_info "ArgoCD web ui running at https://${ARGOCD_IP}" ;
+
+  while ! INGRESS_GW_IP=$(kubectl --context demo-cluster get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
     sleep 1;
   done
 
