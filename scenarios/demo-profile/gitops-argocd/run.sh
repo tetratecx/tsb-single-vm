@@ -220,7 +220,7 @@ fi
 if [[ ${ACTION} = "info" ]]; then
 
   GITEA_HTTP_URL=$(get_gitea_http_url) ;
-  print_info "Gitlab server web ui running at ${GITLAB_HTTP_URL}" ;
+  print_info "Gitea server web ui running at ${GITEA_HTTP_URL}:3000" ;
 
   ARGOCD_IP=$(kubectl --context demo-cluster -n argocd get svc argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ;
   print_info "ArgoCD web ui running at https://${ARGOCD_IP}" ;
