@@ -9,15 +9,15 @@
 #  - https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml
 #  - https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml
 # Patched: removed PodSecurityPolicy (depricated)
-METALLB_INSTALL_YAML=addons/metallb/resources/metallb-0.12.1.yaml
+METALLB_INSTALL_YAML=addons/k8s/metallb/resources/metallb-0.12.1.yaml
 
 # MetalLB configmap configuration ready for envsubst
-METALLB_POOLCONFIG_YAML=addons/metallb/config/metallb-poolconfig.yaml
+METALLB_POOLCONFIG_YAML=addons/k8s/metallb/config/metallb-poolconfig.yaml
 
 # Metrics-Server original deployment yaml files
 #  - https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.6.3/components.yaml
 # Patched: added --kubelet-insecure-tls to metrics-server container command
-METRICS_SERVER_INSTALL_YAML=addons/metrics-server/resources/metrics-server-0.6.3.yaml
+METRICS_SERVER_INSTALL_YAML=addons/k8s/metrics-server/resources/metrics-server-0.6.3.yaml
 
 # Docker and metallb ip addressing defaults
 K8S_LOCAL_DOCKER_SUBNET_START="${K8S_LOCAL_DOCKER_SUBNET_START:-192.168.49.0/24}"
