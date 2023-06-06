@@ -224,6 +224,12 @@ if [[ ${ACTION} = "deploy" ]]; then
   argocd --insecure app set app-openapi --sync-policy automated ;
   argocd --insecure app set app-openapi-tsb --sync-policy automated ;
 
+  argocd --insecure app sync tsb-admin ;
+  argocd --insecure app sync app-abc ;
+  argocd --insecure app sync app-abc-tsb ;
+  argocd --insecure app sync app-openapi ;
+  argocd --insecure app sync app-openapi-tsb ;
+
   exit 0
 fi
 
