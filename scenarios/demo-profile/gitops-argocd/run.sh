@@ -13,59 +13,12 @@ GITEA_HOME="${ROOT_DIR}/output/gitea"
 GITEA_CONFIG="${SCENARIO_ROOT_DIR}/gitea/app.ini"
 GITEA_VERSION="1.19"
 
-
-
-GITLAB_CONTAINER_NAME="gitlab-ee"
-GITLAB_DOCKER_PORT=5050
-GITLAB_HOME="/tmp/gitlab"
-GITLAB_NETWORK="demo-cluster"
-GITLAB_ROOT_EMAIL="root@local"
-GITLAB_ROOT_PASSWORD="Tetrate123."
-GITLAB_ROOT_TOKEN="01234567890123456789"
-GITLAB_SERVER_VERSION="16.0.1"
-
-GITLAB_OMNIBUS_CONFIG="
-    external_url 'http://192.168.47.2'
-    registry_external_url 'http://192.168.47.2:${GITLAB_DOCKER_PORT}'
-  "
+GITEA_ADMIN_USER="gitea-admin"
+GITEA_ADMIN_PASSWORD="gitea-admin"
 
 GITLAB_REPOSITORIES_DIR=${SCENARIO_ROOT_DIR}/repositories
 GITLAB_REPOSITORIES_TEMPDIR=/tmp/repositories
 GITLAB_PROJECTS_CONFIG=${GITLAB_REPOSITORIES_DIR}/projects.json
-
-# Start gitlab server
-#   args:
-#     (1) docker network
-#     (2) data folder
-function start_gitlab {
-  [[ -z "${1}" ]] && echo "Please provide docker network as 1st argument" && return 2 || local docker_network="${1}" ;
-  [[ -z "${2}" ]] && echo "Please provide data folder as 2nd argument" && return 2 || local data_folder="${2}" ;
-
-  if docker ps --filter "status=running" | grep gitlab-ee &>/dev/null ; then
-    echo "Do nothing, container 'gitlab-ee' in docker network '${docker_network}' is already running"
-  elif docker ps --filter "status=exited" | grep gitlab-ee &>/dev/null ; then
-    print_info "Going to start container 'gitlab-ee' in docker network '${docker_network}' again"
-    docker start gitlab-ee ;
-  else
-    print_info "Going to start container 'gitlab-ee' in docker network '${docker_network}' for the first time"
-    mkdir -p ${data_folder} ;
-    mkdir -p ${data_folder}/data/git-data/repositories ;
-    docker run --detach \
-      --env GITLAB_ROOT_EMAIL="${GITLAB_ROOT_EMAIL}" \
-      --env GITLAB_ROOT_PASSWORD="${GITLAB_ROOT_PASSWORD}" \
-      --env GITLAB_OMNIBUS_CONFIG="${GITLAB_OMNIBUS_CONFIG}" \
-      --hostname "gitlab-ee" \
-      --publish 443:443 --publish 80:80 --publish 2222:22 --publish ${GITLAB_DOCKER_PORT}:${GITLAB_DOCKER_PORT} \
-      --name "gitlab-ee" \
-      --network ${docker_network} \
-      --restart always \
-      --volume ${data_folder}/config:/etc/gitlab \
-      --volume ${data_folder}/logs:/var/log/gitlab \
-      --volume ${data_folder}/data:/var/opt/gitlab \
-      --shm-size 512m \
-      gitlab/gitlab-ee:${GITLAB_SERVER_VERSION}-ee.0 ;
-  fi
-}
 
 
 # Start gitlab server
@@ -99,21 +52,6 @@ function start_gitea {
   fi
 }
 
-# Remove gitlab server
-#   args:
-#     (1) data folder
-function remove_gitlab {
-  [[ -z "${1}" ]] && echo "Please provide data folder as 1st argument" && return 2 || local data_folder="${1}" ;
-
-  if docker inspect gitlab-ee &>/dev/null ; then
-    docker stop gitlab-ee &>/dev/null ;
-    docker rm gitlab-ee &>/dev/null ;
-    echo "Local gitlab container stopped and removed"
-  fi
-  sudo rm -rf ${data_folder} ;
-  print_info "Removed gitlab container and local data"
-}
-
 # Remove gitea server
 #   args:
 #     (1) data folder
@@ -129,47 +67,39 @@ function remove_gitea {
   print_info "Removed gitea container and local data"
 }
 
-# Get local gitlab http endpoint
-function get_gitlab_http_url {
-  if ! IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' gitlab-ee  2>/dev/null ); then
-    print_error "Local gitlab container not running" ; 
-    return 1 ;
-  fi
-  echo "http://${IP}:80" ;
-}
-
-# Get local gitlab http endpoint
+# Get local gitea http endpoint
 function get_gitea_http_url {
   if ! IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' gitea  2>/dev/null ); then
-    print_error "Local gitlab container not running" ; 
+    print_error "Local gitea container not running" ; 
     return 1 ;
   fi
   echo "http://${IP}:3000" ;
 }
 
-# Get local gitlab http endpoint with credentials
-function get_gitlab_http_url_with_credentials {
+# Get local gitea http endpoint with credentials
+function get_gitea_http_url_with_credentials {
   if ! IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' gitlab-ee  2>/dev/null ); then
-    print_error "Local docker repo not running" ; 
+    print_error "Local gitea container not running" ; 
     exit 1 ;
   fi
-  echo "http://root:${GITLAB_ROOT_PASSWORD}@${IP}:80" ;
+  echo "http://${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD}@${IP}:3000" ;
 }
 
-# Wait for gitlab UI to become available
+# Initialize local gitea
 #   args:
-#     (1) gitlab http url
-function wait_gitlab_ui_ready {
-  [[ -z "${1}" ]] && echo "Please provide http url as 1st argument" && return 2 || local http_url="${1}" ;
+#     (1) data folder
+function initialize_gitea {
+  [[ -z "${1}" ]] && echo "Please provide data folder as 1st argument" && return 2 || local data_folder="${1}" ;
 
-  echo "Waiting for gitlab to be ready..."
-  while ! curl ${http_url} -k 2>/dev/null | grep "You are being" &>/dev/null;
-  do
-    sleep 1 ;
-    echo -n "." ;
-  done
-  echo "DONE"
-  echo "The gitlab GUI is available at ${http_url}"
+  while ! $(ls ${data_folder}/gitea/conf &>/dev/null); do sleep 1 ; done
+  cp ${GITEA_CONFIG} ${data_folder}/gitea/conf/ ;
+
+  cat <<EOF | docker exec --user git --interactive gitea bash
+/app/gitea/gitea ;
+/app/gitea/gitea admin user create --username "${GITEA_ADMIN_USER}" --password "${GITEA_ADMIN_PASSWORD}" --email "${GITEA_ADMIN_USER}@local" --admin ;
+sleep 5 ;
+EOF
+
 }
 
 # Get local gitlab docker endpoint
@@ -272,8 +202,8 @@ if [[ ${ACTION} = "deploy" ]]; then
   # Start gitlab server in demo-cluster network
   start_gitea ${GITLAB_NETWORK} ${GITEA_HOME} ;
   GITLAB_HTTP_URL=$(get_gitea_http_url) ;
+  initialize_gitea ${GITEA_HOME};
   exit
-  wait_gitlab_ui_ready ${GITLAB_HTTP_URL} ;
   GITLAB_DOCKER_ENDPOINT=$(get_gitlab_docker_endpoint ${GITLAB_CONTAINER_NAME}) ;
   add_insecure_registry ${GITLAB_DOCKER_ENDPOINT} ;
   gitlab_set_root_api_token ${GITLAB_CONTAINER_NAME} ${GITLAB_HTTP_URL} ${GITLAB_ROOT_TOKEN} ;
