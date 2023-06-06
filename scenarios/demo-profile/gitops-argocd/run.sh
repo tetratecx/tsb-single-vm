@@ -93,7 +93,7 @@ function initialize_gitea {
 
   while ! $(ls ${data_folder}/gitea/conf &>/dev/null); do echo -n "." ; sleep 1 ; done
   cp ${GITEA_CONFIG} ${data_folder}/gitea/conf/ ;
-  docker restart gitea ;
+  docker restart gitea ; sleep 5 ;
   output=$(docker exec --user git -it gitea gitea admin user create --username "${GITEA_ADMIN_USER}" --password "${GITEA_ADMIN_PASSWORD}" --email "${GITEA_ADMIN_USER}@local" --admin --access-token) ;
   echo ${output} | awk '{ print $6 }' ;
   echo ">>>>> ${output} <<<<<" ;
