@@ -185,7 +185,9 @@ if [[ ${ACTION} = "deploy" ]]; then
   kubectl --context demo-cluster wait deployment -n argocd argocd-server --for condition=Available=True --timeout=600s ;
 
   # Change argocd initias password if needed
-  INITIAL_ARGOCD_PW=$(argocd --insecure admin initial-password -n argocd | head -1) ;
+  while ! INITIAL_ARGOCD_PW=$(argocd --insecure admin initial-password -n argocd | head -1 2>/dev/null) ; do
+    sleep 1;
+  done
   if $(argocd --insecure login "${ARGOCD_IP}" --username admin --password "${INITIAL_ARGOCD_PW}" &>/dev/null); then
     print_info "Going to change initial password of argocd admin user" ;
     argocd --insecure account update-password --account admin --current-password "${INITIAL_ARGOCD_PW}" --new-password "admin123." ;
