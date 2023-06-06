@@ -103,7 +103,7 @@ function initialize_gitea {
 function wait_gitea_api_ready {
   [[ -z "${1}" ]] && echo "Please provide gitea api url as 1st argument" && return 2 || local base_url="${1}" ;
   echo "Waiting for gitea rest api to become ready"
-  while out=$(gitea_get_version "${base_url}" "${GITEA_ADMIN_USER}" "${GITEA_ADMIN_PASSWORD}" &>/dev/null); do
+  while ! out=$(gitea_get_version "${base_url}" "${GITEA_ADMIN_USER}" "${GITEA_ADMIN_PASSWORD}" &>/dev/null); do
     echo -n "." ; sleep 1 ;
   done
 }
