@@ -145,7 +145,8 @@ function gitea_bootstrap_server {
     echo "Gitea admin user '${admin_user}' already exists"
   else
     echo "Create gitea admin user '${admin_user}'"
-    docker exec --user git -it ${container_name} gitea admin user create --username "${admin_user}" --password "${admin_password}" --email "${admin_user}@gitea.local" --admin ;
+    docker exec --user git -it ${container_name} \
+      gitea admin user create --username "${admin_user}" --password "${admin_password}" --email "${admin_user}@gitea.local" --admin ;
   fi
 
   print_info "Gitea server bootstrapped with config '${config_file}' and admin user '${admin_user}'"
