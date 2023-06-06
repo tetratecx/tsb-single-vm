@@ -196,7 +196,7 @@ if [[ ${ACTION} = "deploy" ]]; then
   done
   kubectl --context demo-cluster wait deployment -n argocd argocd-server --for condition=Available=True --timeout=600s ;
 
-  # Change argocd initias password if needed
+  # Change argocd initial password if needed
   while ! INITIAL_ARGOCD_PW=$(argocd --insecure admin initial-password -n argocd | head -1 2>/dev/null) ; do
     echo -n "."; sleep 1;
   done
@@ -212,8 +212,17 @@ if [[ ${ACTION} = "deploy" ]]; then
   fi
   
   argocd --insecure cluster add demo-cluster --yes ;
+  argocd --insecure app create tsb-admin --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/tsb-admin.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
   argocd --insecure app create app-abc --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path k8s --dest-server https://kubernetes.default.svc ;
   argocd --insecure app create app-abc-tsb --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
+  argocd --insecure app create app-openapi --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-openapi.git --path k8s --dest-server https://kubernetes.default.svc ;
+  argocd --insecure app create app-openapi-tsb --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-openapi.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
+
+  argocd --insecure app set tsb-admin --sync-policy automated ;
+  argocd --insecure app set app-abc --sync-policy automated ;
+  argocd --insecure app set app-abc-tsb --sync-policy automated ;
+  argocd --insecure app set app-openapi --sync-policy automated ;
+  argocd --insecure app set app-openapi-tsb --sync-policy automated ;
 
   exit 0
 fi

@@ -1,9 +1,0 @@
----
-apiVersion: tsb.tetrate.io/v2
-kind: Tenant
-metadata:
-  annotations:
-    tsb.tetrate.io/organization: tetrate
-  name: prod
-spec:
-  displayName: Production

@@ -5,5 +5,8 @@
   },{
     "description": "Deployment of Application OpenAPI",
     "name": "app-openapi"
+  },{
+    "description": "TSB Administration",
+    "name": "tsb-admin"
   }
 ]

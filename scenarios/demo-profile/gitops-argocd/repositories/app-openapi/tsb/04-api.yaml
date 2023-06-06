@@ -1,0 +1,69 @@
+---
+apiVersion: application.tsb.tetrate.io/v2
+kind: API
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/application: app1
+  name: app1-api
+spec:
+  displayName: App One API
+  openapi: |-
+    openapi: 3.0.0
+    info:
+      title: App One API
+      description: Application One API
+      version: '1.0'
+      x-tsb-service: app1.app1
+    servers:
+    - url: "http://app1.demo.tetrate.io"
+      x-tsb-authentication:
+        jwt:
+          issuer: http://jwt.tetrate.io
+          audiences:
+          - demo
+          jwks: |
+            {"keys":[{"kid":"97bf4344-b1e6-4122-9fc5-358b1e0eabad","kty":"oct","alg":"HS256","k":"c2lnbmluZy1rZXk="}]}
+    paths:
+      /: {}
+      /eng:
+        x-tsb-authorization:
+          claims:
+            - other:
+                group: engineering
+        x-tsb-redirect:
+          uri: /proxy/app2.internal
+      /proxy/{service}:
+        parameters:
+          - name: service
+  workloadSelector:
+    labels:
+      app: app1-ingress
+    namespace: app1
+---
+apiVersion: application.tsb.tetrate.io/v2
+kind: API
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/application: app2
+  name: app2-api
+spec:
+  displayName: App Two API
+  openapi: |-
+    openapi: 3.0.0
+    info:
+      title: App Two API
+      description: Application Two API
+      version: '1.0'
+      x-tsb-service: app2.app2
+    servers:
+    - url: "http://app2.demo.tetrate.io"
+    paths:
+      /: {}
+  workloadSelector:
+    labels:
+      app: app2-ingress
+    namespace: app2
