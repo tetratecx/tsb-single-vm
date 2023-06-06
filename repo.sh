@@ -91,8 +91,8 @@ function add_insecure_registry {
 # Sync a given image to given repository
 #
 function sync_single_image {
-  local target_repo = $1
-  local image = $2
+  local target_repo="${1}"
+  local image="${2}"
 
   local image_without_repo=$(echo ${image} | sed "s|containers.dl.tetrate.io/||")
   local image_name=$(echo ${image_without_repo} | awk -F: '{print $1}')
@@ -111,7 +111,7 @@ function sync_single_image {
 
 # Sync tsb docker images locally (if not yet available)
 function sync_tsb_images {
-    local target_repo = $1
+    local target_repo="${1}"
 
     # Sync all tsb images locally
     for image in `tctl install image-sync --just-print --raw --accept-eula 2>/dev/null` ; do
