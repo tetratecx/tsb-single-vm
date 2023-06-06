@@ -160,6 +160,7 @@ if [[ ${ACTION} = "deploy" ]]; then
   GITLAB_HTTP_URL=$(get_gitea_http_url) ;
   initialize_gitea "${GITEA_HOME}" ;
   create_and_sync_gitea_repos ;
+  sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2 ;
 
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
@@ -181,6 +182,7 @@ if [[ ${ACTION} = "deploy" ]]; then
   while ! ARGOCD_IP=$(kubectl --context demo-cluster -n argocd get svc argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
     sleep 1;
   done
+  kubectl --context demo-cluster wait deployment -n argocd argocd-server --for condition=Available=True --timeout=600s ;
 
   # Change argocd initias password if needed
   INITIAL_ARGOCD_PW=$(argocd --insecure admin initial-password -n argocd | head -1) ;
@@ -198,7 +200,6 @@ if [[ ${ACTION} = "deploy" ]]; then
   argocd --insecure cluster add demo-cluster --yes ;
   argocd app create app-abc --repo ${GITLAB_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path k8s --dest-server https://kubernetes.default.svc ;
   argocd app create app-abc-tsb --repo ${GITLAB_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
-  sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2 ;
 
   exit 0
 fi

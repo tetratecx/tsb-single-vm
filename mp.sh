@@ -12,25 +12,6 @@ INSTALL_REPO_PW=$(get_install_repo_password) ;
 INSTALL_REPO_URL=$(get_install_repo_url) ;
 INSTALL_REPO_USER=$(get_install_repo_user) ;
 
-# Patch deployment still using dockerhub: tsb/ratelimit-redis
-#   args:
-#     (1) cluster name
-function patch_dockerhub_dep_redis {
-  while ! kubectl --context ${1} -n tsb set image deployment/ratelimit-redis redis=${INSTALL_REPO_URL}/redis:7.0.7-alpine3.17 &>/dev/null; do
-    sleep 1 ;
-  done
-  echo "Deployment tsb/ratelimit-redis sucessfully patched"
-}
-
-# Patch deployment still using dockerhub: istio-system/ratelimit-server
-#   args:
-#     (1) cluster name
-function patch_dockerhub_dep_ratelimit {
-  while ! kubectl --context ${1} -n istio-system set image deployment/ratelimit-server ratelimit=${INSTALL_REPO_URL}/ratelimit:b3562caa &>/dev/null; do
-    sleep 1 ;
-  done
-  echo "Deployment istio-system/ratelimit-server sucessfully patched"
-}
 
 # Patch affinity rules of management plane (demo only!)
 #   args:
@@ -129,8 +110,6 @@ if [[ ${ACTION} = "install" ]]; then
   fi
   
   # start patching deployments that depend on dockerhub asynchronously
-  patch_dockerhub_dep_redis ${MP_CLUSTER_NAME} &
-  patch_dockerhub_dep_ratelimit ${MP_CLUSTER_NAME} &
   patch_remove_affinity_mp ${MP_CLUSTER_NAME} &
 
   # install tsb management plane using the demo profile
