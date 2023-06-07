@@ -30,10 +30,10 @@ api_endpoint="localhost:3000"
 # gitea_has_repo_by_owner "${api_endpoint}" "repo-dummy" "gitea-admin" ; echo $? ;
 # read -p "Press enter to continue" ;
 
-# gitea_create_repo "${api_endpoint}" "repo1-admin" "repo1-admin description" ;
-# gitea_create_repo "${api_endpoint}" "repo2-admin" "repo2-admin description" ;
-# gitea_create_repo "${api_endpoint}" "repo3-admin" "repo3-admin description" ;
-# gitea_create_repo "${api_endpoint}" "repo4-admin" "repo4-admin description" ;
+# gitea_create_repo_current_user "${api_endpoint}" "repo1-admin" "repo1-admin description" ;
+# gitea_create_repo_current_user "${api_endpoint}" "repo2-admin" "repo2-admin description" ;
+# gitea_create_repo_current_user "${api_endpoint}" "repo3-admin" "repo3-admin description" ;
+# gitea_create_repo_current_user "${api_endpoint}" "repo4-admin" "repo4-admin description" ;
 # read -p "Press enter to continue" ;
 
 # gitea_has_repo_by_owner "${api_endpoint}" "repo1-admin" "gitea-admin" ; echo $? ;
@@ -165,7 +165,7 @@ api_endpoint="localhost:3000"
 # gitea_remove_user_from_org_team "${api_endpoint}" "org1" "org1-team1" "org1-team1-user3" ;
 # gitea_remove_repo_from_org_team "${api_endpoint}" "org1" "org1-team1" "org1-repo1" ;
 
-# gitea_create_repo "${api_endpoint}" "repo1" "repo1 description" ;
+# gitea_create_repo_current_user "${api_endpoint}" "repo1" "repo1 description" ;
 # gitea_create_user "${api_endpoint}" "user1" "user1-pass" ;
 # gitea_add_collaborator_to_repo "${api_endpoint}" "repo1" "gitea-admin" "user1" ;
 # read -p "Press enter to continue" ;
@@ -185,4 +185,17 @@ api_endpoint="localhost:3000"
 # gitea_remove_user_from_org_team "${api_endpoint}" "org1" "team1" "user1" ;
 # gitea_delete_repo "${api_endpoint}" "org1" "repo1" ;
 # gitea_delete_user "${api_endpoint}" "user1" ;
+# read -p "Press enter to continue" ;
+
+# gitea_create_org "${api_endpoint}" "org1" "org1 description" "private";
+# gitea_create_repo_in_org "${api_endpoint}" "org1" "org1-repo1-private" "org1-repo1-private description" "true" ;
+# gitea_create_repo_in_org "${api_endpoint}" "org1" "org1-repo2-public" "org1-repo2-public description" "false" ;
+# gitea_create_repo_in_org "${api_endpoint}" "org1" "org1-repo3-public" "org1-repo3-public description" ;
+# gitea_create_org "${api_endpoint}" "org2" "org2 description" "public" ;
+# gitea_create_repo_in_org "${api_endpoint}" "org2" "org2-repo1-private" "org2-repo1-private description" "true" ;
+# gitea_create_repo_in_org "${api_endpoint}" "org2" "org2-repo2-public" "org2-repo2-public description" "false" ;
+# gitea_create_repo_in_org "${api_endpoint}" "org2" "org2-repo3-public" "org2-repo3-public description" ;
+# gitea_create_repo_current_user "${api_endpoint}" "user-repo1-private" "user-repo1-private description" "true" ;
+# gitea_create_repo_current_user "${api_endpoint}" "user-repo2-public" "user-repo2-public description" "false" ;
+# gitea_create_repo_current_user "${api_endpoint}" "user-repo3-public" "user-repo3-public description" ;
 # read -p "Press enter to continue" ;
