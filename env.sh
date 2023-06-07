@@ -91,7 +91,6 @@ function get_cp_name_by_index {
 
 function get_cp_vm_count_by_index {
   i=${1}
-  j=${2}
   cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].vms[].name" | wc -l | tr -d ' '
 }
 
