@@ -28,7 +28,7 @@ function create_and_sync_gitea_repos {
     local repo_description=$(jq -r '.['${repo_index}'].description' ${GITEA_REPOS_CONFIG})
     local repo_name=$(jq -r '.['${project_index}'].name' ${GITEA_REPOS_CONFIG})
 
-    if echo ${existing_repo_list} | grep "${repo_name}" &>/dev/null); then
+    if $(echo ${existing_repo_list} | grep "${repo_name}" &>/dev/null); then
       print_info "Gitea repository '${repo_name}' already exists"
     else
       print_info "Going to create gitea repository '${repo_name}'"
