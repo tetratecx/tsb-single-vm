@@ -158,7 +158,20 @@ function gitea_delete_repo {
   fi
 }
 
-# Get gitea project full path list
+# Get gitea repository list (name only, without owner/org prefix)
+#   args:
+#     (1) api url
+#     (2) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
+function gitea_get_repos_list {
+  [[ -z "${1}" ]] && print_error "Please provide api url as 1st argument" && return 2 || local base_url="${1}" ;
+  [[ -z "${2}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${2}" ;
+
+  curl --fail --silent --request GET --user "${basic_auth}" \
+    --header 'Content-Type: application/json' \
+    --url "${base_url}/api/v1/repos/search?limit=100" | jq -r '.data[].name' ;
+}
+
+# Get gitea repository full path list (includes owner/org prefix)
 #   args:
 #     (1) api url
 #     (2) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
