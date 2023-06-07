@@ -7,6 +7,8 @@ source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
 source ${ROOT_DIR}/addons/docker/gitea/api.sh
 source ${ROOT_DIR}/addons/docker/gitea/infra.sh
+source ${ROOT_DIR}/addons/k8s/argocd/api.sh
+source ${ROOT_DIR}/addons/k8s/argocd/infra.sh
 
 INSTALL_REPO_URL=$(get_install_repo_url) ;
 
@@ -89,35 +91,12 @@ if [[ ${ACTION} = "deploy" ]]; then
   kubectl --context demo-cluster -n istio-system patch controlplane/controlplane --type merge --patch ${GITOPS_PATCH} ;
   tctl x gitops grant demo-cluster ;
 
-  # Install argocd
-  if $(kubectl --context demo-cluster get namespace argocd &>/dev/null) ; then
-    echo "Namespace 'argocd' already exists" ;
-  else
-    kubectl --context demo-cluster create namespace argocd ;
-  fi
-  kubectl --context demo-cluster apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml ;
-  kubectl --context demo-cluster patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}' ;
-  while ! ARGOCD_IP=$(kubectl --context demo-cluster -n argocd get svc argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
-    echo -n "."; sleep 1;
-  done
-  kubectl --context demo-cluster wait deployment -n argocd argocd-server --for condition=Available=True --timeout=600s ;
+  # Deploy argocd in kubernetes
+  argocd_deploy "demo-cluster" ;
+  argocd_set_admin_password "demo-cluster" ;
 
-  # Change argocd initial password if needed
-  while ! INITIAL_ARGOCD_PW=$(argocd --insecure admin initial-password -n argocd | head -1 2>/dev/null) ; do
-    echo -n "."; sleep 1;
-  done
-  if $(argocd --insecure login "${ARGOCD_IP}" --username admin --password "${INITIAL_ARGOCD_PW}" &>/dev/null); then
-    print_info "Going to change initial password of argocd admin user" ;
-    argocd --insecure account update-password --account admin --current-password "${INITIAL_ARGOCD_PW}" --new-password "admin123." ;
-  else
-    if $(argocd --insecure login "${ARGOCD_IP}" --username admin --password "admin123." &>/dev/null); then
-      print_info "Successfully logged in with argocd admin user and new password" ;
-    else
-      print_error "Failed to login with inital password and new password for argocd admin user" ;
-    fi
-  fi
-  
-  argocd --insecure cluster add demo-cluster --yes ;
+  # Configure argocd for application gitops  
+  argocd --insecure cluster add "demo-cluster" --yes ;
   argocd --insecure app create tsb-admin --upsert --repo ${gitea_http_url}/${GITEA_ADMIN_USER}/tsb-admin.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
   argocd --insecure app create app-abc --upsert --repo ${gitea_http_url}/${GITEA_ADMIN_USER}/app-abc.git --path k8s --dest-server https://kubernetes.default.svc ;
   argocd --insecure app create app-abc-tsb --upsert --repo ${gitea_http_url}/${GITEA_ADMIN_USER}/app-abc.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
@@ -130,11 +109,11 @@ if [[ ${ACTION} = "deploy" ]]; then
   argocd --insecure app set app-openapi --sync-policy automated ;
   argocd --insecure app set app-openapi-tsb --sync-policy automated ;
 
-  argocd --insecure app sync tsb-admin ;
-  argocd --insecure app sync app-abc ;
-  argocd --insecure app sync app-abc-tsb ;
-  argocd --insecure app sync app-openapi ;
-  argocd --insecure app sync app-openapi-tsb ;
+  # argocd --insecure app sync tsb-admin ;
+  # argocd --insecure app sync app-abc ;
+  # argocd --insecure app sync app-abc-tsb ;
+  # argocd --insecure app sync app-openapi ;
+  # argocd --insecure app sync app-openapi-tsb ;
 
   exit 0
 fi
@@ -145,9 +124,8 @@ if [[ ${ACTION} = "undeploy" ]]; then
   # Remove gitea server
   gitea_remove_server ;
 
-  # Remove argocd
-  kubectl --context demo-cluster delete -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml ;
-  kubectl --context demo-cluster delete namespace argocd ;
+  # Undeploy argocd from kubernetes
+  argocd_undeploy demo-cluster ;
 
   exit 0
 fi

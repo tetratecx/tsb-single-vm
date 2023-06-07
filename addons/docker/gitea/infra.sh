@@ -103,8 +103,7 @@ function gitea_remove_server {
   [[ -z "${2}" ]] && local data_folder="/tmp/gitea" || local data_folder="${2}" ;
 
   docker stop "${container_name}" 2>/dev/null ;
-  docker rm "${container_name}" 2>/dev/null ;
-  rm -r "${data_folder}" 2>/dev/null ;
+  docker rm --volumes "${container_name}" 2>/dev/null ;
   print_info "Removed container '${container_name}'" ;
 }
 
