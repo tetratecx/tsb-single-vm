@@ -132,7 +132,10 @@ function get_provider_type_by_kubectl_context {
 function get_provider_type_by_container_name {
   [[ -z "${1}" ]] && echo "Please provide docker container name as 1st argument" && return 2 || local container_name="${1}" ;
 
-  if _=$(docker ps --filter name=${container_name} --quiet) ; then
+  if [[ -z $(docker ps --filter name=${container_name} --quiet) ]] ; then
+    echo "notfound" ;
+    return 1 ;
+  else
     if output=$(docker inspect ${container_name} -f '{{.Config.Image}}' 2>/dev/null) ; then
       case ${output} in
         *"k3s"*)
@@ -153,9 +156,6 @@ function get_provider_type_by_container_name {
           ;;
       esac
     fi
-  else
-    echo "notfound" ;
-    return 1 ;
   fi
 }
 
