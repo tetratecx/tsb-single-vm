@@ -1,0 +1,110 @@
+{
+  "organizations": [
+    {
+      "description": "This is org1",
+      "name": "org1",
+      "repositories": [
+        {
+          "description": "this is org1-repo1",
+          "name": "org1-repo1"
+        },
+        {
+          "description": "this is org1-repo2",
+          "name": "org1-repo2"
+        }
+      ],
+      "teams": [
+        {
+          "description": "this is org1-team1",
+          "members": [
+            "org1-user1",
+            "org1-user3"
+          ],
+          "name": "org1-team1",
+          "repositories": [
+            "org1-repo1"
+          ]
+        },
+        {
+          "description": "this is org1-team2",
+          "members": [
+            "org1-user2"
+          ],
+          "name": "org1-team2",
+          "repositories": [
+            "org1-repo2"
+          ]
+        }
+      ]
+    },
+    {
+      "description": "This is org2",
+      "name": "org2",
+      "repositories": [
+        {
+          "description": "this is org2-repo1",
+          "name": "org2-repo1"
+        },
+        {
+          "description": "this is org2-repo2",
+          "name": "org2-repo2"
+        }
+      ],
+      "teams": [
+        {
+          "description": "this is org2-team1",
+          "members": [
+            "org2-user1",
+            "org2-user3"
+          ],
+          "name": "org2-team1",
+          "repositories": [
+            "org2-repo1"
+          ]
+        },
+        {
+          "description": "this is org2-team2",
+          "members": [
+            "org2-user2"
+          ],
+          "name": "org2-team2",
+          "repositories": [
+            "org2-repo2"
+          ]
+        }
+      ]
+    },
+    {
+      "description": "This is org3",
+      "name": "org3",
+      "repositories": [],
+      "teams": []
+    }
+  ],
+  "users": [
+    {
+      "name": "org1-user1",
+      "password": "org1-user1"
+    },
+    {
+      "name": "org1-user2",
+      "password": "org1-user2"
+    },
+    {
+      "name": "org1-user3",
+      "password": "org1-user3"
+    },
+    {
+      "name": "org2-user1",
+      "password": "org2-user1"
+    },
+    {
+      "name": "org2-user2",
+      "password": "org2-user2"
+    },
+    {
+      "name": "org2-user3",
+      "password": "org2-user3"
+    }
+  ]
+}

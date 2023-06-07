@@ -126,6 +126,7 @@ function gitea_get_http_url {
 #     (3) data folder (optional, default '/tmp/gitea')
 #     (4) admin user (optional, default 'gitea-admin')
 #     (5) admin password (optional, default 'gitea-admin')
+#     (6) admin email (optional, default 'gitea-admin@gitea.local')
 function gitea_bootstrap_server {
   [[ -z "${1}" ]] && print_error "Please provide config file as 1st argument" && return 2 || local config_file="${1}" ;
   [[ ! -f "${1}" ]] && print_error "Config file does not exist" && return 2 || local config_file="${1}" ;
@@ -133,6 +134,7 @@ function gitea_bootstrap_server {
   [[ -z "${3}" ]] && local data_folder="/tmp/gitea" || local data_folder="${3}" ;
   [[ -z "${4}" ]] && local admin_user="gitea-admin" || local admin_user="${4}" ;
   [[ -z "${5}" ]] && local admin_password="gitea-admin" || local admin_password="${5}" ;
+  [[ -z "${6}" ]] && local admin_email="${admin_user}@gitea.local" || local admin_email="${6}" ;
 
   echo -n "Waiting for gitea config folder '${data_folder}/gitea/conf' to be ready: "
   while ! $(ls ${data_folder}/gitea/conf &>/dev/null); do echo -n "." ; sleep 1 ; done
@@ -146,7 +148,7 @@ function gitea_bootstrap_server {
   else
     echo "Create gitea admin user '${admin_user}'"
     docker exec --user git -it ${container_name} \
-      gitea admin user create --username "${admin_user}" --password "${admin_password}" --email "${admin_user}@gitea.local" --admin ;
+      gitea admin user create --username "${admin_user}" --password "${admin_password}" --email "${admin_email}" --admin ;
   fi
 
   print_info "Gitea server bootstrapped with config '${config_file}' and admin user '${admin_user}'"
