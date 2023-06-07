@@ -73,7 +73,7 @@ DONE
 if [[ ${ACTION} = "deploy" ]]; then
 
   # Start gitea server
-  gitea_start_server ;
+  gitea_start_server "" "demo-cluster" ;
   gitea_bootstrap_server "${GITEA_CONFIG_FILE}" ;
   gitea_http_url=$(gitea_get_http_url) ;
   gitea_wait_api_ready "${gitea_http_url}" ;
@@ -143,7 +143,7 @@ fi
 if [[ ${ACTION} = "undeploy" ]]; then
 
   # Remove gitea server
-  remove_gitea "${GITEA_HOME}" ;
+  gitea_remove_server ;
 
   # Remove argocd
   kubectl --context demo-cluster delete -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml ;
@@ -155,7 +155,7 @@ fi
 
 if [[ ${ACTION} = "info" ]]; then
 
-  GITEA_HTTP_URL=$(get_gitea_http_url) ;
+  GITEA_HTTP_URL=$(gitea_get_http_url) ;
   print_info "Gitea server web ui running at ${GITEA_HTTP_URL}" ;
 
   ARGOCD_IP=$(kubectl --context demo-cluster -n argocd get svc argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ;
