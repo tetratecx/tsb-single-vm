@@ -6,16 +6,9 @@ source ${ROOT_DIR}/k8s-local.sh
 
 ACTION=${1}
 
-CLUSTER_METALLB_STARTIP=100
-CLUSTER_METALLB_ENDIP=199
-
 K8S_PROVIDER=$(get_k8s_provider) ;
 K8S_VERSION=$(get_k8s_version) ;
-INSTALL_REPO_PW=$(get_install_repo_password) ;
 INSTALL_REPO_URL=$(get_install_repo_url) ;
-INSTALL_REPO_USER=$(get_install_repo_user) ;
-
-INSTALL_REPO_INSECURE_REGISTRY=$(is_install_repo_insecure_registry) ;
 
 ######################## START OF ACTIONS ########################
 
