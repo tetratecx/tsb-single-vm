@@ -119,7 +119,7 @@ function get_provider_type_by_container_name {
     echo "notfound" ;
     return 1 ;
   else
-    if output=$(docker inspect ${container_name} -f '{{.Config.Image}}' 2>/dev/null) ; then
+    if output=$(docker container inspect ${container_name} -f '{{.Config.Image}}' 2>/dev/null) ; then
       case ${output} in
         *"k3s"*)
           echo "k3s" ;
