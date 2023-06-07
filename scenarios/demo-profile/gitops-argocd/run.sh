@@ -5,128 +5,36 @@ ACTION=${2}
 source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
-source ${SCENARIO_ROOT_DIR}/gitea-api.sh
+source ${ROOT_DIR}/addons/docker/gitea/api.sh
+source ${ROOT_DIR}/addons/docker/gitea/infra.sh
+source ${ROOT_DIR}/addons/k8s/argocd/api.sh
+source ${ROOT_DIR}/addons/k8s/argocd/infra.sh
 
 INSTALL_REPO_URL=$(get_install_repo_url) ;
 
-GITEA_HOME="${ROOT_DIR}/output/gitea"
-GITEA_CONFIG="${SCENARIO_ROOT_DIR}/gitea/app.ini"
-GITEA_VERSION="1.19"
-
-GITEA_ADMIN_USER="gitea-admin"
-GITEA_ADMIN_PASSWORD="gitea-admin"
-
+GITEA_CONFIG_FILE="${SCENARIO_ROOT_DIR}/gitea/app.ini"
 GITEA_REPOS_DIR="${SCENARIO_ROOT_DIR}/repositories"
-GITEA_REPOS_TEMPDIR="/tmp/repositories"
 GITEA_REPOS_CONFIG="${GITEA_REPOS_DIR}/repos.json"
-
-
-# Start gitea server
-#   args:
-#     (1) docker network
-#     (2) data folder
-function start_gitea {
-  [[ -z "${1}" ]] && echo "Please provide docker network as 1st argument" && return 2 || local docker_network="${1}" ;
-  [[ -z "${2}" ]] && echo "Please provide data folder as 2nd argument" && return 2 || local data_folder="${2}" ;
-
-  if docker ps --filter "status=running" | grep gitea &>/dev/null ; then
-    echo "Do nothing, container 'gitea' in docker network '${docker_network}' is already running"
-  elif docker ps --filter "status=exited" | grep gitea &>/dev/null ; then
-    print_info "Going to start container 'gitea' in docker network '${docker_network}' again"
-    docker start gitea ;
-  else
-    print_info "Going to start container 'gitea' in docker network '${docker_network}' for the first time"
-    mkdir -p ${data_folder} ;
-    docker run --detach \
-      --env USER_UID="1000" \
-      --env USER_GID="1000" \
-      --hostname "gitea" \
-      --publish 3000:3000 --publish 2222:2222 \
-      --name "gitea" \
-      --network ${docker_network} \
-      --restart always \
-      --volume ${data_folder}:/data \
-      --volume /etc/timezone:/etc/timezone:ro \
-      --volume /etc/localtime:/etc/localtime:ro \
-      gitea/gitea:${GITEA_VERSION} ;
-  fi
-}
-
-# Remove gitea server
-#   args:
-#     (1) data folder
-function remove_gitea {
-  [[ -z "${1}" ]] && echo "Please provide data folder as 1st argument" && return 2 || local data_folder="${1}" ;
-
-  if docker inspect gitea &>/dev/null ; then
-    docker stop gitea &>/dev/null ;
-    docker rm gitea &>/dev/null ;
-    echo "Local gitea container stopped and removed"
-  fi
-  sudo rm -rf ${data_folder} ;
-  print_info "Removed gitea container and local data"
-}
-
-# Get local gitea http endpoint
-function get_gitea_http_url {
-  if ! IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' gitea  2>/dev/null ); then
-    print_error "Local gitea container not running" ; 
-    return 1 ;
-  fi
-  echo "http://${IP}:3000" ;
-}
-
-# Get local gitea http endpoint with credentials
-function get_gitea_http_url_with_credentials {
-  if ! IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' gitea  2>/dev/null ); then
-    print_error "Local gitea container not running" ; 
-    exit 1 ;
-  fi
-  echo "http://${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASSWORD}@${IP}:3000" ;
-}
-
-# Initialize local gitea
-#   args:
-#     (1) data folder
-function initialize_gitea {
-  [[ -z "${1}" ]] && echo "Please provide data folder as 1st argument" && return 2 || local data_folder="${1}" ;
-
-  while ! $(ls ${data_folder}/gitea/conf &>/dev/null); do echo -n "." ; sleep 1 ; done
-  cp ${GITEA_CONFIG} ${data_folder}/gitea/conf/ ;
-  docker restart gitea ; sleep 5 ;
-  output=$(docker exec --user git -it gitea gitea admin user create --username "${GITEA_ADMIN_USER}" --password "${GITEA_ADMIN_PASSWORD}" --email "${GITEA_ADMIN_USER}@local" --admin --access-token) ;
-}
-
-# Wait for gitea api to be ready
-#   args:
-#     (1) gitea api url
-function wait_gitea_api_ready {
-  [[ -z "${1}" ]] && echo "Please provide gitea api url as 1st argument" && return 2 || local base_url="${1}" ;
-  echo "Waiting for gitea rest api to become ready"
-  while ! out=$(gitea_get_version "${base_url}" "${GITEA_ADMIN_USER}" "${GITEA_ADMIN_PASSWORD}" &>/dev/null); do
-    echo -n "." ; sleep 1 ;
-  done
-}
+GITEA_REPOS_TEMPDIR="/tmp/gitea-repos"
 
 # Create and sync gitea repositories
 function create_and_sync_gitea_repos {
   mkdir -p ${GITEA_REPOS_TEMPDIR}
+  local gitea_http_url=$(gitea_get_http_url)
+  local gitea_http_url_creds=$(gitea_get_http_url_with_credentials)
 
-  local gitea_http_url=$(get_gitea_http_url)
-  local gitea_http_url_creds=$(get_gitea_http_url_with_credentials)
+  # Gitea repository creation
+  local repo_count=$(jq '. | length' ${GITEA_REPOS_CONFIG})
+  local existing_repo_list=$(gitea_get_repos_list "${gitea_http_url}")
+  for ((repo_index=0; repo_index<${repo_count}; repo_index++)); do
+    local repo_description=$(jq -r '.['${repo_index}'].description' ${GITEA_REPOS_CONFIG})
+    local repo_name=$(jq -r '.['${repo_index}'].name' ${GITEA_REPOS_CONFIG})
 
-  # Project creation using gitea REST APIs
-  local project_count=$(jq '. | length' ${GITEA_REPOS_CONFIG})
-  local existing_project_full_name_list=$(gitea_get_repos_full_name_list "${gitea_http_url}" "${GITEA_ADMIN_USER}" "${GITEA_ADMIN_PASSWORD}")
-  for ((project_index=0; project_index<${project_count}; project_index++)); do
-    local project_description=$(jq -r '.['${project_index}'].description' ${GITEA_REPOS_CONFIG})
-    local project_name=$(jq -r '.['${project_index}'].name' ${GITEA_REPOS_CONFIG})
-
-    if $(echo ${existing_project_full_name_list} | grep "${project_name}" &>/dev/null); then
-      print_info "Gitea project '${project_name}' already exists"
+    if $(echo ${existing_repo_list} | grep "${repo_name}" &>/dev/null); then
+      print_info "Gitea repository '${repo_name}' already exists"
     else
-      print_info "Going to create gitea project '${project_name}'"
-      gitea_create_repo "${gitea_http_url}" "${GITEA_ADMIN_USER}" "${GITEA_ADMIN_PASSWORD}" "${project_name}" "${project_description}" ;
+      print_info "Going to create gitea repository '${repo_name}'"
+      gitea_create_repo_current_user "${gitea_http_url}" "${repo_name}" "${repo_description}" ;
     fi
   done
 
@@ -166,12 +74,12 @@ DONE
 
 if [[ ${ACTION} = "deploy" ]]; then
 
-  # Start gitea server in demo-cluster network
-  start_gitea "demo-cluster" "${GITEA_HOME}" ;
-  GITEA_HTTP_URL=$(get_gitea_http_url) ;
-  initialize_gitea "${GITEA_HOME}" ;
-  wait_gitea_api_ready "${GITEA_HTTP_URL}" ;
-  create_and_sync_gitea_repos ;
+  # Start gitea server
+  gitea_start_server "" "demo-cluster" ;
+  gitea_bootstrap_server "${GITEA_CONFIG_FILE}" ;
+  gitea_http_url=$(gitea_get_http_url) ;
+  gitea_wait_api_ready "${gitea_http_url}" ;
+  create_and_sync_gitea_repos "${gitea_http_url}" ;
   sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2 ;
 
   # Login again as tsb admin in case of a session time-out
@@ -183,40 +91,17 @@ if [[ ${ACTION} = "deploy" ]]; then
   kubectl --context demo-cluster -n istio-system patch controlplane/controlplane --type merge --patch ${GITOPS_PATCH} ;
   tctl x gitops grant demo-cluster ;
 
-  # Install argocd
-  if $(kubectl --context demo-cluster get namespace argocd &>/dev/null) ; then
-    echo "Namespace 'argocd' already exists" ;
-  else
-    kubectl --context demo-cluster create namespace argocd ;
-  fi
-  kubectl --context demo-cluster apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml ;
-  kubectl --context demo-cluster patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}' ;
-  while ! ARGOCD_IP=$(kubectl --context demo-cluster -n argocd get svc argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
-    echo -n "."; sleep 1;
-  done
-  kubectl --context demo-cluster wait deployment -n argocd argocd-server --for condition=Available=True --timeout=600s ;
+  # Deploy argocd in kubernetes
+  argocd_deploy "demo-cluster" ;
+  argocd_set_admin_password "demo-cluster" ;
 
-  # Change argocd initial password if needed
-  while ! INITIAL_ARGOCD_PW=$(argocd --insecure admin initial-password -n argocd | head -1 2>/dev/null) ; do
-    echo -n "."; sleep 1;
-  done
-  if $(argocd --insecure login "${ARGOCD_IP}" --username admin --password "${INITIAL_ARGOCD_PW}" &>/dev/null); then
-    print_info "Going to change initial password of argocd admin user" ;
-    argocd --insecure account update-password --account admin --current-password "${INITIAL_ARGOCD_PW}" --new-password "admin123." ;
-  else
-    if $(argocd --insecure login "${ARGOCD_IP}" --username admin --password "admin123." &>/dev/null); then
-      print_info "Successfully logged in with argocd admin user and new password" ;
-    else
-      print_error "Failed to login with inital password and new password for argocd admin user" ;
-    fi
-  fi
-  
-  argocd --insecure cluster add demo-cluster --yes ;
-  argocd --insecure app create tsb-admin --upsert --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/tsb-admin.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
-  argocd --insecure app create app-abc --upsert --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path k8s --dest-server https://kubernetes.default.svc ;
-  argocd --insecure app create app-abc-tsb --upsert --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-abc.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
-  argocd --insecure app create app-openapi --upsert --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-openapi.git --path k8s --dest-server https://kubernetes.default.svc ;
-  argocd --insecure app create app-openapi-tsb --upsert --repo ${GITEA_HTTP_URL}/${GITEA_ADMIN_USER}/app-openapi.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
+  # Configure argocd for application gitops  
+  argocd --insecure cluster add "demo-cluster" --yes ;
+  argocd --insecure app create tsb-admin --upsert --repo ${gitea_http_url}/${GITEA_ADMIN_USER}/tsb-admin.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
+  argocd --insecure app create app-abc --upsert --repo ${gitea_http_url}/${GITEA_ADMIN_USER}/app-abc.git --path k8s --dest-server https://kubernetes.default.svc ;
+  argocd --insecure app create app-abc-tsb --upsert --repo ${gitea_http_url}/${GITEA_ADMIN_USER}/app-abc.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
+  argocd --insecure app create app-openapi --upsert --repo ${gitea_http_url}/${GITEA_ADMIN_USER}/app-openapi.git --path k8s --dest-server https://kubernetes.default.svc ;
+  argocd --insecure app create app-openapi-tsb --upsert --repo ${gitea_http_url}/${GITEA_ADMIN_USER}/app-openapi.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
 
   argocd --insecure app set tsb-admin --sync-policy automated ;
   argocd --insecure app set app-abc --sync-policy automated ;
@@ -224,11 +109,11 @@ if [[ ${ACTION} = "deploy" ]]; then
   argocd --insecure app set app-openapi --sync-policy automated ;
   argocd --insecure app set app-openapi-tsb --sync-policy automated ;
 
-  argocd --insecure app sync tsb-admin ;
-  argocd --insecure app sync app-abc ;
-  argocd --insecure app sync app-abc-tsb ;
-  argocd --insecure app sync app-openapi ;
-  argocd --insecure app sync app-openapi-tsb ;
+  # argocd --insecure app sync tsb-admin ;
+  # argocd --insecure app sync app-abc ;
+  # argocd --insecure app sync app-abc-tsb ;
+  # argocd --insecure app sync app-openapi ;
+  # argocd --insecure app sync app-openapi-tsb ;
 
   exit 0
 fi
@@ -237,11 +122,10 @@ fi
 if [[ ${ACTION} = "undeploy" ]]; then
 
   # Remove gitea server
-  remove_gitea "${GITEA_HOME}" ;
+  gitea_remove_server ;
 
-  # Remove argocd
-  kubectl --context demo-cluster delete -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml ;
-  kubectl --context demo-cluster delete namespace argocd ;
+  # Undeploy argocd from kubernetes
+  argocd_undeploy demo-cluster ;
 
   exit 0
 fi
@@ -249,7 +133,7 @@ fi
 
 if [[ ${ACTION} = "info" ]]; then
 
-  GITEA_HTTP_URL=$(get_gitea_http_url) ;
+  GITEA_HTTP_URL=$(gitea_get_http_url) ;
   print_info "Gitea server web ui running at ${GITEA_HTTP_URL}" ;
 
   ARGOCD_IP=$(kubectl --context demo-cluster -n argocd get svc argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ;

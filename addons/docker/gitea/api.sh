@@ -83,12 +83,14 @@ function gitea_has_repo_by_owner {
 #     (1) api url
 #     (2) repository name
 #     (3) repository description
-#     (4) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
-function gitea_create_repo {
+#     (4) repository private (optional, default 'false')
+#     (5) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
+function gitea_create_repo_current_user {
   [[ -z "${1}" ]] && print_error "Please provide api url as 1st argument" && return 2 || local base_url="${1}" ;
   [[ -z "${2}" ]] && print_error "Please provide repository name as 2nd argument" && return 2 || local repo_name="${2}" ;
   [[ -z "${3}" ]] && print_error "Please provide repository description as 3th argument" && return 2 || local repo_description="${3}" ;
-  [[ -z "${4}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${4}" ;
+  [[ -z "${4}" ]] && local repo_private="false" || local repo_private="${4}" ;
+  [[ -z "${5}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${5}" ;
 
   repo_owner=$(echo ${basic_auth} | cut -d ':' -f1)
   if $(gitea_has_repo_by_owner "${base_url}" "${repo_name}" "${repo_owner}" "${basic_auth}" &>/dev/null); then
@@ -97,7 +99,7 @@ function gitea_create_repo {
     curl --fail --silent --request POST --user "${basic_auth}" \
       --header 'Content-Type: application/json' \
       --url "${base_url}/api/v1/user/repos" \
-      -d "{ \"name\": \"${repo_name}\", \"description\": \"${repo_description}\", \"private\": true}" | jq ;
+      -d "{ \"name\": \"${repo_name}\", \"description\": \"${repo_description}\", \"private\": ${repo_private}}" | jq ;
     print_info "Created repository '${repo_name}' with owner '${repo_owner}'" ;
   fi
 }
@@ -108,13 +110,15 @@ function gitea_create_repo {
 #     (2) organization name
 #     (3) repository name
 #     (4) repository description
-#     (5) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
+#     (5) repository private (optional, default 'false')
+#     (6) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
 function gitea_create_repo_in_org {
   [[ -z "${1}" ]] && print_error "Please provide api url as 1st argument" && return 2 || local base_url="${1}" ;
   [[ -z "${2}" ]] && print_error "Please provide organization name as 2nd argument" && return 2 || local org_name="${2}" ;
   [[ -z "${3}" ]] && print_error "Please provide repository name as 3th argument" && return 2 || local repo_name="${3}" ;
   [[ -z "${4}" ]] && print_error "Please provide repository description as 4th argument" && return 2 || local repo_description="${4}" ;
-  [[ -z "${5}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${5}" ;
+  [[ -z "${5}" ]] && local repo_private="false" || local repo_private="${5}" ;
+  [[ -z "${6}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${6}" ;
 
   if $(gitea_has_repo_by_owner "${base_url}" "${repo_name}" "${org_name}" "${basic_auth}" &>/dev/null); then
     echo "Gitea repository '${repo_name}' in organization '${org_name}' already exists" ;
@@ -122,7 +126,7 @@ function gitea_create_repo_in_org {
     curl --fail --silent --request POST --user "${basic_auth}" \
       --header 'Content-Type: application/json' \
       --url "${base_url}/api/v1/orgs/${org_name}/repos" \
-      -d "{ \"name\": \"${repo_name}\", \"description\": \"${repo_description}\", \"private\": true}" | jq ;
+      -d "{ \"name\": \"${repo_name}\", \"description\": \"${repo_description}\", \"private\": ${repo_private}}" | jq ;
     print_info "Created repository '${repo_name}' in organization '${org_name}'" ;
   fi
 }
@@ -154,7 +158,20 @@ function gitea_delete_repo {
   fi
 }
 
-# Get gitea project full path list
+# Get gitea repository list (name only, without owner/org prefix)
+#   args:
+#     (1) api url
+#     (2) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
+function gitea_get_repos_list {
+  [[ -z "${1}" ]] && print_error "Please provide api url as 1st argument" && return 2 || local base_url="${1}" ;
+  [[ -z "${2}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${2}" ;
+
+  curl --fail --silent --request GET --user "${basic_auth}" \
+    --header 'Content-Type: application/json' \
+    --url "${base_url}/api/v1/repos/search?limit=100" | jq -r '.data[].name' ;
+}
+
+# Get gitea repository full path list (includes owner/org prefix)
 #   args:
 #     (1) api url
 #     (2) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
@@ -194,12 +211,14 @@ function gitea_has_org {
 #     (1) api url
 #     (2) organization name
 #     (3) organization description
-#     (4) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
+#     (4) organization visibility (optional, default 'public')
+#     (5) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
 function gitea_create_org {
   [[ -z "${1}" ]] && print_error "Please provide api url as 1st argument" && return 2 || local base_url="${1}" ;
   [[ -z "${2}" ]] && print_error "Please provide organization name as 2nd argument" && return 2 || local org_name="${2}" ;
   [[ -z "${3}" ]] && print_error "Please provide organization description as 3th argument" && return 2 || local org_description="${3}" ;
-  [[ -z "${4}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${4}" ;
+  [[ -z "${4}" ]] && local org_visibility="public" || local org_visibility="${4}" ;
+  [[ -z "${5}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${5}" ;
 
   if $(gitea_has_org "${base_url}" "${org_name}" "${basic_auth}" &>/dev/null); then
     echo "Gitea organization '${org_name}' already exists" ;
@@ -207,7 +226,7 @@ function gitea_create_org {
     curl --fail --silent --request POST --user "${basic_auth}" \
       --header 'Content-Type: application/json' \
       --url "${base_url}/api/v1/orgs" \
-      -d "{ \"name\": \"${org_name}\", \"username\": \"${org_name}\", \"description\": \"${org_description}\", \"visibility\": \"private\"}" | jq ;
+      -d "{ \"name\": \"${org_name}\", \"username\": \"${org_name}\", \"description\": \"${org_description}\", \"visibility\": \"${org_visibility}\"}" | jq ;
     print_info "Created organization '${org_name}' with username '${org_name}'" ;
   fi
 }

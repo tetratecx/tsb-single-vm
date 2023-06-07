@@ -9,6 +9,9 @@ REDB_COLOR="\033[1;31m"
 GITEA_HTTP_PORT=3000
 GITEA_SSH_PORT=2222
 
+GITEA_ADMIN_USER="gitea-admin"
+GITEA_ADMIN_PASSWORD="gitea-admin"
+
 # Print info messages
 #   args:
 #     (1) message
@@ -100,8 +103,7 @@ function gitea_remove_server {
   [[ -z "${2}" ]] && local data_folder="/tmp/gitea" || local data_folder="${2}" ;
 
   docker stop "${container_name}" 2>/dev/null ;
-  docker rm "${container_name}" 2>/dev/null ;
-  rm -r "${data_folder}" 2>/dev/null ;
+  docker rm --volumes "${container_name}" 2>/dev/null ;
   print_info "Removed container '${container_name}'" ;
 }
 
@@ -119,6 +121,24 @@ function gitea_get_http_url {
   echo "http://${gitea_ip}:${GITEA_HTTP_PORT}" ;
 }
 
+# Get gitea server http url with credentials
+#   args:
+#     (1) container name (optional, default 'gitea')
+#     (2) admin user (optional, default 'gitea-admin')
+#     (3) admin password (optional, default 'gitea-admin')
+function gitea_get_http_url_with_credentials {
+  [[ -z "${1}" ]] && local container_name="gitea" || local container_name="${1}" ;
+  [[ -z "${2}" ]] && local admin_user="${GITEA_ADMIN_USER}" || local admin_user="${2}" ;
+  [[ -z "${3}" ]] && local admin_password="${GITEA_ADMIN_PASSWORD}" || local admin_password="${3}" ;
+
+  local gitea_ip=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${container_name}" 2>/dev/null | awk NF) ;
+  if [[ -z "${gitea_ip}" ]]; then
+    print_error "Container '${container_name}' has no ip address or is not running" ;
+    return 1 ;
+  fi
+  echo "http://${admin_user}:${admin_password}@${gitea_ip}:${GITEA_HTTP_PORT}" ;
+}
+
 # Bootstrap gitea server
 #   args:
 #     (1) config file
@@ -132,8 +152,8 @@ function gitea_bootstrap_server {
   [[ ! -f "${1}" ]] && print_error "Config file does not exist" && return 2 || local config_file="${1}" ;
   [[ -z "${2}" ]] && local container_name="gitea" || local container_name="${2}" ;
   [[ -z "${3}" ]] && local data_folder="/tmp/gitea" || local data_folder="${3}" ;
-  [[ -z "${4}" ]] && local admin_user="gitea-admin" || local admin_user="${4}" ;
-  [[ -z "${5}" ]] && local admin_password="gitea-admin" || local admin_password="${5}" ;
+  [[ -z "${4}" ]] && local admin_user="${GITEA_ADMIN_USER}" || local admin_user="${4}" ;
+  [[ -z "${5}" ]] && local admin_password="${GITEA_ADMIN_PASSWORD}" || local admin_password="${5}" ;
   [[ -z "${6}" ]] && local admin_email="${admin_user}@gitea.local" || local admin_email="${6}" ;
 
   echo -n "Waiting for gitea config folder '${data_folder}/gitea/conf' to be ready: "

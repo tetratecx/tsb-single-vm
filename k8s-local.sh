@@ -8,7 +8,7 @@
 # MetalLB original deployment yaml files
 #  - https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml
 #  - https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml
-# Patched: removed PodSecurityPolicy (depricated)
+# Patched: removed PodSecurityPolicy (deprecated)
 METALLB_INSTALL_YAML=addons/k8s/metallb/resources/metallb-0.12.1.yaml
 
 # MetalLB configmap configuration ready for envsubst
@@ -24,24 +24,7 @@ K8S_LOCAL_DOCKER_SUBNET_START="${K8S_LOCAL_DOCKER_SUBNET_START:-192.168.49.0/24}
 K8S_LOCAL_METALLB_STARTIP="${K8S_LOCAL_METALLB_STARTIP:-100}"
 K8S_LOCAL_METALLB_STOPIP="${K8S_LOCAL_METALLB_STOPIP:-199}"
 
-# Some colors
-END_COLOR="\033[0m"
-GREENB_COLOR="\033[1;32m"
-REDB_COLOR="\033[1;31m"
-
-# Print info messages
-#   args:
-#     (1) message
-function print_info {
-  echo -e "${GREENB_COLOR}${1}${END_COLOR}" ;
-}
-
-# Print error messages
-#   args:
-#     (1) message
-function print_error {
-  echo -e "${REDB_COLOR}${1}${END_COLOR}" ;
-}
+source ${ROOT_DIR}/helpers.sh
 
 # Helper function to do some prerequisite verifications
 #   args:
@@ -205,7 +188,7 @@ function get_apiserver_url {
   echo "https://${kubeapi_ip}:6443" ;
 }
 
-# Get kubernetes cluster apiserver address
+# Deploy metallb
 #   args:
 #     (1) cluster name
 #     (2) docker network name
