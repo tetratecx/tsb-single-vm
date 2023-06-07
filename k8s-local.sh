@@ -112,7 +112,7 @@ function get_provider_type_by_kubectl_context {
         return 0 ;
         ;;
       *)
-        echo "unkown" ;
+        echo "unknown" ;
         return 1 ;
         ;;
     esac
@@ -147,7 +147,7 @@ function get_provider_type_by_container_name {
         return 0 ;
         ;;
       *)
-        echo "unkown" ;
+        echo "unknown" ;
         return 1 ;
         ;;
     esac
