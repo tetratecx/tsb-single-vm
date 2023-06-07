@@ -19,10 +19,10 @@ fi
 api_endpoint="localhost:3000"
 
 # API tests
-gitea_create_from_json_file "${api_endpoint}" "${TEST_DIR}/config/test-gitea.json" ;
-read -p "Press enter to continue" ;
-gitea_delete_from_json_file "${api_endpoint}" "${TEST_DIR}/config/test-gitea.json" ;
-read -p "Press enter to continue" ;
+# gitea_create_from_json_file "${api_endpoint}" "${TEST_DIR}/config/test-gitea.json" ;
+# read -p "Press enter to continue" ;
+# gitea_delete_from_json_file "${api_endpoint}" "${TEST_DIR}/config/test-gitea.json" ;
+# read -p "Press enter to continue" ;
 
 # gitea_wait_api_ready "${api_endpoint}" ;
 # gitea_get_repos_full_name_list "${api_endpoint}" ;
@@ -164,3 +164,25 @@ read -p "Press enter to continue" ;
 # gitea_remove_repo_from_org_team "${api_endpoint}" "org1" "org1-team1" "org1-repo1" ;
 # gitea_remove_user_from_org_team "${api_endpoint}" "org1" "org1-team1" "org1-team1-user3" ;
 # gitea_remove_repo_from_org_team "${api_endpoint}" "org1" "org1-team1" "org1-repo1" ;
+
+# gitea_create_repo "${api_endpoint}" "repo1" "repo1 description" ;
+# gitea_create_user "${api_endpoint}" "user1" "user1-pass" ;
+# gitea_add_collaborator_to_repo "${api_endpoint}" "repo1" "gitea-admin" "user1" ;
+# read -p "Press enter to continue" ;
+# gitea_remove_collaborator_from_repo "${api_endpoint}" "repo1" "gitea-admin" "user1" ;
+# gitea_delete_repo "${api_endpoint}" "gitea-admin" "repo1" ;
+# gitea_delete_user "${api_endpoint}" "user1" ;
+# read -p "Press enter to continue" ;
+
+# gitea_create_org "${api_endpoint}" "org1" "org1 description" ;
+# gitea_create_org_team "${api_endpoint}" "org1" "team1" "team1 description" ;
+# gitea_create_repo_in_org "${api_endpoint}" "org1" "repo1" "repo1 description" ;
+# gitea_create_user "${api_endpoint}" "user1" "user1-pass" ;
+# gitea_add_user_to_org_team "${api_endpoint}" "org1" "team1" "user1" ;
+# gitea_add_org_team_to_repo "${api_endpoint}" "repo1" "org1" "team1" ;
+# read -p "Press enter to continue" ;
+# gitea_remove_org_team_from_repo "${api_endpoint}" "repo1" "org1" "team1" ;
+# gitea_remove_user_from_org_team "${api_endpoint}" "org1" "team1" "user1" ;
+# gitea_delete_repo "${api_endpoint}" "org1" "repo1" ;
+# gitea_delete_user "${api_endpoint}" "user1" ;
+# read -p "Press enter to continue" ;

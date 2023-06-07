@@ -637,6 +637,135 @@ function gitea_remove_repo_from_org_team {
   fi
 }
 
+# Add gitea collaborator to repository
+#   args:
+#     (1) api url
+#     (2) repository name
+#     (3) repository owner (can be a user or an organization)
+#     (3) username
+#     (4) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
+function gitea_add_collaborator_to_repo {
+  [[ -z "${1}" ]] && print_error "Please provide api url as 1st argument" && return 2 || local base_url="${1}" ;
+  [[ -z "${2}" ]] && print_error "Please provide repo name as 2nd argument" && return 2 || local repo_name="${2}" ;
+  [[ -z "${3}" ]] && print_error "Please provide repo owner as 3th argument" && return 2 || local repo_owner="${3}" ;
+  [[ -z "${4}" ]] && print_error "Please provide username as 4th argument" && return 2 || local username="${4}" ;
+  [[ -z "${5}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${5}" ;
+  
+  if ! $(gitea_has_repo_by_owner "${base_url}" "${repo_name}" "${repo_owner}" "${basic_auth}" &>/dev/null); then
+    print_error "Gitea repository '${repo_name}' with owner '${repo_owner}' does not exist" ;
+    return 1 ;
+  fi
+  if ! $(gitea_has_user "${base_url}" "${username}" "${basic_auth}" &>/dev/null); then
+    print_error "Gitea user '${username}' does not exist" ;
+    return 1 ;
+  fi
+
+  if $(curl --fail --silent --request PUT --user "${basic_auth}" \
+            --header 'Content-Type: application/json' \
+            --url "${base_url}/api/v1/repos/${repo_owner}/${repo_name}/collaborators/${username}" \
+            -d "{ \"permission\": \"admin\"}"); then
+    print_info "Added collaborator '${username}' to repository '${repo_name}' with owner '${repo_owner}'" ;
+  else
+    print_error "Failed to add collaborator '${username}' to repository '${repo_name}' with owner '${repo_owner}'" ;
+  fi
+}
+
+# Remove gitea collaborator from repository
+#   args:
+#     (1) api url
+#     (2) repository name
+#     (3) repository owner (can be a user or an organization)
+#     (3) username
+#     (4) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
+function gitea_remove_collaborator_from_repo {
+  [[ -z "${1}" ]] && print_error "Please provide api url as 1st argument" && return 2 || local base_url="${1}" ;
+  [[ -z "${2}" ]] && print_error "Please provide repo name as 2nd argument" && return 2 || local repo_name="${2}" ;
+  [[ -z "${3}" ]] && print_error "Please provide repo owner as 3th argument" && return 2 || local repo_owner="${3}" ;
+  [[ -z "${4}" ]] && print_error "Please provide username as 4th argument" && return 2 || local username="${4}" ;
+  [[ -z "${5}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${5}" ;
+  
+  if ! $(gitea_has_repo_by_owner "${base_url}" "${repo_name}" "${repo_owner}" "${basic_auth}" &>/dev/null); then
+    print_error "Gitea repository '${repo_name}' with owner '${repo_owner}' does not exist" ;
+    return 1 ;
+  fi
+  if ! $(gitea_has_user "${base_url}" "${username}" "${basic_auth}" &>/dev/null); then
+    print_error "Gitea user '${username}' does not exist" ;
+    return 1 ;
+  fi
+
+  if $(curl --fail --silent --request DELETE --user "${basic_auth}" \
+            --header 'Content-Type: application/json' \
+            --url "${base_url}/api/v1/repos/${repo_owner}/${repo_name}/collaborators/${username}"); then
+    print_info "Removed collaborator '${username}' from repository '${repo_name}' with owner '${repo_owner}'" ;
+  else
+    print_error "Failed to remove collaborator '${username}' from repository '${repo_name}' with owner '${repo_owner}'" ;
+  fi
+}
+
+# Add gitea organization team to repository
+#   args:
+#     (1) api url
+#     (2) repository name
+#     (3) organization name
+#     (4) team name
+#     (5) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
+function gitea_add_org_team_to_repo {
+  [[ -z "${1}" ]] && print_error "Please provide api url as 1st argument" && return 2 || local base_url="${1}" ;
+  [[ -z "${2}" ]] && print_error "Please provide repo name as 2nd argument" && return 2 || local repo_name="${2}" ;
+  [[ -z "${3}" ]] && print_error "Please provide organization name as 3th argument" && return 2 || local org_name="${3}" ;
+  [[ -z "${4}" ]] && print_error "Please provide team name as 4th argument" && return 2 || local team_name="${4}" ;
+  [[ -z "${5}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${5}" ;
+  
+  if ! $(gitea_has_repo_by_owner "${base_url}" "${repo_name}" "${org_name}" "${basic_auth}" &>/dev/null); then
+    print_error "Gitea repository '${repo_name}' in organization '${org_name}' does not exist" ;
+    return 1 ;
+  fi
+  if ! $(gitea_has_org_team "${base_url}" "${org_name}" "${team_name}" "${basic_auth}" &>/dev/null); then
+    print_error "Gitea team '${team_name}' in organization '${org_name}' does not exist" ;
+    return 1 ;
+  fi
+
+  if $(curl --fail --silent --request PUT --user "${basic_auth}" \
+            --header 'Content-Type: application/json' \
+            --url "${base_url}/api/v1/repos/${org_name}/${repo_name}/teams/${team_name}"); then
+    print_info "Added team '${team_name}' to repository '${repo_name}' in organization '${org_name}'" ;
+  else
+    print_error "Failed to add team '${team_name}' to repository '${repo_name}' in organization '${org_name}'" ;
+  fi
+}
+
+# Remove gitea organization team from repository
+#   args:
+#     (1) api url
+#     (2) repository name
+#     (3) organization name
+#     (4) team name
+#     (5) basic auth credentials (optional, default 'gitea-admin:gitea-admin')
+function gitea_remove_org_team_from_repo {
+  [[ -z "${1}" ]] && print_error "Please provide api url as 1st argument" && return 2 || local base_url="${1}" ;
+  [[ -z "${2}" ]] && print_error "Please provide repo name as 2nd argument" && return 2 || local repo_name="${2}" ;
+  [[ -z "${3}" ]] && print_error "Please provide organization name as 4th argument" && return 2 || local org_name="${3}" ;
+  [[ -z "${4}" ]] && print_error "Please provide team name as 5th argument" && return 2 || local team_name="${4}" ;
+  [[ -z "${5}" ]] && local basic_auth="gitea-admin:gitea-admin" || local basic_auth="${5}" ;
+  
+  if ! $(gitea_has_repo_by_owner "${base_url}" "${repo_name}" "${org_name}" "${basic_auth}" &>/dev/null); then
+    print_error "Gitea repository '${repo_name}' in organization '${org_name}' does not exist" ;
+    return 1 ;
+  fi
+  if ! $(gitea_has_org_team "${base_url}" "${org_name}" "${team_name}" "${basic_auth}" &>/dev/null); then
+    print_error "Gitea team '${team_name}' in organization '${org_name}' does not exist" ;
+    return 1 ;
+  fi
+
+  if $(curl --fail --silent --request DELETE --user "${basic_auth}" \
+            --header 'Content-Type: application/json' \
+            --url "${base_url}/api/v1/repos/${org_name}/${repo_name}/teams/${team_name}") ; then
+    print_info "Removed team '${team_name}' from repository '${repo_name}' in organization '${org_name}'" ;
+  else
+    print_error "Failed to remove team '${team_name}' from repository '${repo_name}' in organization '${org_name}'" ;
+  fi
+}
+
 # Create gitea configuration objets from a json file
 #   args:
 #     (1) api url
