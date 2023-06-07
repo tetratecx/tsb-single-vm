@@ -22,23 +22,23 @@ DONE
 #     (1) vm name
 #     (2) onboarding script path
 function onboard_vm {
-  VM_IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1})
+  local vm_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1})
 
   # scp onboarding script
   expect <<DONE
-  spawn scp -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ${2} ubuntu@${VM_IP}:/home/ubuntu/onboard-vm.sh
+  spawn scp -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ${2} ubuntu@${vm_ip}:/home/ubuntu/onboard-vm.sh
   expect "password:" { send "ubuntu\\r" }
   expect eof
 DONE
 
   # ssh bootstrap onboarding script
   expect <<DONE
-  spawn ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${VM_IP} -- chmod +x /home/ubuntu/onboard-vm.sh
+  spawn ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${vm_ip} -- chmod +x /home/ubuntu/onboard-vm.sh
   expect "password:" { send "ubuntu\\r" }
   expect eof
 DONE
   expect <<DONE
-  spawn ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${VM_IP} -- /home/ubuntu/onboard-vm.sh
+  spawn ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${vm_ip} -- /home/ubuntu/onboard-vm.sh
   expect "password:" { send "ubuntu\\r" }
   expect "Onboarding finished"
 DONE
@@ -49,23 +49,23 @@ DONE
 #     (1) vm name
 #     (2) offboarding script path
 function offboard_vm {
-  VM_IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1})
+  local vm_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1})
 
   # scp offboarding script
   expect <<DONE
-  spawn scp -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ${2} ubuntu@${VM_IP}:/home/ubuntu/offboard-vm.sh
+  spawn scp -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ${2} ubuntu@${vm_ip}:/home/ubuntu/offboard-vm.sh
   expect "password:" { send "ubuntu\\r" }
   expect eof
 DONE
 
   # ssh bootstrap offboarding script
   expect <<DONE
-  spawn ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${VM_IP} -- chmod +x /home/ubuntu/offboard-vm.sh
+  spawn ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${vm_ip} -- chmod +x /home/ubuntu/offboard-vm.sh
   expect "password:" { send "ubuntu\\r" }
   expect eof
 DONE
   expect <<DONE
-  spawn ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${VM_IP} -- /home/ubuntu/offboard-vm.sh
+  spawn ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${vm_ip} -- /home/ubuntu/offboard-vm.sh
   expect "password:" { send "ubuntu\\r" }
   expect "Offboarding finished"
 DONE

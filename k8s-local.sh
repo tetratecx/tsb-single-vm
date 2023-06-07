@@ -250,9 +250,9 @@ function start_k3s_cluster {
   [[ -z "${4}" ]] && echo "Please provide docker network subnet as 4th argument" && return 2 || local network_subnet="${4}" ;
   [[ -z "${5}" ]] && echo "No insecure registry provided" && local insecure_registry="" || local insecure_registry="${5}" ;
 
-  if $(docker inspect -f '{{.State.Status}}' ${cluster_name} 2>/dev/null | grep "running" &>/dev/null) ; then
+  if $(docker container inspect -f '{{.State.Status}}' ${cluster_name} 2>/dev/null | grep "running" &>/dev/null) ; then
     echo "K3s cluster '${cluster_name}' already running" ;
-  elif $(docker inspect -f '{{.State.Status}}' ${cluster_name} 2>/dev/null | grep "exited" &>/dev/null) ; then
+  elif $(docker container inspect -f '{{.State.Status}}' ${cluster_name} 2>/dev/null | grep "exited" &>/dev/null) ; then
     echo "Restarting k3s cluster '${cluster_name}'" ;
     docker start ${cluster_name} ;
   else
@@ -328,7 +328,7 @@ function wait_k3s_cluster_ready {
 #     (1) cluster name
 function stop_k3s_cluster {
   [[ -z "${1}" ]] && echo "Please provide cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
-  if $(docker inspect -f '{{.State.Status}}' ${cluster_name} | grep "running" &>/dev/null) ; then
+  if $(docker container inspect -f '{{.State.Status}}' ${cluster_name} | grep "running" &>/dev/null) ; then
     echo "Going to stop k3s cluster '${cluster_name}'" ;
     k3d cluster stop ${cluster_name} ;
   fi
@@ -367,9 +367,9 @@ function start_kind_cluster {
   [[ -z "${4}" ]] && echo "Please provide docker network subnet as 4th argument" && return 2 || local network_subnet="${4}" ;
   [[ -z "${5}" ]] && echo "No insecure registry provided" && local insecure_registry="" || local insecure_registry="${5}" ;
 
-  if $(docker inspect -f '{{.State.Status}}' ${cluster_name} 2>/dev/null | grep "running" &>/dev/null) ; then
+  if $(docker container inspect -f '{{.State.Status}}' ${cluster_name} 2>/dev/null | grep "running" &>/dev/null) ; then
     echo "Kind cluster '${cluster_name}' already running" ;
-  elif $(docker inspect -f '{{.State.Status}}' ${cluster_name} 2>/dev/null | grep "exited" &>/dev/null) ; then
+  elif $(docker container inspect -f '{{.State.Status}}' ${cluster_name} 2>/dev/null | grep "exited" &>/dev/null) ; then
     echo "Restarting kind cluster '${cluster_name}'" ;
     docker start ${cluster_name} ;
   else
@@ -454,7 +454,7 @@ function wait_kind_cluster_ready {
 #     (1) cluster name
 function stop_kind_cluster {
   [[ -z "${1}" ]] && echo "Please provide cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
-  if $(docker inspect -f '{{.State.Status}}' ${cluster_name} | grep "running" &>/dev/null) ; then
+  if $(docker container inspect -f '{{.State.Status}}' ${cluster_name} | grep "running" &>/dev/null) ; then
     echo "Going to stop kind cluster '${cluster_name}'" ;
     docker stop ${cluster_name} ;
   fi

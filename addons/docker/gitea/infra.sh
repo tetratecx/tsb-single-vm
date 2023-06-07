@@ -113,7 +113,7 @@ function gitea_remove_server {
 function gitea_get_http_url {
   [[ -z "${1}" ]] && local container_name="gitea" || local container_name="${1}" ;
 
-  local gitea_ip=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${container_name}" 2>/dev/null | awk NF) ;
+  local gitea_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${container_name}" 2>/dev/null | awk NF) ;
   if [[ -z "${gitea_ip}" ]]; then
     print_error "Container '${container_name}' has no ip address or is not running" ; 
     return 1 ;
@@ -131,7 +131,7 @@ function gitea_get_http_url_with_credentials {
   [[ -z "${2}" ]] && local admin_user="${GITEA_ADMIN_USER}" || local admin_user="${2}" ;
   [[ -z "${3}" ]] && local admin_password="${GITEA_ADMIN_PASSWORD}" || local admin_password="${3}" ;
 
-  local gitea_ip=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${container_name}" 2>/dev/null | awk NF) ;
+  local gitea_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${container_name}" 2>/dev/null | awk NF) ;
   if [[ -z "${gitea_ip}" ]]; then
     print_error "Container '${container_name}' has no ip address or is not running" ;
     return 1 ;

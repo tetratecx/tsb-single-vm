@@ -210,7 +210,7 @@ if [[ ${ACTION} = "info" ]]; then
     MP_VM_INDEX=0
     while [[ ${MP_VM_INDEX} -lt ${MP_VM_COUNT} ]]; do
       VM_NAME=$(get_mp_vm_name_by_index ${MP_VM_INDEX}) ;
-      VM_IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${VM_NAME}) ;
+      VM_IP=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${VM_NAME}) ;
       echo "${VM_NAME} has ip address ${VM_IP}"
       print_command "ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${VM_IP}"
     MP_VM_INDEX=$((MP_VM_INDEX+1))
@@ -229,7 +229,7 @@ if [[ ${ACTION} = "info" ]]; then
       CP_VM_INDEX=0
       while [[ ${CP_VM_INDEX} -lt ${CP_VM_COUNT} ]]; do
         VM_NAME=$(get_cp_vm_name_by_index ${CP_INDEX} ${CP_VM_INDEX}) ;
-        VM_IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${VM_NAME}) ;
+        VM_IP=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${VM_NAME}) ;
         echo "${VM_NAME} has ip address ${VM_IP}"
         print_command "ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${VM_IP}"
         CP_VM_INDEX=$((CP_VM_INDEX+1))

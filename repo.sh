@@ -36,7 +36,7 @@ function start_local_repo {
 #   args:
 #     (1) repo name
 function stop_local_repo {
-  if docker inspect ${1} &>/dev/null ; then
+  if docker container inspect ${1} &>/dev/null ; then
     docker stop ${1} &>/dev/null ;
     print_info "Local docker repo ${1} stopped"
   fi
@@ -47,7 +47,7 @@ function stop_local_repo {
 #     (1) repo docker network
 #     (2) repo name
 function remove_local_repo {
-  if docker inspect ${2} &>/dev/null ; then
+  if docker container inspect ${2} &>/dev/null ; then
     docker stop ${2} &>/dev/null ;
     docker rm ${2} &>/dev/null ;
     print_info "Local docker repo stopped and removed"
@@ -62,7 +62,7 @@ function remove_local_repo {
 #   args:
 #     (1) repo name
 function get_repo_endpoint {
-  if ! IP=$(docker inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1}  2>/dev/null ); then
+  if ! IP=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1}  2>/dev/null ); then
     print_error "Local docker repo not running" ; 
     exit 1 ;
   fi
