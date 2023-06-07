@@ -1,0 +1,25 @@
+{
+  "k8s_provider": "k3s",
+  "k8s_version": "1.25.9",
+  "mp_cluster": {
+    "demo_profile": true,
+    "name": "t1",
+    "region": "us-central1",
+    "zone": "us-central1-a",
+    "vms": []
+  },
+  "cp_clusters": [
+    {
+      "name": "c1",
+      "region": "us-central1",
+      "zone": "us-central1-a",
+      "vms": []
+    },
+    {
+      "name": "c2",
+      "region": "us-east1",
+      "zone": "us-east1-a",
+      "vms": []
+    }
+  ]
+}

@@ -95,7 +95,7 @@ function get_provider_type_by_kubectl_context {
         return 0 ;
         ;;
       *)
-        echo "unkown" ;
+        echo "unknown" ;
         return 1 ;
         ;;
     esac
@@ -109,34 +109,36 @@ function get_provider_type_by_kubectl_context {
 #   args:
 #     (1) docker container name
 #   returns:
-#     - prints provider string "k3d", "kind" or "minikube" with return value 0 if success
+#     - prints provider string "k3s", "kind" or "minikube" with return value 0 if success
 #     - prints string "unknown" with return value 1 if provider unknown based on container name
 #     - prints string "notfound" with return value 1 if container with this name does not exist
 function get_provider_type_by_container_name {
   [[ -z "${1}" ]] && echo "Please provide docker container name as 1st argument" && return 2 || local container_name="${1}" ;
-  
-  if output=$(docker inspect ${container_name} -f '{{.Config.Image}}' 2>/dev/null) ; then
-    case ${output} in
-      *"k3s"*)
-        echo "k3s" ;
-        return 0 ;
-        ;;
-      *"kind"*)
-        echo "kind" ;
-        return 0 ;
-        ;;
-      *"kicbase"*)
-        echo "minikube" ;
-        return 0 ;
-        ;;
-      *)
-        echo "unkown" ;
-        return 1 ;
-        ;;
-    esac
-  else
+
+  if [[ -z $(docker ps --filter name=${container_name} --quiet) ]] ; then
     echo "notfound" ;
     return 1 ;
+  else
+    if output=$(docker inspect ${container_name} -f '{{.Config.Image}}' 2>/dev/null) ; then
+      case ${output} in
+        *"k3s"*)
+          echo "k3s" ;
+          return 0 ;
+          ;;
+        *"kind"*)
+          echo "kind" ;
+          return 0 ;
+          ;;
+        *"kicbase"*)
+          echo "minikube" ;
+          return 0 ;
+          ;;
+        *)
+          echo "unknown" ;
+          return 1 ;
+          ;;
+      esac
+    fi
   fi
 }
 
