@@ -110,11 +110,11 @@ if [[ ${ACTION} = "info" ]]; then
   print_info "****************************"
   echo
   echo "Traffic through T1 Gateway:"
-  curl -I -H \"X-B3-Sampled: 1\" --resolve \"bookinfo.tetrate.com:80:${T1_GW_IP}\" http://bookinfo.tetrate.com/productpage
+  print_command "curl -I -H \"X-B3-Sampled: 1\" --resolve \"bookinfo.tetrate.com:80:${T1_GW_IP}\" http://bookinfo.tetrate.com/productpage"
   echo "Traffic to C1 Ingress Gateway:"
-  curl -I -H \"X-B3-Sampled: 1\" --resolve \"bookinfo.tetrate.com:80:${C1_GW_IP}\" http://bookinfo.tetrate.com/productpage
+  print_command "curl -I -H \"X-B3-Sampled: 1\" --resolve \"bookinfo.tetrate.com:80:${C1_GW_IP}\" http://bookinfo.tetrate.com/productpage"
   echo "Traffic to C2 Ingress Gateway:"
-  curl -I -H \"X-B3-Sampled: 1\" --resolve \"bookinfo.tetrate.com:80:${C2_GW_IP}\" http://bookinfo.tetrate.com/productpage
+  print_command "curl -I -H \"X-B3-Sampled: 1\" --resolve \"bookinfo.tetrate.com:80:${C2_GW_IP}\" http://bookinfo.tetrate.com/productpage"
 
   echo "Load gen through T1 Gateway:"
   print_command "while true ; do
