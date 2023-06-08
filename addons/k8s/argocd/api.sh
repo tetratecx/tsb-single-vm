@@ -1,6 +1,9 @@
 # Helper functions to manage argocd
 #
 
+ARGOCD_DEFAULT_ADMIN_PASSWORD="admin-pass"
+ARGOCD_DEFAULT_NAMESPACE="argocd"
+
 # Some colors
 END_COLOR="\033[0m"
 GREENB_COLOR="\033[1;32m"
@@ -29,8 +32,8 @@ function print_error {
 #     (3) namespace (optional, default 'argocd')
 function argocd_set_admin_password {
   [[ -z "${1}" ]] && print_error "Please provide kubernetes context as 1st argument" && return 2 || local kube_context="${1}" ;
-  [[ -z "${2}" ]] && local admin_password="admin-pass" || local admin_password="${2}" ;
-  [[ -z "${3}" ]] && local argocd_namespace="argocd" || local argocd_namespace="${3}" ;
+  [[ -z "${2}" ]] && local admin_password="${ARGOCD_DEFAULT_ADMIN_PASSWORD}" || local admin_password="${2}" ;
+  [[ -z "${3}" ]] && local argocd_namespace="${ARGOCD_DEFAULT_NAMESPACE}" || local argocd_namespace="${3}" ;
 
   echo -n "Waiting to fetch argocd initial password: "
   while ! unparsed_initial_password=$(argocd --kube-context ${kube_context} --insecure admin initial-password -n ${argocd_namespace} 2>/dev/null) ; do

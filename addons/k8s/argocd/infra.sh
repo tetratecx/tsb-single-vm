@@ -2,6 +2,7 @@
 #
 
 ARGOCD_MANIFEST="https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml"
+ARGOCD_DEFAULT_NAMESPACE="argocd"
 
 # Some colors
 END_COLOR="\033[0m"
@@ -30,7 +31,7 @@ function print_error {
 #     (2) namespace (optional, default 'argocd')
 function argocd_deploy {
   [[ -z "${1}" ]] && print_error "Please provide kubernetes context as 1st argument" && return 2 || local kube_context="${1}" ;
-  [[ -z "${2}" ]] && local argocd_namespace="argocd" || local argocd_namespace="${2}" ;
+  [[ -z "${2}" ]] && local argocd_namespace="${ARGOCD_DEFAULT_NAMESPACE}" || local argocd_namespace="${2}" ;
 
   if $(kubectl --context ${kube_context} get namespace ${argocd_namespace} &>/dev/null) ; then
     echo "Namespace '${argocd_namespace}' already exists" ;
@@ -64,7 +65,7 @@ function argocd_deploy {
 #     (2) namespace (optional, default 'argocd')
 function argocd_undeploy {
   [[ -z "${1}" ]] && print_error "Please provide kubernetes context as 1st argument" && return 2 || local kube_context="${1}" ;
-  [[ -z "${2}" ]] && local argocd_namespace="argocd" || local argocd_namespace="${2}" ;
+  [[ -z "${2}" ]] && local argocd_namespace="${ARGOCD_DEFAULT_NAMESPACE}" || local argocd_namespace="${2}" ;
 
   if $(kubectl --context ${kube_context} get namespace ${argocd_namespace} &>/dev/null) ; then 
     kubectl --context ${kube_context} delete -n ${argocd_namespace} -f ${ARGOCD_MANIFEST} ;
@@ -84,7 +85,7 @@ function argocd_undeploy {
 #     (2) namespace (optional, default 'argocd')
 function argocd_get_external_ip {
   [[ -z "${1}" ]] && print_error "Please provide kubernetes context as 1st argument" && return 2 || local kube_context="${1}" ;
-  [[ -z "${2}" ]] && local argocd_namespace="argocd" || local argocd_namespace="${2}" ;
+  [[ -z "${2}" ]] && local argocd_namespace="${ARGOCD_DEFAULT_NAMESPACE}" || local argocd_namespace="${2}" ;
 
   kubectl --context ${kube_context} -n ${argocd_namespace} get svc argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}'
 }
