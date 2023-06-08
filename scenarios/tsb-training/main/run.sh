@@ -98,14 +98,27 @@ if [[ ${ACTION} = "info" ]]; then
   while ! T1_GW_IP=$(kubectl --context t1 get svc -n tier1 tier1-gateway --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
     sleep 1;
   done
+  while ! C1_GW_IP=$(kubectl --context c1 get svc -n bookinfo tsb-gateway-bookinfo --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+    sleep 1;
+  done
+  while ! C2_GW_IP=$(kubectl --context c2 get svc -n bookinfo tsb-gateway-bookinfo --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+    sleep 1;
+  done
 
   print_info "****************************"
   print_info "*** App Traffic Commands ***"
   print_info "****************************"
   echo
-  echo "All at once in a loop"
+  echo "Traffic through T1 Gateway:"
+  curl -I -H \"X-B3-Sampled: 1\" --resolve \"bookinfo.tetrate.com:80:${T1_GW_IP}\" http://bookinfo.tetrate.com/productpage
+  echo "Traffic to C1 Ingress Gateway:"
+  curl -I -H \"X-B3-Sampled: 1\" --resolve \"bookinfo.tetrate.com:80:${C1_GW_IP}\" http://bookinfo.tetrate.com/productpage
+  echo "Traffic to C2 Ingress Gateway:"
+  curl -I -H \"X-B3-Sampled: 1\" --resolve \"bookinfo.tetrate.com:80:${C2_GW_IP}\" http://bookinfo.tetrate.com/productpage
+
+  echo "Load gen through T1 Gateway:"
   print_command "while true ; do
-  curl -I -H \"X-B3-Sampled: 1\" --resolve \"bookinfo.tetrate.com:80:${T1_GW_IP}\" \"http://bookinfo.tetrate.com/productpage\"
+  curl -I -H \"X-B3-Sampled: 1\" --resolve \"bookinfo.tetrate.com:80:${T1_GW_IP}\" http://bookinfo.tetrate.com/productpage
   sleep 0.5 ;
 done"
   echo
