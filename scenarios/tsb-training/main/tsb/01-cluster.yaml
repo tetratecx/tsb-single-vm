@@ -1,14 +1,13 @@
-#since mgmt cluster is installed using the demo profile, the t1 cluster should already be onboarded
-#---
-#apiVersion: api.tsb.tetrate.io/v2
-#kind: Cluster
-#metadata:
-#  name: t1
-#  organization: tetrate
-#spec:
-#  description: Tier1 cluster
-#  tokenTtl: "1h"
-#  tier1Cluster: true
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: Cluster
+metadata:
+  name: t1
+  organization: tetrate
+spec:
+  description: Tier1 cluster
+  tokenTtl: "1h"
+  tier1Cluster: true
 ---
 apiVersion: api.tsb.tetrate.io/v2
 kind: Cluster
