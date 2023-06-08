@@ -1,4 +1,4 @@
-# Tetrate Service Bridge on Minikube
+# Tetrate Service Bridge on Local Kubernetes
 
 ## Introduction
 
@@ -10,9 +10,12 @@ The target audience for this repo includes:
  - Developers to quickly reproduce scenarios that go beyond just one cluster
  - Trainers and trainees, to have an isolated and easy to manage/clean-up environment.
 
-The environment is based on [minikube](https://minikube.sigs.k8s.io/docs/start), with docker as the underlying virtualization [driver](https://minikube.sigs.k8s.io/docs/drivers/docker). Currently, only a Linux x86 based systems are supported, as TSB images are not multi-arch yet (no support for MacOS on an M1 for example).
+The environment is based on locally hosted kubernetes clusters, with docker as the underlying virtualization. Currently, only a Linux x86 based systems are supported, as TSB images are not multi-arch yet (no support for MacOS on an M1 for example). The following local kubernetes providers are supported:
+ - [k3s](https://k3s.io) managed through [k3d](https://k3d.io)
+ - [kind](https://kind.sigs.k8s.io/docs/user/quick-start)
+ - [minikube](https://minikube.sigs.k8s.io/docs/start) using the [docker driver](https://minikube.sigs.k8s.io/docs/drivers/docker)
 
-The repo provides support to spin up any arbitrary number of minikube based kubernetes clusters and VM's. VM's are implemented as docker containers with systemd support, so that VM onboarding with our onboarding agent and JWK based attestation can be demo'ed. TSB is automatically installed on those minikube clusters, as per declarative configuration (more on that later).
+The repo provides support to spin up any arbitrary number of local kubernetes clusters and VM's. VM's are implemented as docker containers with systemd support, so that VM onboarding with our onboarding agent and JWK based attestation can be demo'ed. TSB is automatically installed on those local kubernetes clusters, as per declarative configuration (more on that later).
 
 To reduce traffic from cloudsmith, a local docker repository is implemented, which decreases traffic costs and speeds up TSB deployments.
 
@@ -82,20 +85,20 @@ For use cases (2) and (3) above, you can use a helper script to speed up the pro
 ```console
 # ./repo.sh 
 Please specify correct action:
-  - local-info : get local docker repo url (default: 192.168.48.2:5000)
-  - local-remove : remove local docker repo
-  - local-start : start local docker repo
-  - local-stop : stop local docker repo
-  - sync <repo-url> : sync tsb images from official repo to provided target repo
+  - info : get local docker repo url (default: 192.168.48.2:5000)
+  - start : start local docker repo
+  - stop : stop local docker repo
+  - remove : remove local docker repo
+  - sync <target-repo> : sync tsb images from official repo to provided target repo (default: 192.168.48.2:5000)
 ```
 
-### Networking and minikube details
+### Networking and local kubernetes details
 
-Every cluster (managementplane or controlplane) is deployed in a separate [minikube profile](https://minikube.sigs.k8s.io/docs/commands/profile), which is hosted in a dedicated [docker network](https://docs.docker.com/engine/reference/commandline/network) with a separate subnet. VMs that are configured at the managementplane or controlplane are docker containers run within that same network. The name of the docker network, matches the name of the cluster.
+Every cluster (managementplane or controlplane) is deployed in a separate [docker network](https://docs.docker.com/engine/reference/commandline/network) with a separate subnet. VMs that are configured at the managementplane or controlplane are docker containers that run within that same network. The name of the docker network, matches the name of the cluster, which matches the name of the kubectl context.
 
 In order to provide cross docker network connectivity, docker iptables rules are flushed (docker networks are isolated with iptables by design, and we do not want that here).
 
-The reason to use separate minikube profiles and docker networks, is mere convenience in terms of metallb dhcp pools and ip address assignment and traceability in general.
+The reason to use separate docker networks, is mere convenience in terms of metallb dhcp pools and ip address assignment and traceability in general.
 
 ### Local docker repository details
 
@@ -116,7 +119,7 @@ CONTAINER ID   IMAGE        COMMAND                  CREATED      STATUS       P
 Topologies are the infra-structure part of the repo, and are expressed in JSON files. 
 
 Topologies determine:
-- the names of your clusters (mapping to minikube profiles, k8s cluster contexts and docker networks)
+- the names of your clusters (mapping to kubectl contexts and docker networks)
 - how many kubernetes clusters you want
 - how many tsb managementplane and controlplane clusters you want
 - the networking aspects of those clusters (in terms of region/zone)
@@ -143,16 +146,17 @@ A short enumeration of the parameters to be configured:
 |parameter|type|description|
 |---------|----|-----------|
 |cp_clusters|list|a list TSB controlplane clusters|
-|cp_clusters.[].name|string|the name of this controlplane cluster (used in minikube/k8s profile and TSB cluster name)|
+|cp_clusters.[].name|string|the name of this controlplane cluster (used as local kubectl context, docker network name and TSB cluster name)|
 |cp_clusters.[].region|string|the region to configure for this controlplane cluster|
 |cp_clusters.[].zone|string|the zone to configure for this controlplane cluster|
 |cp_clusters.[].vms|list|a list of VMs to spin-up in the same network as this controlplane cluster|
 |cp_clusters.[].vms.[].image|string|the base image to use as VM|
 |cp_clusters.[].vms.[].name|string|the name of this VM (used as hostname, docker container name and VM name)|
-|k8s_version|string|version of kubernetes to be used by minikube|
+|k8s_provider|string|provider to be used by local kubernetes (`k3s`, `kind` or `minikube`)|
+|k8s_version|string|version of kubernetes to be used by local kubernetes|
 |mp_cluster|object|tsb managementplane cluster configuration|
 |mp_cluster.demo_profile|bool|use TSB demo installation profile (with cert-manager, postgres, elastic, redis and ldap)|
-|mp_cluster.name|string|the name of this managementplane cluster (used in minikube/k8s profile and TSB cluster name)|
+|mp_cluster.name|string|the name of this managementplane cluster (used as local kubectl context, docker network name and TSB cluster name)|
 |mp_cluster.region|string|the region to configure for the managementplane cluster|
 |mp_cluster.zone|string|the zone to configure for the managementplane cluster|
 |mp_cluster.vms|list||a list of VMs to spin-up in the same network as the managementplane cluster|
@@ -192,8 +196,8 @@ help                           This help
 up                             Bring up full demo scenario
 prereq-check                   Check if prerequisites are installed
 prereq-install                 Install prerequisites
-infra-up                       Bring up and configure minikube clusters and vms
-infra-down                     Bring down minikube clusters and vms
+infra-up                       Bring up and configure local kubernetes clusters and vms
+infra-down                     Bring down local kubernetes clusters and vms
 tsb-mp-install                 Install TSB management cluster
 tsb-mp-uninstall               Uninstall TSB management cluster
 tsb-cp-install                 Install TSB control/data plane(s)
@@ -226,7 +230,7 @@ This section is a brief description of the repo structure itself. What folder an
 |cp.sh|script to install tsb controlplane, based on the topology configured|
 |env-template.json|env.json template to be copied and adjusted to your needs (never commit this one!)|
 |helpers.sh|helper functions to add color in a madness of shell output|
-|infra.sh|script to install the desired topology, using minikube and docker|
+|infra.sh|script to install the desired topology, using local kubernetes and docker|
 |Makefile|the top level makefile and main entrypoint to be used by end-users|
 |mp.sh|script to install tsb management plane, based on the topology configured|
 |README.md|this file for documentation|
@@ -259,7 +263,6 @@ A non-exhaustive list of to be implemented items include:
  - tsb training labs (https://github.com/tetrateio/tsb-labs) as a set of scenarios on a dedicated training topology
  - porting eshop-demo repo (https://github.com/tetrateio/eshop-demo/tree/main/docs) to here as well
  - more scenarios with real applications
- - potentially add LXD support next to minikube/docker support
  - add TF and/or cloudshell (glcoud/aws-cli/az-cli) to quickly bootstrap a fully prepped and ready VM on AWS/GCP/Azure
  - add support for local MacOS (intel and arm chipset)
  - integrations, integrations, integrations:

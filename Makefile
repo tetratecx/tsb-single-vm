@@ -19,11 +19,11 @@ prereq-install: ## Install prerequisites
 	@/bin/sh -c './prereq.sh install'
 
 .PHONY: prereq-check
-infra-up: prereq-check ## Bring up and configure kubernetes clusters and vms
+infra-up: prereq-check ## Bring up and configure local kubernetes clusters and vms
 	@/bin/bash -c './infra.sh up'
 
 .PHONY: infra-down
-infra-down: ## Bring down kubernetes clusters and vms
+infra-down: ## Bring down local kubernetes clusters and vms
 	@/bin/bash -c './infra.sh down'
 
 .PHONY: tsb-mp-install
