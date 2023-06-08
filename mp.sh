@@ -15,9 +15,11 @@ INSTALL_REPO_USER=$(get_install_repo_user) ;
 
 # Patch affinity rules of management plane (demo only!)
 #   args:
-#     (1) cluster name
+#     (1) cluster context
 function patch_remove_affinity_mp {
-  while ! kubectl --context ${1} -n tsb get managementplane managementplane &>/dev/null; do
+  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
+
+  while ! kubectl --context ${cluster_ctx} -n tsb get managementplane managementplane &>/dev/null; do
     sleep 1 ;
   done
   for tsb_component in apiServer collector frontEnvoy iamServer mpc ngac oap webUI ; do
@@ -30,12 +32,15 @@ function patch_remove_affinity_mp {
 
 # Login as admin into tsb
 #   args:
-#     (1) cluster name
-#     (2) organization
+#     (1) cluster context
+#     (2) tsb organization
 function login_tsb_admin {
-  kubectl config use-context ${1} ;
+  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
+  [[ -z "${2}" ]] && print_error "Please provide tsb organization as 2nd argument" && return 2 || local tsb_org="${2}" ;
+
+  kubectl config use-context ${cluster_ctx} ;
   expect <<DONE
-  spawn tctl login --username admin --password admin --org ${2}
+  spawn tctl login --username admin --password admin --org ${tsb_org}
   expect "Tenant:" { send "\\r" }
   expect eof
 DONE
@@ -43,38 +48,48 @@ DONE
 
 # Patch OAP refresh rate of management plane
 #   args:
-#     (1) cluster name
+#     (1) cluster context
 function patch_oap_refresh_rate_mp {
-  OAP_PATCH='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}'
-  kubectl --context ${1} -n tsb patch managementplanes managementplane --type merge --patch ${OAP_PATCH}
+  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
+
+  local oap_patch='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}'
+  kubectl --context ${cluster_ctx} -n tsb patch managementplanes managementplane --type merge --patch ${oap_patch}
 }
 
 # Patch OAP refresh rate of control plane
 #   args:
-#     (1) cluster name
+#     (1) cluster context
 function patch_oap_refresh_rate_cp {
-  OAP_PATCH='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}'
-  kubectl --context ${1} -n istio-system patch controlplanes controlplane --type merge --patch ${OAP_PATCH}
+  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
+
+  local oap_patch='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}'
+  kubectl --context ${cluster_ctx} -n istio-system patch controlplanes controlplane --type merge --patch ${oap_patch}
 }
 
 # Patch jwt token expiration and pruneInterval
 #   args:
-#     (1) cluster name
+#     (1) cluster context
 function patch_jwt_token_expiration_mp {
-  TOKEN_PATCH='{"spec":{"tokenIssuer":{"jwt":{"expiration":"36000s","tokenPruneInterval":"36000s"}}}}'
-  kubectl --context ${1} -n tsb patch managementplanes managementplane --type merge --patch ${TOKEN_PATCH}
+  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
+
+  local token_patch='{"spec":{"tokenIssuer":{"jwt":{"expiration":"36000s","tokenPruneInterval":"36000s"}}}}'
+  kubectl --context ${cluster_ctx} -n tsb patch managementplanes managementplane --type merge --patch ${token_patch}
 }
 
 # Expose tsb gui with kubectl port-forward
 #   args:
-#     (1) cluster name
+#     (1) cluster context
 function expose_tsb_gui {
+  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
+
+  local tsb_api_endpoint=$(kubectl --context ${cluster_ctx} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+
   sudo tee /etc/systemd/system/tsb-gui.service << EOF
 [Unit]
 Description=TSB GUI Exposure
 
 [Service]
-ExecStart=$(which kubectl) --kubeconfig ${HOME}/.kube/config --context ${1} port-forward -n tsb service/envoy 8443:8443 --address 0.0.0.0
+ExecStart=$(which kubectl) --kubeconfig ${HOME}/.kube/config --context ${cluster_ctx} port-forward -n tsb service/envoy 8443:8443 --address 0.0.0.0
 Restart=always
 
 [Install]
@@ -83,8 +98,10 @@ EOF
 
   sudo systemctl enable tsb-gui ;
   sudo systemctl start tsb-gui ;
-  echo "The tsb gui should be available locally at https://127.0.0.1:8443"
-  echo "The tsb gui should be available remotely at https://$(curl -s ifconfig.me):8443"
+  print_info "The tsb gui should be available at some of the following urls:"
+  echo " - local host: https://127.0.0.1:8443"
+  echo " - docker network: https://${tsb_api_endpoint}:8443"
+  echo " - public ip: https://$(curl -s ifconfig.me):8443"
 }
 
 
