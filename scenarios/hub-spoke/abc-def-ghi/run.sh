@@ -5,32 +5,9 @@ ACTION=${2}
 source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
+source ${ROOT_DIR}/tsb-helpers.sh
 
 INSTALL_REPO_URL=$(get_install_repo_url) ;
-
-# Login as admin into tsb
-#   args:
-#     (1) organization
-function login_tsb_admin {
-  expect <<DONE
-  spawn tctl login --username admin --password admin --org ${1}
-  expect "Tenant:" { send "\\r" }
-  expect eof
-DONE
-}
-
-# Wait for cluster to be onboarded
-#   args:
-#     (1) onboarding cluster name
-function wait_cluster_onboarded {
-  echo "Wait for cluster ${1} to be onboarded"
-  while ! tctl experimental status cs ${1} | grep "Cluster onboarded" &>/dev/null ; do
-    sleep 5
-    echo -n "."
-  done
-  echo "DONE"
-}
-
 
 if [[ ${ACTION} = "deploy" ]]; then
 
