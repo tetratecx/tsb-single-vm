@@ -5,6 +5,7 @@ ACTION=${2}
 source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
+source ${ROOT_DIR}/tsb-helpers.sh
 source ${ROOT_DIR}/addons/docker/gitea/api.sh
 source ${ROOT_DIR}/addons/docker/gitea/infra.sh
 source ${ROOT_DIR}/addons/k8s/argocd/api.sh
@@ -57,19 +58,6 @@ function create_and_sync_gitea_repos {
     git commit -m "This is an automated commit"
     git push -u origin main
   done
-}
-
-# Login as admin into tsb
-#   args:
-#     (1) tsb organization
-function login_tsb_admin {
-  [[ -z "${1}" ]] && print_error "Please provide tsb organization as 1st argument" && return 2 || local organization="${1}" ;
-
-  expect <<DONE
-  spawn tctl login --username admin --password admin --org ${organization}
-  expect "Tenant:" { send "\\r" }
-  expect eof
-DONE
 }
 
 if [[ ${ACTION} = "deploy" ]]; then

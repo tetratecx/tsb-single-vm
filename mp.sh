@@ -5,6 +5,7 @@ ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
+source ${ROOT_DIR}/tsb-helpers.sh
 
 ACTION=${1}
 
@@ -28,22 +29,6 @@ function patch_remove_affinity_mp {
       &>/dev/null;
   done
   echo "Managementplane tsb/managementplane sucessfully patched"
-}
-
-# Login as admin into tsb
-#   args:
-#     (1) cluster context
-#     (2) tsb organization
-function login_tsb_admin {
-  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
-  [[ -z "${2}" ]] && print_error "Please provide tsb organization as 2nd argument" && return 2 || local tsb_org="${2}" ;
-
-  kubectl config use-context ${cluster_ctx} ;
-  expect <<DONE
-  spawn tctl login --username admin --password admin --org ${tsb_org}
-  expect "Tenant:" { send "\\r" }
-  expect eof
-DONE
 }
 
 # Patch OAP refresh rate of management plane
@@ -231,7 +216,7 @@ if [[ ${ACTION} = "reset" ]]; then
   MP_CLUSTER_NAME=$(get_mp_name) ;
 
   # Login again as tsb admin in case of a session time-out
-  login_tsb_admin ${MP_CLUSTER_NAME} tetrate ;
+  login_tsb_admin tetrate ;
 
   # Remove all TSB configuration objects
   kubectl config use-context ${MP_CLUSTER_NAME} ;
@@ -239,7 +224,7 @@ if [[ ${ACTION} = "reset" ]]; then
 
   # Remove all TSB kubernetes installation objects
   kubectl --context ${MP_CLUSTER_NAME} get -A egressgateways.install.tetrate.io,ingressgateways.install.tetrate.io,tier1gateways.install.tetrate.io -o yaml \
-   | kubectl --context ${MP_CLUSTER_NAME} delete -f - ;
+    | kubectl --context ${MP_CLUSTER_NAME} delete -f - ;
 
   exit 0
 fi

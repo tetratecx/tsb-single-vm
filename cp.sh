@@ -5,25 +5,10 @@ ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
+source ${ROOT_DIR}/tsb-helpers.sh
 
 ACTION=${1}
 INSTALL_REPO_URL=$(get_install_repo_url) ;
-
-# Login as admin into tsb
-#   args:
-#     (1) cluster context
-#     (2) tsb organization
-function login_tsb_admin {
-  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
-  [[ -z "${2}" ]] && print_error "Please provide tsb organization as 2nd argument" && return 2 || local tsb_org="${2}" ;
-
-  kubectl config use-context ${cluster_ctx} ;
-  expect <<DONE
-  spawn tctl login --username admin --password admin --org ${tsb_org}
-  expect "Tenant:" { send "\\r" }
-  expect eof
-DONE
-}
 
 # Patch OAP refresh rate of control plane
 #   args:
@@ -42,7 +27,7 @@ if [[ ${ACTION} = "install" ]]; then
   MP_OUTPUT_DIR=$(get_mp_output_dir) ;
 
   # Login again as tsb admin in case of a session time-out
-  login_tsb_admin ${MP_CLUSTER_NAME} tetrate ;
+  login_tsb_admin tetrate ;
 
   export TSB_API_ENDPOINT=$(kubectl --context ${MP_CLUSTER_NAME} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
   export TSB_INSTALL_REPO_URL=${INSTALL_REPO_URL}
@@ -92,7 +77,7 @@ if [[ ${ACTION} = "install" ]]; then
 
     # Deploy operators
     #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#deploy-operators
-    login_tsb_admin ${MP_CLUSTER_NAME} tetrate ;
+    login_tsb_admin tetrate ;
     tctl install manifest cluster-operators --registry ${INSTALL_REPO_URL} > ${CP_OUTPUT_DIR}/clusteroperators.yaml ;
 
     # Applying operator, secrets and control plane configuration

@@ -5,17 +5,7 @@ ACTION=${2}
 source ${ROOT_DIR}/env.sh ${ROOT_DIR}
 source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
-
-# Login as admin into tsb
-#   args:
-#     (1) organization
-function login_tsb_admin {
-  expect <<DONE
-  spawn tctl login --username admin --password admin --org ${1}
-  expect "Tenant:" { send "\\r" }
-  expect eof
-DONE
-}
+source ${ROOT_DIR}/tsb-helpers.sh
 
 # Onboard vm by uploading onboarding script and running it
 #   args:
