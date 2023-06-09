@@ -7,12 +7,9 @@ source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
 source ${ROOT_DIR}/helpers.sh
 source ${ROOT_DIR}/tsb-helpers.sh
 
-INSTALL_REPO_URL=$(get_install_repo_url) ;
-
 if [[ ${ACTION} = "deploy" ]]; then
 
-  # Set TSB_INSTALL_REPO_URL for envsubst of image repo
-  export TSB_INSTALL_REPO_URL=${INSTALL_REPO_URL}
+  clusters=( c1 c2 ) ;
 
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
@@ -20,26 +17,21 @@ if [[ ${ACTION} = "deploy" ]]; then
   # Deploy tsb cluster and tenant objects
   # Wait for clusters to be onboarded to avoid race conditions
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ;
-  sleep 5 ;
-  wait_cluster_onboarded c1 ;
-  wait_cluster_onboarded c2 ;
+  wait_clusters_onboarded "${clusters[@]}"
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/02-tenant.yaml ;
 
   # Deploy kubernetes objects in mgmt cluster
   kubectl --context t1 apply -f ${SCENARIO_ROOT_DIR}/k8s/t1/01-namespace.yaml ;
   kubectl --context t1 apply -f ${SCENARIO_ROOT_DIR}/k8s/t1/02-tier1-gateway.yaml ;
 
-  # Deploy kubernetes objects in c1
-  kubectl --context c1 apply -f ${SCENARIO_ROOT_DIR}/k8s/c1/01-namespace.yaml ;
-  kubectl --context c1 apply -n bookinfo -f ${SCENARIO_ROOT_DIR}/k8s/c1/02-bookinfo.yaml ;
-  kubectl --context c1 apply -n bookinfo -f ${SCENARIO_ROOT_DIR}/k8s/c1/03-sleep.yaml ;
-  kubectl --context c1 apply -f ${SCENARIO_ROOT_DIR}/k8s/c1/04-ingress-gw.yaml ;
+  # Deploy kubernetes objects to the workload clusters..
+  for cluster in "${clusters[@]}"; do
+    kubectl --context $cluster apply -f ${SCENARIO_ROOT_DIR}/k8s/workload-clusters/01-namespace.yaml ;
+    kubectl --context $cluster apply -f ${SCENARIO_ROOT_DIR}/k8s/workload-clusters/02-ingress-gw.yaml ;
 
-  # Deploy kubernetes objects in c2
-  kubectl --context c2 apply -f ${SCENARIO_ROOT_DIR}/k8s/c2/01-namespace.yaml ;
-  kubectl --context c2 apply -n bookinfo -f ${SCENARIO_ROOT_DIR}/k8s/c2/02-bookinfo.yaml ;
-  kubectl --context c2 apply -n bookinfo -f ${SCENARIO_ROOT_DIR}/k8s/c2/03-sleep.yaml ;
-  kubectl --context c2 apply -f ${SCENARIO_ROOT_DIR}/k8s/c2/04-ingress-gw.yaml ;
+    kubectl --context $cluster apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/platform/kube/bookinfo.yaml ;
+    kubectl --contect $cluster apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/master/samples/sleep/sleep.yaml ;
+  done
 
   # Deploy tsb objects
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-workspace.yaml ;

@@ -24,3 +24,10 @@ function wait_cluster_onboarded {
   done
   echo "DONE"
 }
+
+function wait_clusters_onboarded {
+  local clusters=("$@")
+  for cluster in "${clusters[@]}"; do
+    wait_cluster_onboarded $cluster
+  done
+}
