@@ -15,7 +15,7 @@ if ! which jq &>/dev/null ; then
   exit 2
 fi
 
-if ! cat ${ENV_CONF} | jq -r ".topology" &>/dev/null ; then
+if ! jq -r ".topology" ${ENV_CONF} &>/dev/null ; then
   print_error "Unable to parse topology from ${ENV_CONF}, aborting..."
   exit 3
 fi
