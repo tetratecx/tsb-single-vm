@@ -15,16 +15,16 @@ if ! which jq &>/dev/null ; then
   exit 2
 fi
 
-if ! cat ${ENV_CONF} | jq -r ".topology" &>/dev/null ; then
+if ! jq -r ".topology" ${ENV_CONF} &>/dev/null ; then
   print_error "Unable to parse topology from ${ENV_CONF}, aborting..."
   exit 3
 fi
 
 function get_topology {
-  cat ${ENV_CONF} | jq -r ".topology"
+  jq -r ".topology" ${ENV_CONF}
 }
 function get_scenario {
-  cat ${ENV_CONF} | jq -r ".scenario"
+  jq -r ".scenario" ${ENV_CONF}
 }
 function get_topology_dir {
   echo ${ROOT_DIR}/topologies/$(get_topology)
@@ -43,114 +43,114 @@ fi
 ### Infra Configuration ###
 
 function get_k8s_provider {
-  cat ${TOPOLOGY_CONF} | jq -r ".k8s_provider"
+  jq -r ".k8s_provider" ${TOPOLOGY_CONF}
 }
 
 function get_k8s_version {
-  cat ${TOPOLOGY_CONF} | jq -r ".k8s_version"
+  jq -r ".k8s_version" ${TOPOLOGY_CONF}
 }
 
 ###### MP Cluster ######
 
 function get_mp_name {
-  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.name"
+  jq -r ".mp_cluster.name" ${TOPOLOGY_CONF}
 }
 
 function get_mp_region {
-  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.region"
+  jq -r ".mp_cluster.region" ${TOPOLOGY_CONF}
 }
 
 function get_mp_vm_count {
-  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.vms | length"
+  jq -r ".mp_cluster.vms | length" ${TOPOLOGY_CONF}
 }
 
 function get_mp_vm_image_by_index {
   i=${1}
-  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.vms[${i}].image"
+  jq -r ".mp_cluster.vms[${i}].image" ${TOPOLOGY_CONF}
 }
 
 function get_mp_vm_name_by_index {
   i=${1}
-  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.vms[${i}].name"
+  jq -r ".mp_cluster.vms[${i}].name" ${TOPOLOGY_CONF}
 }
 
 function get_mp_zone {
-  cat ${TOPOLOGY_CONF} | jq -r ".mp_cluster.zone"
+  jq -r ".mp_cluster.zone" ${TOPOLOGY_CONF}
 }
 
 ###### CP Clusters ######
 
 function get_cp_count {
-  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters | length"
+  jq -r ".cp_clusters | length" ${TOPOLOGY_CONF}
 }
 
 function get_cp_name_by_index {
   i=${1}
-  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].name"
+  jq -r ".cp_clusters[${i}].name" ${TOPOLOGY_CONF}
 }
 
 function get_cp_vm_count_by_index {
   i=${1}
-  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].vms | length"
+  jq -r ".cp_clusters[${i}].vms | length" ${TOPOLOGY_CONF}
 }
 
 function get_cp_vm_image_by_index {
   i=${1}
   j=${2}
-  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].vms[${j}].image"
+  jq -r ".cp_clusters[${i}].vms[${j}].image" ${TOPOLOGY_CONF}
 }
 
 function get_cp_vm_name_by_index {
   i=${1}
   j=${2}
-  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].vms[${j}].name"
+  jq -r ".cp_clusters[${i}].vms[${j}].name" ${TOPOLOGY_CONF}
 }
 
 function get_cp_region_by_index {
   i=${1}
-  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].region"
+  jq -r ".cp_clusters[${i}].region" ${TOPOLOGY_CONF}
 }
 
 function get_cp_zone_by_index {
   i=${1}
-  cat ${TOPOLOGY_CONF} | jq -r ".cp_clusters[${i}].zone"
+  jq -r ".cp_clusters[${i}].zone" ${TOPOLOGY_CONF}
 }
 
 
 ### TSB Configuration ###
 function is_install_repo_insecure_registry {
-  cat ${ENV_CONF} | jq -r ".tsb.install_repo.insecure_registry"
+  jq -r ".tsb.install_repo.insecure_registry" ${ENV_CONF}
 }
 
 function get_install_repo_password {
-  cat ${ENV_CONF} | jq -r ".tsb.install_repo.password"
+  jq -r ".tsb.install_repo.password" ${ENV_CONF}
 }
 
 function get_install_repo_url {
-  cat ${ENV_CONF} | jq -r ".tsb.install_repo.url"
+  jq -r ".tsb.install_repo.url" ${ENV_CONF}
 }
 
 function get_install_repo_user {
-  cat ${ENV_CONF} | jq -r ".tsb.install_repo.user"
+  jq -r ".tsb.install_repo.user" ${ENV_CONF}
 }
 
 function get_tetrate_repo_password {
-  cat ${ENV_CONF} | jq -r ".tsb.tetrate_repo.password"
+  jq -r ".tsb.tetrate_repo.password" ${ENV_CONF}
 }
 function get_tetrate_repo_url {
-  cat ${ENV_CONF} | jq -r ".tsb.tetrate_repo.url"
+  jq -r ".tsb.tetrate_repo.url" ${ENV_CONF}
 }
 
 function get_tetrate_repo_user {
-  cat ${ENV_CONF} | jq -r ".tsb.tetrate_repo.user"
+  jq -r ".tsb.tetrate_repo.user" ${ENV_CONF}
 }
 
 function get_tsb_version {
-  cat ${ENV_CONF} | jq -r ".tsb.version"
+  jq -r ".tsb.version" ${ENV_CONF}
 }
 
 function get_tsb_istio_version {
-  cat ${ENV_CONF} | jq -r ".tsb.istio_version"
+  jq -r ".tsb.istio_version" ${ENV_CONF}
 }
 
 
