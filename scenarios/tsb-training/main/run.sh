@@ -30,7 +30,7 @@ if [[ ${ACTION} = "deploy" ]]; then
     kubectl --context $cluster apply -f ${SCENARIO_ROOT_DIR}/k8s/workload-clusters/02-ingress-gw.yaml ;
 
     kubectl --context $cluster apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/platform/kube/bookinfo.yaml ;
-    kubectl --contect $cluster apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/master/samples/sleep/sleep.yaml ;
+    kubectl --context $cluster apply -n bookinfo -f https://raw.githubusercontent.com/istio/istio/master/samples/sleep/sleep.yaml ;
   done
 
   # Deploy tsb objects

@@ -41,3 +41,4 @@ spec:
             value:
               name: CLUSTER_STATE_RESYNC_INTERVAL
               value: "20s"
+  meshExpansion: {}

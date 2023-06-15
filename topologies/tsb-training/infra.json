@@ -13,7 +13,12 @@
       "name": "c1",
       "region": "us-central1",
       "zone": "us-central1-a",
-      "vms": []
+      "vms": [
+        {
+          "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+          "name": "ratings-vm"
+        }
+      ]
     },
     {
       "name": "c2",
