@@ -194,15 +194,17 @@ After you have configured the necessary details in `env.json` as described above
 
 help                           This help
 up                             Bring up full demo scenario
+down                           Bring down full demo scenario
+info                           Get information about infra environment and scenario
 prereq-check                   Check if prerequisites are installed
 prereq-install                 Install prerequisites
 infra-up                       Bring up and configure local kubernetes clusters and vms
 infra-down                     Bring down local kubernetes clusters and vms
+infra-info                     Get infra environment info
 tsb-mp-install                 Install TSB management cluster
 tsb-mp-uninstall               Uninstall TSB management cluster
 tsb-cp-install                 Install TSB control/data plane(s)
 tsb-cp-uninstall               Install TSB control/data plane(s)
-info                           Get infra environment info
 scenario-deploy                Deploy this scenario
 scenario-undeploy              Undeploy this scenario
 scenario-info                  Info about this scenario

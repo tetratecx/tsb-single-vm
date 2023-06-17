@@ -8,7 +8,10 @@ help: ## This help
 
 .DEFAULT_GOAL := help
 
+.PHONY: up down info
 up: infra-up tsb-mp-install tsb-cp-install scenario-deploy info scenario-info ## Bring up full demo scenario
+down: clean ## Bring down full demo scenario
+info: infra-info scenario-info ## Get information about infra environment and scenario
 
 .PHONY: prereq-check
 prereq-check: ## Check if prerequisites are installed
@@ -18,13 +21,17 @@ prereq-check: ## Check if prerequisites are installed
 prereq-install: ## Install prerequisites
 	@/bin/sh -c './prereq.sh install'
 
-.PHONY: prereq-check
+.PHONY: infra-up
 infra-up: prereq-check ## Bring up and configure local kubernetes clusters and vms
 	@/bin/bash -c './infra.sh up'
 
 .PHONY: infra-down
 infra-down: ## Bring down local kubernetes clusters and vms
 	@/bin/bash -c './infra.sh down'
+
+.PHONY: infra-info
+infra-info: ## Get infra environment info
+	@/bin/bash -c './infra.sh info'
 
 .PHONY: tsb-mp-install
 tsb-mp-install: ## Install TSB management cluster
@@ -41,10 +48,6 @@ tsb-cp-install: ## Install TSB control/data plane(s)
 .PHONY: tsb-cp-uninstall
 tsb-cp-uninstall: ## Install TSB control/data plane(s)
 	@/bin/bash -c './cp.sh uninstall'
-
-.PHONY: info
-info: ## Get infra environment info
-	@/bin/bash -c './infra.sh info'
 
 .PHONY: scenario-deploy
 scenario-deploy: ## Deploy this scenario
