@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gateway-t1-abcd
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gateway-transit1-c
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gateway-transit1-g
