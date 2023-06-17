@@ -652,6 +652,8 @@ function wait_cluster_ready {
   while ! $(kubectl config get-contexts | grep "${cluster_name}" &>/dev/null) ; do sleep 0.1 ; echo -n "." ; done ; echo "DONE" ;
   echo -n "Waiting for kubectl to be able to reach cluster apiserver of '${cluster_name}': "
   while ! $(kubectl --context ${cluster_name} get nodes &>/dev/null) ; do sleep 0.1 ; echo -n "." ; done ; echo "DONE" ;
+  echo -n "Waiting for kubectl to be able to reach metrics.k8s.io/v1beta1 endpoint of '${cluster_name}': "
+  while ! $(kubectl --context ${cluster_name} get --raw /apis/metrics.k8s.io/v1beta1 &>/dev/null) ; do sleep 0.1 ; echo -n "." ; done ; echo "DONE" ;
 
   case ${k8s_provider} in
     "k3s")
