@@ -1,4 +1,4 @@
-# Tetrate Service Bridge on Local Kubernetes
+# Tetrate Service Bridge on Local Kubernetes (K3s/Kind/Minikube) within a Single VM
 
 ## Introduction
 
