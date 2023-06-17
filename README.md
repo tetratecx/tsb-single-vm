@@ -148,6 +148,7 @@ A short enumeration of the parameters to be configured:
 |cp_clusters|list|a list TSB controlplane clusters|
 |cp_clusters.[].name|string|the name of this controlplane cluster (used as local kubectl context, docker network name and TSB cluster name)|
 |cp_clusters.[].region|string|the region to configure for this controlplane cluster|
+|cp_clusters.[].trust_domain|string|the trust domain to configure for this controlplane cluster|
 |cp_clusters.[].zone|string|the zone to configure for this controlplane cluster|
 |cp_clusters.[].vms|list|a list of VMs to spin-up in the same network as this controlplane cluster|
 |cp_clusters.[].vms.[].image|string|the base image to use as VM|
@@ -158,6 +159,7 @@ A short enumeration of the parameters to be configured:
 |mp_cluster.demo_profile|bool|use TSB demo installation profile (with cert-manager, postgres, elastic, redis and ldap)|
 |mp_cluster.name|string|the name of this managementplane cluster (used as local kubectl context, docker network name and TSB cluster name)|
 |mp_cluster.region|string|the region to configure for the managementplane cluster|
+|mp_cluster.trust_domain|string|the trust domain to configure for the managementplane cluster|
 |mp_cluster.zone|string|the zone to configure for the managementplane cluster|
 |mp_cluster.vms|list||a list of VMs to spin-up in the same network as the managementplane cluster|
 |mp_cluster.vms.[].image|string|the base image to use as VM|
