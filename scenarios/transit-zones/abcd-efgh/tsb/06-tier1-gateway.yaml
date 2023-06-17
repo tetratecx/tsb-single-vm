@@ -21,7 +21,7 @@ spec:
       mode: SIMPLE
       secretName: app-abcd-cert
     clusters:
-    - name: app-cluster1
+    - name: app1
 ---
 apiVersion: gateway.tsb.tetrate.io/v2
 kind: Tier1Gateway
@@ -41,7 +41,7 @@ spec:
   - name: transit1-c
     hostname: app-c.ns-c
     clusters:
-    - name: transit-cluster2
+    - name: transit2
 ---
 apiVersion: gateway.tsb.tetrate.io/v2
 kind: Tier1Gateway
@@ -61,7 +61,7 @@ spec:
   - name: transit2-c
     hostname: app-c.ns-c
     clusters:
-    - name: app-cluster2
+    - name: app2
 ---
 apiVersion: gateway.tsb.tetrate.io/v2
 kind: Tier1Gateway
@@ -85,7 +85,7 @@ spec:
       mode: SIMPLE
       secretName: app-efgh-cert
     clusters:
-    - name: app-cluster2
+    - name: app2
 ---
 apiVersion: gateway.tsb.tetrate.io/v2
 kind: Tier1Gateway
@@ -105,7 +105,7 @@ spec:
   - name: transit2-g
     hostname: app-g.ns-g
     clusters:
-    - name: transit-cluster1
+    - name: transit1
 ---
 apiVersion: gateway.tsb.tetrate.io/v2
 kind: Tier1Gateway
@@ -125,4 +125,4 @@ spec:
   - name: transit1-g
     hostname: app-g.ns-g
     clusters:
-    - name: app-cluster1
+    - name: app1

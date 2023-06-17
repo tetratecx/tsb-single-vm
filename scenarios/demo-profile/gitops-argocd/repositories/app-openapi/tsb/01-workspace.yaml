@@ -10,5 +10,5 @@ spec:
   displayName: OpenAPI Apps
   namespaceSelector:
     names:
-    - "demo-cluster/app1"
-    - "demo-cluster/app2"
+    - "demo/app1"
+    - "demo/app2"

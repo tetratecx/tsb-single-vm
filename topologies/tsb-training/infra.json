@@ -5,6 +5,7 @@
     "demo_profile": true,
     "name": "t1",
     "region": "us-central1",
+    "trust_domain": "t1",
     "zone": "us-central1-a",
     "vms": []
   },
@@ -12,6 +13,7 @@
     {
       "name": "c1",
       "region": "us-central1",
+      "trust_domain": "c1",
       "zone": "us-central1-a",
       "vms": [
         {
@@ -23,6 +25,7 @@
     {
       "name": "c2",
       "region": "us-east1",
+      "trust_domain": "c2",
       "zone": "us-east1-a",
       "vms": []
     }

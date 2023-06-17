@@ -21,5 +21,5 @@ spec:
       mode: SIMPLE
       secretName: app-abc-cert
     clusters:
-    - name: active-cluster
-    - name: standby-cluster
+    - name: active
+    - name: standby

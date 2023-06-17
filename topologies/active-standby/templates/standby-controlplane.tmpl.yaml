@@ -9,7 +9,7 @@ spec:
   managementPlane:
     host: $TSB_API_ENDPOINT
     port: 8443
-    clusterName: app-cluster2
+    clusterName: $TSB_CLUSTER_NAME
     selfSigned: true
   telemetryStore:
     elastic:
@@ -21,9 +21,10 @@ spec:
     internalCertProvider:
       certManager:
         managed: INTERNAL
+    istio:
+      trustDomain: $TSB_TRUST_DOMAIN
     xcp:
       centralAuthMode: JWT
-      enableHttpMeshInternalIdentityPropagation: true
       kubeSpec:
         overlays:
         - apiVersion: install.xcp.tetrate.io/v1alpha1
@@ -40,4 +41,3 @@ spec:
             value:
               name: CLUSTER_STATE_RESYNC_INTERVAL
               value: "20s"
-

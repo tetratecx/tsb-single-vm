@@ -9,7 +9,7 @@ spec:
   managementPlane:
     host: $TSB_API_ENDPOINT
     port: 8443
-    clusterName: cluster2
+    clusterName: $TSB_CLUSTER_NAME
     selfSigned: true
   telemetryStore:
     elastic:
@@ -21,8 +21,11 @@ spec:
     internalCertProvider:
       certManager:
         managed: INTERNAL
+    istio:
+      trustDomain: $TSB_TRUST_DOMAIN
     xcp:
       centralAuthMode: JWT
+      enableHttpMeshInternalIdentityPropagation: true
       kubeSpec:
         overlays:
         - apiVersion: install.xcp.tetrate.io/v1alpha1
@@ -31,6 +34,10 @@ spec:
           patches:
           - path: spec.centralAuthJwt.centralSni
             value: "central.xcp.tetrate.io"
+          - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+            value:
+              name: ENABLE_ENHANCED_EAST_WEST_ROUTING
+              value: "true"
           - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
             value:
               name: CLUSTER_STATE_RESYNC_INTERVAL

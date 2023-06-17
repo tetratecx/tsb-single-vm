@@ -1,26 +1,30 @@
 {
   "cp_clusters": [
     {
-      "name": "app-cluster1",
+      "name": "app1",
       "region": "region1",
+      "trust_domain": "app1",
       "vms": [],
       "zone": "zone1a"
     },
     {
-      "name": "transit-cluster1",
+      "name": "transit1",
       "region": "region1",
+      "trust_domain": "transit1",
       "vms": [],
       "zone": "zone1b"
     },
     {
-      "name": "transit-cluster2",
+      "name": "transit2",
       "region": "region2",
+      "trust_domain": "transit2",
       "vms": [],
       "zone": "zone2a"
     },
     {
-      "name": "app-cluster2",
+      "name": "app2",
       "region": "region2",
+      "trust_domain": "app2",
       "vms": [],
       "zone": "zone2b"
     }
@@ -29,8 +33,9 @@
   "k8s_version": "1.25.9",
   "mp_cluster": {
     "demo_profile": true,
-    "name": "mgmt-cluster",
+    "name": "mgmt",
     "region": "region0",
+    "trust_domain": "mgmt",
     "vms": [],
     "zone": "zone0a"
   }

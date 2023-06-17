@@ -21,10 +21,10 @@ if [[ ${ACTION} = "deploy" ]]; then
   # Wait for clusters to be onboarded to avoid race conditions
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ;
   sleep 5 ;
-  wait_cluster_onboarded app-cluster1 ;
-  wait_cluster_onboarded transit-cluster1 ;
-  wait_cluster_onboarded transit-cluster2 ;
-  wait_cluster_onboarded app-cluster2 ;
+  wait_cluster_onboarded app1 ;
+  wait_cluster_onboarded transit1 ;
+  wait_cluster_onboarded transit2 ;
+  wait_cluster_onboarded app2 ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/02-organization-setting.yaml ;
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-tenant.yaml ;
 
@@ -33,51 +33,51 @@ if [[ ${ACTION} = "deploy" ]]; then
   generate_server_cert efgh demo.tetrate.io ;
   CERTS_BASE_DIR=$(get_certs_base_dir) ;
 
-  # Deploy kubernetes objects in app-cluster1
-  kubectl --context app-cluster1 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster1/01-namespace.yaml ;
-  if ! kubectl --context app-cluster1 get secret app-abcd-cert -n gateway-a &>/dev/null ; then
-    kubectl --context app-cluster1 create secret tls app-abcd-cert -n gateway-a \
+  # Deploy kubernetes objects in cluster 'app1'
+  kubectl --context app1 apply -f ${SCENARIO_ROOT_DIR}/k8s/app1/01-namespace.yaml ;
+  if ! kubectl --context app1 get secret app-abcd-cert -n gateway-a &>/dev/null ; then
+    kubectl --context app1 create secret tls app-abcd-cert -n gateway-a \
       --key ${CERTS_BASE_DIR}/abcd/server.abcd.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/abcd/server.abcd.demo.tetrate.io-cert.pem ;
   fi
-  kubectl --context app-cluster1 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster1/02-service-account.yaml
-  mkdir -p ${ROOT_DIR}/output/app-cluster1/k8s ;
-  envsubst < ${SCENARIO_ROOT_DIR}/k8s/app-cluster1/03-deployment.yaml > ${ROOT_DIR}/output/app-cluster1/k8s/03-deployment.yaml ;
-  kubectl --context app-cluster1 apply -f ${ROOT_DIR}/output/app-cluster1/k8s/03-deployment.yaml ;
-  kubectl --context app-cluster1 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster1/04-service.yaml
-  kubectl --context app-cluster1 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster1/05-ingress-gateway.yaml
+  kubectl --context app1 apply -f ${SCENARIO_ROOT_DIR}/k8s/app1/02-service-account.yaml
+  mkdir -p ${ROOT_DIR}/output/app1/k8s ;
+  envsubst < ${SCENARIO_ROOT_DIR}/k8s/app1/03-deployment.yaml > ${ROOT_DIR}/output/app1/k8s/03-deployment.yaml ;
+  kubectl --context app1 apply -f ${ROOT_DIR}/output/app1/k8s/03-deployment.yaml ;
+  kubectl --context app1 apply -f ${SCENARIO_ROOT_DIR}/k8s/app1/04-service.yaml
+  kubectl --context app1 apply -f ${SCENARIO_ROOT_DIR}/k8s/app1/05-ingress-gateway.yaml
 
-  # Deploy kubernetes objects in in transit-cluster1
-  kubectl --context transit-cluster1 apply -f ${SCENARIO_ROOT_DIR}/k8s/transit-cluster1/01-namespace.yaml ;
-  if ! kubectl --context transit-cluster1 get secret app-abcd-cert -n gateway-t1-abcd &>/dev/null ; then
-    kubectl --context transit-cluster1 create secret tls app-abcd-cert -n gateway-t1-abcd \
+  # Deploy kubernetes objects in cluster 'transit1'
+  kubectl --context transit1 apply -f ${SCENARIO_ROOT_DIR}/k8s/transit1/01-namespace.yaml ;
+  if ! kubectl --context transit1 get secret app-abcd-cert -n gateway-t1-abcd &>/dev/null ; then
+    kubectl --context transit1 create secret tls app-abcd-cert -n gateway-t1-abcd \
       --key ${CERTS_BASE_DIR}/abcd/server.abcd.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/abcd/server.abcd.demo.tetrate.io-cert.pem ;
   fi
-  kubectl --context transit-cluster1 apply -f ${SCENARIO_ROOT_DIR}/k8s/transit-cluster1/02-tier1-gateway.yaml
+  kubectl --context transit1 apply -f ${SCENARIO_ROOT_DIR}/k8s/transit1/02-tier1-gateway.yaml
 
-  # Deploy kubernetes objects in in transit-cluster2
-  kubectl --context transit-cluster2 apply -f ${SCENARIO_ROOT_DIR}/k8s/transit-cluster2/01-namespace.yaml ;
-  if ! kubectl --context transit-cluster2 get secret app-efgh-cert -n gateway-t1-efgh &>/dev/null ; then
-    kubectl --context transit-cluster2 create secret tls app-efgh-cert -n gateway-t1-efgh \
+  # Deploy kubernetes objects in cluster 'transit2'
+  kubectl --context transit2 apply -f ${SCENARIO_ROOT_DIR}/k8s/transit2/01-namespace.yaml ;
+  if ! kubectl --context transit2 get secret app-efgh-cert -n gateway-t1-efgh &>/dev/null ; then
+    kubectl --context transit2 create secret tls app-efgh-cert -n gateway-t1-efgh \
       --key ${CERTS_BASE_DIR}/efgh/server.efgh.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/efgh/server.efgh.demo.tetrate.io-cert.pem ;
   fi
-  kubectl --context transit-cluster2 apply -f ${SCENARIO_ROOT_DIR}/k8s/transit-cluster2/02-tier1-gateway.yaml
+  kubectl --context transit2 apply -f ${SCENARIO_ROOT_DIR}/k8s/transit2/02-tier1-gateway.yaml
 
-  # Deploy kubernetes objects in app-cluster2
-  kubectl --context app-cluster2 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster2/01-namespace.yaml ;
-  if ! kubectl --context app-cluster2 get secret app-efgh-cert -n gateway-e &>/dev/null ; then
-    kubectl --context app-cluster2 create secret tls app-efgh-cert -n gateway-e \
+  # Deploy kubernetes objects in cluster 'app2'
+  kubectl --context app2 apply -f ${SCENARIO_ROOT_DIR}/k8s/app2/01-namespace.yaml ;
+  if ! kubectl --context app2 get secret app-efgh-cert -n gateway-e &>/dev/null ; then
+    kubectl --context app2 create secret tls app-efgh-cert -n gateway-e \
       --key ${CERTS_BASE_DIR}/efgh/server.efgh.demo.tetrate.io-key.pem \
       --cert ${CERTS_BASE_DIR}/efgh/server.efgh.demo.tetrate.io-cert.pem ;
   fi
-  kubectl --context app-cluster2 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster2/02-service-account.yaml
-  mkdir -p ${ROOT_DIR}/output/app-cluster2/k8s ;
-  envsubst < ${SCENARIO_ROOT_DIR}/k8s/app-cluster2/03-deployment.yaml > ${ROOT_DIR}/output/app-cluster2/k8s/03-deployment.yaml ;
-  kubectl --context app-cluster2 apply -f ${ROOT_DIR}/output/app-cluster2/k8s/03-deployment.yaml ;
-  kubectl --context app-cluster2 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster2/04-service.yaml
-  kubectl --context app-cluster2 apply -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster2/05-ingress-gateway.yaml
+  kubectl --context app2 apply -f ${SCENARIO_ROOT_DIR}/k8s/app2/02-service-account.yaml
+  mkdir -p ${ROOT_DIR}/output/app2/k8s ;
+  envsubst < ${SCENARIO_ROOT_DIR}/k8s/app2/03-deployment.yaml > ${ROOT_DIR}/output/app2/k8s/03-deployment.yaml ;
+  kubectl --context app2 apply -f ${ROOT_DIR}/output/app2/k8s/03-deployment.yaml ;
+  kubectl --context app2 apply -f ${SCENARIO_ROOT_DIR}/k8s/app2/04-service.yaml
+  kubectl --context app2 apply -f ${SCENARIO_ROOT_DIR}/k8s/app2/05-ingress-gateway.yaml
 
   # Deploy tsb objects
   tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/04-workspace.yaml ;
@@ -102,12 +102,12 @@ if [[ ${ACTION} = "undeploy" ]]; then
   done
 
   # Delete kubernetes configuration in mgmt, active and standby cluster
-  kubectl --context app-cluster1 delete -f ${ROOT_DIR}/output/app-cluster1/k8s/03-deployment.yaml 2>/dev/null ;
-  kubectl --context app-cluster1 delete -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster1 2>/dev/null ;
-  kubectl --context transit-cluster1 delete -f ${SCENARIO_ROOT_DIR}/k8s/transit-cluster1 2>/dev/null ;
-  kubectl --context transit-cluster2 delete -f ${SCENARIO_ROOT_DIR}/k8s/transit-cluster2 2>/dev/null ;
-  kubectl --context app-cluster2 delete -f ${ROOT_DIR}/output/app-cluster2/k8s/03-deployment.yaml 2>/dev/null ;
-  kubectl --context app-cluster2 delete -f ${SCENARIO_ROOT_DIR}/k8s/app-cluster2 2>/dev/null ;
+  kubectl --context app1 delete -f ${ROOT_DIR}/output/app1/k8s/03-deployment.yaml 2>/dev/null ;
+  kubectl --context app1 delete -f ${SCENARIO_ROOT_DIR}/k8s/app1 2>/dev/null ;
+  kubectl --context transit1 delete -f ${SCENARIO_ROOT_DIR}/k8s/transit1 2>/dev/null ;
+  kubectl --context transit2 delete -f ${SCENARIO_ROOT_DIR}/k8s/transit2 2>/dev/null ;
+  kubectl --context app2 delete -f ${ROOT_DIR}/output/app2/k8s/03-deployment.yaml 2>/dev/null ;
+  kubectl --context app2 delete -f ${SCENARIO_ROOT_DIR}/k8s/app2 2>/dev/null ;
 
   exit 0
 fi
@@ -115,8 +115,8 @@ fi
 
 if [[ ${ACTION} = "info" ]]; then
 
-  ABCD_T1_GW_IP=$(kubectl --context transit-cluster1 get svc -n gateway-t1-abcd gw-t1-abcd --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
-  EFGH_T1_GW_IP=$(kubectl --context transit-cluster2 get svc -n gateway-t1-efgh gw-t1-efgh --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  ABCD_T1_GW_IP=$(kubectl --context transit1 get svc -n gateway-t1-abcd gw-t1-abcd --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  EFGH_T1_GW_IP=$(kubectl --context transit2 get svc -n gateway-t1-efgh gw-t1-efgh --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
 
   CERTS_BASE_DIR=$(get_certs_base_dir) ;
 

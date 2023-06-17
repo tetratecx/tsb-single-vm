@@ -10,7 +10,7 @@ spec:
   displayName: GatewayABC_WS
   namespaceSelector:
     names:
-      - "demo-cluster/gateway-abc"
+      - "demo/gateway-abc"
 ---
 apiVersion: tsb.tetrate.io/v2
 kind: Workspace
@@ -23,7 +23,7 @@ spec:
   displayName: AppA_WS
   namespaceSelector:
     names:
-      - "demo-cluster/ns-a"
+      - "demo/ns-a"
 ---
 apiVersion: tsb.tetrate.io/v2
 kind: Workspace
@@ -36,7 +36,7 @@ spec:
   displayName: AppB_WS
   namespaceSelector:
     names:
-      - "demo-cluster/ns-b"
+      - "demo/ns-b"
 ---
 apiVersion: tsb.tetrate.io/v2
 kind: Workspace
@@ -49,4 +49,4 @@ spec:
   displayName: AppC_WS
   namespaceSelector:
     names:
-      - "demo-cluster/ns-c"
+      - "demo/ns-c"

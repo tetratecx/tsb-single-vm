@@ -9,7 +9,7 @@ spec:
   displayName: GatewayT1_WS_ABC
   namespaceSelector:
     names:
-      - "mgmt-cluster/gateway-tier1-abc"
+      - "mgmt/gateway-tier1-abc"
 ---
 apiversion: api.tsb.tetrate.io/v2
 kind: Workspace
@@ -21,7 +21,7 @@ spec:
   displayName: GatewayT1_WS_DEF
   namespaceSelector:
     names:
-      - "mgmt-cluster/gateway-tier1-def"
+      - "mgmt/gateway-tier1-def"
 ---
 apiversion: api.tsb.tetrate.io/v2
 kind: Workspace
@@ -33,7 +33,7 @@ spec:
   displayName: GatewayT1_WS_GHI
   namespaceSelector:
     names:
-      - "mgmt-cluster/gateway-tier1-ghi"
+      - "mgmt/gateway-tier1-ghi"
 ---
 apiversion: api.tsb.tetrate.io/v2
 kind: Workspace

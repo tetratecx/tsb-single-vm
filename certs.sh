@@ -104,7 +104,7 @@ function generate_server_cert {
 ### Cert Generation Tests
 
 # generate_root_cert ;
-# generate_istio_cert mgmt-cluster ;
+# generate_istio_cert mgmt ;
 # generate_istio_cert active-cluster ;
 # generate_istio_cert standby-cluster ;
 # generate_client_cert vm-onboarding tetrate.prod ;

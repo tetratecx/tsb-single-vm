@@ -9,7 +9,7 @@ spec:
   managementPlane:
     host: $TSB_API_ENDPOINT
     port: 8443
-    clusterName: c1
+    clusterName: $TSB_CLUSTER_NAME
     selfSigned: true
   telemetryStore:
     elastic:
@@ -22,7 +22,7 @@ spec:
       certManager:
         managed: INTERNAL
     istio:
-      trustDomain: c1
+      trustDomain: $TSB_TRUST_DOMAIN
     xcp:
       centralAuthMode: JWT
       kubeSpec:
@@ -41,4 +41,3 @@ spec:
             value:
               name: CLUSTER_STATE_RESYNC_INTERVAL
               value: "20s"
-  meshExpansion: {}

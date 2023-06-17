@@ -11,7 +11,7 @@ spec:
   displayName: GatewayABC_GatewayGroup
   namespaceSelector:
     names:
-      - "demo-cluster/gateway-abc"
+      - "demo/gateway-abc"
   configMode: BRIDGED
 ---
 apiVersion: traffic.tsb.tetrate.io/v2
@@ -26,7 +26,7 @@ spec:
   displayName: AppA_TrafficGroup
   namespaceSelector:
     names:
-      - "demo-cluster/ns-a"
+      - "demo/ns-a"
   configMode: BRIDGED
 ---
 apiVersion: security.tsb.tetrate.io/v2
@@ -41,7 +41,7 @@ spec:
   displayName: AppA_SecurityGroup
   namespaceSelector:
     names:
-      - "demo-cluster/ns-a"
+      - "demo/ns-a"
   configMode: BRIDGED
 ---
 apiVersion: traffic.tsb.tetrate.io/v2
@@ -56,7 +56,7 @@ spec:
   displayName: AppB_TrafficGroup
   namespaceSelector:
     names:
-      - "demo-cluster/ns-b"
+      - "demo/ns-b"
   configMode: BRIDGED
 ---
 apiVersion: security.tsb.tetrate.io/v2
@@ -71,7 +71,7 @@ spec:
   displayName: AppB_SecurityGroup
   namespaceSelector:
     names:
-      - "demo-cluster/ns-b"
+      - "demo/ns-b"
   configMode: BRIDGED
 ---
 apiVersion: traffic.tsb.tetrate.io/v2
@@ -86,7 +86,7 @@ spec:
   displayName: AppC_TrafficGroup
   namespaceSelector:
     names:
-      - "demo-cluster/ns-c"
+      - "demo/ns-c"
   configMode: BRIDGED
 ---
 apiVersion: security.tsb.tetrate.io/v2
@@ -101,5 +101,5 @@ spec:
   displayName: AppC_SecurityGroup
   namespaceSelector:
     names:
-      - "demo-cluster/ns-c"
+      - "demo/ns-c"
   configMode: BRIDGED

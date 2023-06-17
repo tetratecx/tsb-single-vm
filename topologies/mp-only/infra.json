@@ -27,8 +27,9 @@
       }
     },
     "demo_profile": false,
-    "name": "mgmt-cluster",
+    "name": "mgmt",
     "region": "region1",
+    "trust_domain": "mgmt",
     "vms": [],
     "zone": "zone1a"
   }

@@ -63,7 +63,7 @@ function create_and_sync_gitea_repos {
 if [[ ${ACTION} = "deploy" ]]; then
 
   # Start gitea server
-  gitea_start_server "" "demo-cluster" ;
+  gitea_start_server "" "demo " ;
   gitea_bootstrap_server "${GITEA_CONFIG_FILE}" ;
   gitea_http_url=$(gitea_get_http_url) ;
   gitea_wait_api_ready "${gitea_http_url}" ;
@@ -74,17 +74,17 @@ if [[ ${ACTION} = "deploy" ]]; then
   login_tsb_admin tetrate ;
 
   # Enable gitops in the CP cluster
-  print_info "Enabling GitOps in the CP demo-cluster" ;
+  print_info "Enabling GitOps in the CP cluster 'demo'" ;
   GITOPS_PATCH='{"spec":{"components":{"gitops":{"enabled":true,"reconcileInterval":"30s"}}}}' ;
-  kubectl --context demo-cluster -n istio-system patch controlplane/controlplane --type merge --patch ${GITOPS_PATCH} ;
-  tctl x gitops grant demo-cluster ;
+  kubectl --context demo  -n istio-system patch controlplane/controlplane --type merge --patch ${GITOPS_PATCH} ;
+  tctl x gitops grant demo  ;
 
   # Deploy argocd in kubernetes
-  argocd_deploy "demo-cluster" ;
-  argocd_set_admin_password "demo-cluster" ;
+  argocd_deploy "demo " ;
+  argocd_set_admin_password "demo " ;
 
   # Configure argocd for application gitops  
-  argocd --insecure cluster add "demo-cluster" --yes ;
+  argocd --insecure cluster add "demo " --yes ;
   argocd --insecure app create tsb-admin --upsert --repo ${gitea_http_url}/${GITEA_ADMIN_USER}/tsb-admin.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
   argocd --insecure app create app-abc --upsert --repo ${gitea_http_url}/${GITEA_ADMIN_USER}/app-abc.git --path k8s --dest-server https://kubernetes.default.svc ;
   argocd --insecure app create app-abc-tsb --upsert --repo ${gitea_http_url}/${GITEA_ADMIN_USER}/app-abc.git --path tsb --dest-server https://kubernetes.default.svc --dest-namespace argocd ;
@@ -113,7 +113,7 @@ if [[ ${ACTION} = "undeploy" ]]; then
   gitea_remove_server ;
 
   # Undeploy argocd from kubernetes
-  argocd_undeploy demo-cluster ;
+  argocd_undeploy demo  ;
 
   exit 0
 fi
@@ -124,16 +124,16 @@ if [[ ${ACTION} = "info" ]]; then
   GITEA_HTTP_URL=$(gitea_get_http_url) ;
   print_info "Gitea server web ui running at ${GITEA_HTTP_URL}" ;
 
-  ARGOCD_IP=$(kubectl --context demo-cluster -n argocd get svc argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ;
+  ARGOCD_IP=$(kubectl --context demo  -n argocd get svc argocd-server --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ;
   print_info "ArgoCD web ui running at https://${ARGOCD_IP}" ;
 
-  while ! APPABC_INGRESS_GW_IP=$(kubectl --context demo-cluster get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+  while ! APPABC_INGRESS_GW_IP=$(kubectl --context demo  get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
     sleep 1;
   done
-  while ! APP1_INGRESS_GW_IP=$(kubectl --context demo-cluster get svc -n app1 app1-ingress --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+  while ! APP1_INGRESS_GW_IP=$(kubectl --context demo  get svc -n app1 app1-ingress --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
     sleep 1;
   done
-  while ! APP2_INGRESS_GW_IP=$(kubectl --context demo-cluster get svc -n app2 app2-ingress --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+  while ! APP2_INGRESS_GW_IP=$(kubectl --context demo  get svc -n app2 app2-ingress --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
     sleep 1;
   done
 

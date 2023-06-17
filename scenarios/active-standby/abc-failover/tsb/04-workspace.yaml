@@ -9,7 +9,7 @@ spec:
   displayName: GatewayTier1_WS
   namespaceSelector:
     names:
-      - "mgmt-cluster/gateway-tier1"
+      - "mgmt/gateway-tier1"
 ---
 apiversion: api.tsb.tetrate.io/v2
 kind: Workspace

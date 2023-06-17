@@ -60,6 +60,10 @@ function get_mp_region {
   jq -r ".mp_cluster.region" ${TOPOLOGY_CONF}
 }
 
+function get_mp_trust_domain {
+  jq -r ".mp_cluster.trust_domain" ${TOPOLOGY_CONF}
+}
+
 function get_mp_vm_count {
   jq -r ".mp_cluster.vms | length" ${TOPOLOGY_CONF}
 }
@@ -109,6 +113,11 @@ function get_cp_vm_name_by_index {
 function get_cp_region_by_index {
   i=${1}
   jq -r ".cp_clusters[${i}].region" ${TOPOLOGY_CONF}
+}
+
+function get_cp_trust_domain_by_index {
+  i=${1}
+  jq -r ".cp_clusters[${i}].trust_domain" ${TOPOLOGY_CONF}
 }
 
 function get_cp_zone_by_index {
@@ -164,9 +173,9 @@ function get_mp_output_dir {
   echo ${OUTPUT_DIR}/$(get_mp_name)
 }
 
-function get_cp_config_dir {
+function get_cp_template_file {
   i=${1}
-  echo $(get_topology_dir)/$(get_cp_name_by_index ${i})
+  echo $(get_topology_dir)/templates/$(get_cp_name_by_index ${i})-controlplane.tmpl.yaml
 }
 
 function get_cp_output_dir {
@@ -180,6 +189,7 @@ function get_cp_output_dir {
 # get_k8s_version;
 # get_mp_name;
 # get_mp_region;
+# get_mp_trust_domain;
 # get_mp_vm_count;
 # get_mp_vm_image_by_index 0;
 # get_mp_vm_image_by_index 1;
@@ -189,6 +199,7 @@ function get_cp_output_dir {
 # get_cp_count;
 # get_cp_name_by_index 0;
 # get_cp_region_by_index 0;
+# get_cp_trust_domain_by_index 0;
 # get_cp_zone_by_index 0;
 # get_cp_name_by_index 1;
 # get_cp_vm_count_by_index 0;
@@ -202,6 +213,7 @@ function get_cp_output_dir {
 # get_cp_vm_image_by_index 1 0;
 # get_cp_vm_image_by_index 1 1;
 # get_cp_region_by_index 1;
+# get_cp_trust_domain_by_index 1;
 # get_cp_zone_by_index 1;
 
 # get_tsb_repo_password;
@@ -213,9 +225,9 @@ function get_cp_output_dir {
 # get_certs_base_dir;
 # get_mp_config_dir;
 # get_mp_output_dir;
-# get_cp_config_dir 0;
+# get_cp_template_file 0;
 # get_cp_output_dir 0;
-# get_cp_config_dir 1;
+# get_cp_template_file 1;
 # get_cp_output_dir 1;
 
 # get_scenario_dir;

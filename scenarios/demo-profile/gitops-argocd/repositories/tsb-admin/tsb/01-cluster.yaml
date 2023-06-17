@@ -4,7 +4,7 @@ kind: Cluster
 metadata:
   annotations:
     tsb.tetrate.io/organization: tetrate
-  name: demo-cluster
+  name: demo
 spec:
   locality:
     region: region1

@@ -11,7 +11,7 @@ spec:
   displayName: App One Gateways
   namespaceSelector:
     names:
-    - "demo-cluster/app1"
+    - "demo/app1"
 ---
 apiVersion: gateway.tsb.tetrate.io/v2
 kind: Group
@@ -25,4 +25,4 @@ spec:
   displayName: App Two Gateways
   namespaceSelector:
     names:
-    - "demo-cluster/app2"
+    - "demo/app2"

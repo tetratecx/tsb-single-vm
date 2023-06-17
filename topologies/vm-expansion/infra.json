@@ -4,8 +4,9 @@
   "k8s_version": "1.25.9",
   "mp_cluster": {
     "demo_profile": true,
-    "name": "mgmt-cluster",
+    "name": "mgmt",
     "region": "region1",
+    "trust_domain": "mgmt",
     "vms": [
       {
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",

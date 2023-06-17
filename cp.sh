@@ -36,7 +36,8 @@ if [[ ${ACTION} = "install" ]]; then
   CP_INDEX=0
   while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
     CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
-    CP_CONFIG_DIR=$(get_cp_config_dir ${CP_INDEX}) ;
+    CP_TRUST_DOMAIN=$(get_cp_trust_domain_by_index ${CP_INDEX}) ;
+    CP_TEMPLATE_FILE=$(get_cp_template_file ${CP_INDEX}) ;
     CP_OUTPUT_DIR=$(get_cp_output_dir ${CP_INDEX}) ;
     print_info "Start installation of tsb control plane in cluster ${CP_CLUSTER_NAME}"
 
@@ -57,7 +58,9 @@ if [[ ${ACTION} = "install" ]]; then
       > ${CP_OUTPUT_DIR}/controlplane-secrets.yaml ;
 
     # Generate controlplane.yaml by inserting the correct mgmt plane API endpoint IP address
-    envsubst < ${CP_CONFIG_DIR}/controlplane-template.yaml > ${CP_OUTPUT_DIR}/controlplane.yaml ;
+    export TSB_CLUSTER_NAME=${CP_CLUSTER_NAME} ;
+    export TSB_TRUST_DOMAIN=${CP_TRUST_DOMAIN} ;
+    envsubst < ${CP_TEMPLATE_FILE} > ${CP_OUTPUT_DIR}/controlplane.yaml ;
 
     # bootstrap cluster with self signed certificate that share a common root certificate
     #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#intermediate-istio-ca-certificates

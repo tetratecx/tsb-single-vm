@@ -9,7 +9,7 @@ spec:
   managementPlane:
     host: $TSB_API_ENDPOINT
     port: 8443
-    clusterName: transit-cluster1
+    clusterName: $TSB_CLUSTER_NAME
     selfSigned: true
   telemetryStore:
     elastic:
@@ -21,6 +21,8 @@ spec:
     internalCertProvider:
       certManager:
         managed: INTERNAL
+    istio:
+      trustDomain: $TSB_TRUST_DOMAIN
     xcp:
       centralAuthMode: JWT
       enableHttpMeshInternalIdentityPropagation: true
