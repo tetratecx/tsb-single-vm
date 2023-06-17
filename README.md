@@ -27,31 +27,63 @@ In terms of memory constraints of the VM: a 64GB Ubuntu machine can support up t
 
 In order to spin-up an environment, leveraging a certain topology and scenario, a top level JSON file `env.json` needs to be configured. An example (without actual TSB repo password) is provided [here](./env-template.json).
 
-The JSON file contains configuration data on the topology and scenario to be used. The topology and scenario names match exactly the name of the folders within the [scenario](./scenario) and [topology](./topology) folders.
+The JSON file contains configuration data on the topology and scenario to be used. The topology and scenario names match exactly the name of the folders structure under **topologies/<topolgy-name>/scenarios/<scenario-name>**.
 
 
 ```console
-# tree topologies/ -L 1
+# tree topologies/ -L 3
 topologies
 ├── active-standby
+│   ├── infra.json
+│   ├── scenarios
+│   │   ├── abc-failover
+│   │   └── bookinfo
+│   └── templates
+│       ├── active-controlplane.tmpl.yaml
+│       └── standby-controlplane.tmpl.yaml
 ├── demo-profile
+│   ├── infra.json
+│   └── scenarios
+│       ├── gitops-argocd
+│       └── gitops-fluxcd
 ├── hub-spoke
+│   ├── infra.json
+│   ├── scenarios
+│   │   └── abc-def-ghi
+│   └── templates
+│       ├── cluster1-controlplane.tmpl.yaml
+│       ├── cluster2-controlplane.tmpl.yaml
+│       └── cluster3-controlplane.tmpl.yaml
+├── infra-template.json
+├── mp-only
+│   ├── infra.json
+│   ├── scenarios
+│   └── templates
+│       └── mgmt-managementplane.tmpl.yaml
 ├── transit-zones
+│   ├── infra.json
+│   ├── scenarios
+│   │   └── abcd-efgh
+│   └── templates
+│       ├── app1-controlplane.tmpl.yaml
+│       ├── app2-controlplane.tmpl.yaml
+│       ├── transit1-controlplane.tmpl.yaml
+│       └── transit2-controlplane.tmpl.yaml
+├── tsb-training
+│   ├── infra.json
+│   ├── scenarios
+│   │   └── main
+│   └── templates
+│       ├── c1-controlplane.tmpl.yaml
+│       └── c2-controlplane.tmpl.yaml
 ├── vm-expansion
+│   ├── infra.json
+│   └── scenarios
+│       └── abc-hybrid
 └── vm-only
-
-$ tree scenarios/ -L 2
-scenarios
-├── active-standby
-│   └── abc-failover
-├── hub-spoke
-│   └── abc-def-ghi
-├── transit-zones
-│   └── abcd-efgh
-├── vm-expansion
-│   └── abc-hybrid
-└── vm-only
-    └── abc-vm
+    ├── infra.json
+    └── scenarios
+        └── abc-vm
 ```
 
 A short enumeration of the paramaters to be configured:
@@ -130,12 +162,14 @@ Currently a handful of useful topologies are available:
 ```console
 # ls topologies -1
 
-active-standby/
-demo-profile/
-hub-spoke/
-transit-zones/
-vm-expansion/
-vm-only/
+active-standby
+demo-profile
+hub-spoke
+mp-only
+transit-zones
+tsb-training
+vm-expansion
+vm-only
 infra-template.json
 ```
 
@@ -176,15 +210,16 @@ Current scenarios implemented on the available topologies all leverage our built
 
 Scenarios should not limit themselves to demo applications. One can also implement a scenario to demonstrate gitops, ci/cd, telemetry, rbac or other integrations. As long as the components are docker/k8s friendly and there is no hard-coded external dependency, anything is possible.
 
-Scenario documentation and screenshots are to be provided in the corresponding scenario folders (TODO).
+Scenario documentation and screenshots are to be provided in the corresponding scenario subfolders within a topology (TODO).
 
 | topology | scenario | description |
 |----------|----------|-------------|
-| [active-standby](./topologies/active-standby) | [abc-failover](./scenarios/active-standby/abc-failover) | mgmt cluster as T1, active cluster with a-b-c, standby cluster as failover |
-| [hub-spoke](./topologies/hub-spoke) | [abc-def-ghi](./scenarios/hub-spoke/abc-def-ghi) | mgmt cluster as multi-tenant T1, a-b-c d-e-f and g-h-i as separate tenants |
-| [transit-zones](./topologies/transit-zones) | [abcd-efgh](./scenarios/transit-zones/abcd-efgh) | mgmt cluster and 2 app clusters and 2 transit cluster, ab-cd and ef-gh bidirectional cross transit |
-| [vm-expansion](./topologies/vm-expansion) | [abc-hybrid](./scenarios/vm-expansion/abc-hybrid) | mgmt cluster as T1, a-b-c with a k8s only, b hybrid and c vm only
-| [vm-only](./topologies/vm-only) | [abc-vm](./scenarios/vm-only/abc-vm) | mgmt cluster as T1, a-b-c as VM only |
+| [active-standby](./topologies/active-standby) | [abc-failover](./topologies/active-standby/scenarios/abc-failover) | mgmt cluster as T1, active cluster with a-b-c, standby cluster as failover |
+| [hub-spoke](./topologies/hub-spoke) | [abc-def-ghi](./topologies/hub-spoke/scenarios/abc-def-ghi) | mgmt cluster as multi-tenant T1, a-b-c d-e-f and g-h-i as separate tenants |
+| [transit-zones](./topologies/transit-zones) | [abcd-efgh](./topologies/transit-zones/scenarios/abcd-efgh) | mgmt cluster and 2 app clusters and 2 transit cluster, ab-cd and ef-gh bidirectional cross transit |
+| [tsb-training](./topologies/tsb-training) | [main](./topologies/tsb-training/scenarios/main) | tsb training (cfr https://tsb-labs.netlify.app) |
+| [vm-expansion](./topologies/vm-expansion) | [abc-hybrid](./topologies/vm-expansion/scenarios/abc-hybrid) | mgmt cluster as T1, a-b-c with a k8s only, b hybrid and c vm only |
+| [vm-only](./topologies/vm-only) | [abc-vm](./topologies/vm-only/scenarios/abc-vm) | mgmt cluster as T1, a-b-c as VM only |
 
 
 ## Usage
@@ -228,8 +263,8 @@ This section is a brief description of the repo structure itself. What folder an
 |addons/|useful addons (wip). Eg: kibana for elastic index display, openldap-ui for ldap configuration, pgadmin for postgres exploration, etc|
 |docker-vm/|the dockerfile for the VM, which is basically a docker image with systemd and some more|
 |output/|structured output with temporary files like certificates, configuration, jwk's, etc|
-|scenarios/|the scenarios available, sorted per topology|
 |topologies/|the topologies available|
+|topologies/<topology-name>/scenarios/<senario-name>/|a scenario available for a certain topology|
 |certs.sh|script with functions to generate certificates with openssl (root, istio, server or client)|
 |cp.sh|script to install tsb controlplane, based on the topology configured|
 |env-template.json|env.json template to be copied and adjusted to your needs (never commit this one!)|

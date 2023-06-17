@@ -30,7 +30,7 @@ function get_topology_dir {
   echo ${ROOT_DIR}/topologies/$(get_topology)
 }
 function get_scenario_dir {
-  echo ${ROOT_DIR}/scenarios/$(get_topology)/$(get_scenario)
+  echo ${ROOT_DIR}/topologies/$(get_topology)/scenarios/$(get_scenario)
 }
 
 TOPOLOGY_CONF=$(get_topology_dir)/infra.json
