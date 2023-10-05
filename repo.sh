@@ -186,7 +186,7 @@ if [[ ${ACTION} = "remove" ]]; then
 fi
 
 if [[ ${ACTION} = "sync" ]]; then
-  [[ -z "${TARGET_REPO}" ]] && target_repo=$(get_repo_endpoint) || local target_repo="${TARGET_REPO}" ;
+  [[ -z "${TARGET_REPO}" ]] && target_repo=$(get_repo_endpoint) || target_repo="${TARGET_REPO}" ;
   sync_tsb_images "${target_repo}" ;
   exit 0 ;
 fi
