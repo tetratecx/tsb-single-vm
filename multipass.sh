@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# Helper script to create a local Ubuntu VM for MacOS or Windows
+# because the docker network stack on those OS's is not useable.
+#
 
 ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 
