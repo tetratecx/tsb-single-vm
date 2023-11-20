@@ -1,6 +1,8 @@
 {
   "cp_clusters": [
     {
+      "k8s_provider": "minikube",
+      "k8s_version": "1.27.8",
       "name": "active",
       "region": "region1",
       "trust_domain": "active",
@@ -8,6 +10,8 @@
       "zone": "zone1a"
     },
     {
+      "k8s_provider": "minikube",
+      "k8s_version": "1.27.8",
       "name": "standby",
       "region": "region2",
       "trust_domain": "standby",
@@ -15,10 +19,9 @@
       "zone": "zone2a"
     }
   ],
-  "k8s_provider": "minikube",
-  "k8s_version": "1.25.9",
   "mp_cluster": {
-    "demo_profile": true,
+    "k8s_provider": "minikube",
+    "k8s_version": "1.27.8",
     "name": "mgmt",
     "region": "region1",
     "trust_domain": "mgmt",

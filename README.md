@@ -190,7 +190,6 @@ A short enumeration of the parameters to be configured:
 |k8s_provider|string|provider to be used by local kubernetes (`k3s`, `kind` or `minikube`)|
 |k8s_version|string|version of kubernetes to be used by local kubernetes|
 |mp_cluster|object|tsb managementplane cluster configuration|
-|mp_cluster.demo_profile|bool|use TSB demo installation profile (with cert-manager, postgres, elastic, redis and ldap)|
 |mp_cluster.name|string|the name of this managementplane cluster (used as local kubectl context, docker network name and TSB cluster name)|
 |mp_cluster.region|string|the region to configure for the managementplane cluster|
 |mp_cluster.trust_domain|string|the trust domain to configure for the managementplane cluster|

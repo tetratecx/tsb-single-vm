@@ -23,15 +23,15 @@ prereq-install: ## Install prerequisites
 
 .PHONY: infra-up
 infra-up: prereq-check ## Bring up and configure local kubernetes clusters and vms
-	@/bin/bash -c './infra.sh up'
+	@/bin/bash -c './infra.sh --up'
 
 .PHONY: infra-down
 infra-down: ## Bring down local kubernetes clusters and vms
-	@/bin/bash -c './infra.sh down'
+	@/bin/bash -c './infra.sh --down'
 
 .PHONY: infra-info
 infra-info: ## Get infra environment info
-	@/bin/bash -c './infra.sh info'
+	@/bin/bash -c './infra.sh --info'
 
 .PHONY: tsb-mp-install
 tsb-mp-install: ## Install TSB management cluster
@@ -63,5 +63,5 @@ scenario-info: ## Info about this scenario
 
 .PHONY: clean
 clean: ## Clean up all resources
-	@/bin/bash -c './infra.sh clean'
+	@/bin/bash -c './infra.sh --clean'
 	@/bin/bash -c 'rm -rf ./output/*'

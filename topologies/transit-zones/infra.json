@@ -30,9 +30,8 @@
     }
   ],
   "k8s_provider": "minikube",
-  "k8s_version": "1.25.9",
+  "k8s_version": "1.27.8",
   "mp_cluster": {
-    "demo_profile": true,
     "name": "mgmt",
     "region": "region0",
     "trust_domain": "mgmt",

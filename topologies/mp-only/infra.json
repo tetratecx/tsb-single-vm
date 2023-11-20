@@ -1,7 +1,5 @@
 {
   "cp_clusters": [],
-  "istioctl_version": "1.15.2",
-  "k8s_version": "1.24.9",
   "mp_cluster": {
     "config": {
       "elastic": {
@@ -26,7 +24,8 @@
         "organization": "tetrate"
       }
     },
-    "demo_profile": false,
+    "k8s_provider": "minikube",
+    "k8s_version": "1.27.8",
     "name": "mgmt",
     "region": "region1",
     "trust_domain": "mgmt",

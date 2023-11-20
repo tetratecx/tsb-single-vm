@@ -39,18 +39,15 @@ if ! [[ -f "${TOPOLOGY_CONF}" ]] ; then
   exit 4
 fi
 
-
-### Infra Configuration ###
-
-function get_k8s_provider {
-  jq -r ".k8s_provider" ${TOPOLOGY_CONF}
-}
-
-function get_k8s_version {
-  jq -r ".k8s_version" ${TOPOLOGY_CONF}
-}
-
 ###### MP Cluster ######
+
+function get_mp_k8s_provider {
+  jq -r ".mp_cluster.k8s_provider" ${TOPOLOGY_CONF}
+}
+
+function get_mp_k8s_version {
+  jq -r ".mp_cluster.k8s_version" ${TOPOLOGY_CONF}
+}
 
 function get_mp_name {
   jq -r ".mp_cluster.name" ${TOPOLOGY_CONF}
@@ -86,6 +83,16 @@ function get_mp_zone {
 
 function get_cp_count {
   jq -r ".cp_clusters | length" ${TOPOLOGY_CONF}
+}
+
+function get_cp_k8s_provider_by_index {
+  i=${1}
+  jq -r ".cp_clusters[${i}].k8s_provider" ${TOPOLOGY_CONF}
+}
+
+function get_cp_k8s_version_by_index {
+  i=${1}
+  jq -r ".cp_clusters[${i}].k8s_version" ${TOPOLOGY_CONF}
 }
 
 function get_cp_name_by_index {

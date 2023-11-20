@@ -1,33 +1,36 @@
 {
-  "k8s_provider": "k3s",
-  "k8s_version": "1.25.9",
-  "mp_cluster": {
-    "demo_profile": true,
-    "name": "t1",
-    "region": "us-central1",
-    "trust_domain": "t1",
-    "zone": "us-central1-a",
-    "vms": []
-  },
   "cp_clusters": [
     {
+      "k8s_provider": "k3s",
+      "k8s_version": "1.27.8",
       "name": "c1",
       "region": "us-central1",
       "trust_domain": "c1",
-      "zone": "us-central1-a",
       "vms": [
         {
           "image": "boeboe/tsb-ubuntu-vm:1.0.0",
           "name": "ratings-vm"
         }
-      ]
+      ],
+      "zone": "us-central1-a"
     },
     {
+      "k8s_provider": "k3s",
+      "k8s_version": "1.27.8",
       "name": "c2",
       "region": "us-east1",
       "trust_domain": "c2",
-      "zone": "us-east1-a",
-      "vms": []
+      "vms": [],
+      "zone": "us-east1-a"
     }
-  ]
+  ],
+  "mp_cluster": {
+    "k8s_provider": "k3s",
+    "k8s_version": "1.27.8",
+    "name": "t1",
+    "region": "us-central1",
+    "trust_domain": "t1",
+    "vms": [],
+    "zone": "us-central1-a"
+  }
 }
