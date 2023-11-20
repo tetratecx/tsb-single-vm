@@ -84,7 +84,7 @@ function up() {
 
     # Start kubernetes application cluster
     start_cluster "${cp_k8s_provider}" "${cp_cluster_name}" "${cp_k8s_version}" "${cp_cluster_name}" "" "${install_repo_url}" ;
-    wait_cluster_ready "${cp_k8s_version}" "${cp_cluster_name}" ;
+    wait_cluster_ready "${cp_k8s_provider}" "${cp_cluster_name}" ;
 
     # Add nodes labels for locality based routing (region and zone)
     for node_name in $(kubectl --context ${cp_cluster_name} get nodes -o custom-columns=":metadata.name" --no-headers=true); do
