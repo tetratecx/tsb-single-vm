@@ -20,7 +20,7 @@ function check() {
 
   local dependencies=( tctl kubectl istioctl awk curl docker expect jq k3d kind minikube nc ) ;
   local istioctl_version=$(get_tsb_istio_version) ;
-  local k8s_version=$(get_k8s_version) ;
+  local k8s_version=$(get_mp_k8s_version) ;
   local tsb_version=$(get_tsb_version) ;
 
   # check necessary dependencies are installed
@@ -59,7 +59,7 @@ function check() {
 function install() {
   local architecture=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/arm64\|aarch64/arm64/')
   local istioctl_version=$(get_tsb_istio_version) ;
-  local k8s_version=$(get_k8s_version) ;
+  local k8s_version=$(get_mp_k8s_version) ;
   local tsb_version=$(get_tsb_version) ;
 
   print_info "Installing apt packages" ;
