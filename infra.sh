@@ -294,15 +294,17 @@ function clean() {
 
   # Delete kubernetes cluster
   local mp_cluster_name=$(get_mp_name) ;
+  local mp_k8s_provider=$(get_mp_k8s_provider) ;
   print_info "Going to delete management cluster '${mp_cluster_name}'" ;
-  remove_cluster "${K8S_PROVIDER}" "${mp_cluster_name}" "${mp_cluster_name}" ;
+  remove_cluster "${mp_k8s_provider}" "${mp_cluster_name}" "${mp_cluster_name}" ;
 
   local cp_count=$(get_cp_count) ;
   local cp_index=0 ;
   while [[ ${cp_index} -lt ${cp_count} ]]; do
     cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
+    cp_k8s_provider=$(get_cp_k8s_provider_by_index ${cp_index}) ;
     print_info "Going to delete application cluster '${cp_cluster_name}'" ;
-    remove_cluster "${K8S_PROVIDER}" "${cp_cluster_name}" "${cp_cluster_name}" ;
+    remove_cluster "${cp_k8s_provider}" "${cp_cluster_name}" "${cp_cluster_name}" ;
     cp_index=$((cp_index+1)) ;
   done
 
