@@ -3,16 +3,31 @@
 # Helper script to create local docker repo with tsb images or push tsb images
 # to another private repo.
 #
-ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
-source ${ROOT_DIR}/helpers.sh
+
+BASE_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+export BASE_DIR
+source "${BASE_DIR}/env.sh" "${BASE_DIR}"
+source "${BASE_DIR}/helpers.sh"
 
 ACTION=${1}
 TARGET_REPO=${2}
 
-LOCAL_REPO_NETWORK="registry" 
-LOCAL_REPO_NAME="registry"
-LOCAL_REPO_SUBNET="192.168.48.0/24"
-LOCAL_REPO_PORT=5000
+LOCAL_REPO_NETWORK="${LOCAL_REPO_NETWORK:-registry}"
+LOCAL_REPO_NAME="${LOCAL_REPO_NAME:-registry}"
+LOCAL_REPO_SUBNET="${LOCAL_REPO_SUBNET:-192.168.48.0/24}"
+LOCAL_REPO_PORT="${LOCAL_REPO_PORT:-5000}"
+
+# This function provides help information for the script.
+#
+function help() {
+  echo "Usage: $0 <command> [options]" ;
+  echo "Commands:" ;
+  echo "  --info : get local docker repo url (default: 192.168.48.2:5000)" ;
+  echo "  --start : start local docker repo" ;
+  echo "  --stop : stop local docker repo" ;
+  echo "  --remove : remove local docker repo" ;
+  echo "  --sync <target-repo> : sync tsb images from official repo to provided target repo (default: 192.168.48.2:5000)" ;
+}
 
 # Start local docker repository
 #   args:
@@ -142,14 +157,29 @@ function sync_single_image {
   if ! curl -s -X GET ${target_repo}/v2/${image_name}/tags/list | grep "${image_tag}" &>/dev/null ; then
     docker push ${target_repo}/${image_without_repo} ;
   fi
+
+  echo "Image '${image}' synced to '${target_repo}'" ;
 }
 
 # Sync tsb container images to target repo (if not yet available)
 #   args:
-#     (1) target repo
+#     (1) tsb repo url
+#     (2) tsb repo username
+#     (3) tsb repo password
+#     (4) target repo
 function sync_tsb_images {
-  [[ -z "${1}" ]] && print_error "Please provide target repo as 1st argument" && return 2 || local target_repo="${1}" ;
-  echo "Going to sync tsb images to target repo '${target_repo}'"
+  [[ -z "${1}" ]] && print_error "Please provide tsb source repo url as 1st argument" && return 2 || local source_repo_url="${1}" ;
+  [[ -z "${2}" ]] && print_error "Please provide tsb source repo username as 2nd argument" && return 2 || local source_repo_user="${2}" ;
+  [[ -z "${3}" ]] && print_error "Please provide tsb source repo password as 3rd argument" && return 2 || local source_repo_password="${3}" ;
+  [[ -z "${4}" ]] && print_error "Please provide target repo as 4th argument" && return 2 || local target_repo="${4}" ;
+
+  echo "Going to sync tetrate's tsb images to target repo '${target_repo}'" ;
+  if ! command -v tctl &>/dev/null ; then print_error "Error: tctl could not be found. Please install it to continue." ; exit 1 ; fi
+  if ! docker login ${source_repo_url} --username ${source_repo_user} --password ${source_repo_password} 2>/dev/null; then
+    echo "Failed to login to docker registry at ${source_repo_url}. Check your credentials" ; exit 1 ;
+  else
+    echo "Docker repo is reachable and credentials valid: ok" ;
+  fi
 
   # Sync all tsb images to target repo
   for image in `tctl install image-sync --just-print --raw --accept-eula 2>/dev/null` ; do
@@ -164,38 +194,36 @@ function sync_tsb_images {
 }
 
 
-if [[ ${ACTION} = "info" ]]; then
-  echo $(get_repo_endpoint) ;
-  exit 0 ;
-fi
-
-if [[ ${ACTION} = "start" ]]; then
-  start_local_repo ;
-  add_insecure_registry ;
-  exit 0 ;
-fi
-
-if [[ ${ACTION} = "stop" ]]; then
-  stop_local_repo ;
-  exit 0 ;
-fi
-
-if [[ ${ACTION} = "remove" ]]; then
-  remove_local_repo ;
-  exit 0 ;
-fi
-
-if [[ ${ACTION} = "sync" ]]; then
-  [[ -z "${TARGET_REPO}" ]] && target_repo=$(get_repo_endpoint) || target_repo="${TARGET_REPO}" ;
-  sync_tsb_images "${target_repo}" ;
-  exit 0 ;
-fi
-
-
-echo "Please specify correct action:"
-echo "  - info : get local docker repo url (default: 192.168.48.2:5000)"
-echo "  - start : start local docker repo"
-echo "  - stop : stop local docker repo"
-echo "  - remove : remove local docker repo"
-echo "  - sync <target-repo> : sync tsb images from official repo to provided target repo (default: 192.168.48.2:5000)"
-exit 1
+# Main execution
+#
+case "${ACTION}" in
+  --help)
+    help ;
+    ;;
+  --info)
+    print_stage "Going to get local docker repo url" ;
+    print_info "REPO_URL: $(get_repo_endpoint)" ;
+    ;;
+  --start)
+    print_stage "Going to start the local docker repo" ;
+    start_local_repo ;
+    add_insecure_registry ;
+    ;;
+  --stop)
+    print_stage "Going to stop the local docker repo" ;
+    stop_local_repo ;
+    ;;
+  --remove)
+    print_stage "Going to remove the local docker repo" ;
+    remove_local_repo ;
+    ;;
+  --sync)
+    print_stage "Going to sync tsb images to target repo" ;
+    [[ -z "${TARGET_REPO}" ]] && target_repo=$(get_repo_endpoint) || target_repo="${TARGET_REPO}" ;
+    sync_tsb_images "$(get_tetrate_repo_url)" "$(get_tetrate_repo_user)" "$(get_tetrate_repo_password)" "${target_repo}" ;
+    ;;
+  *)
+    print_error "Invalid option. Use 'help' to see available commands." ;
+    help ;
+    ;;
+esac

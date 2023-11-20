@@ -15,11 +15,11 @@ info: infra-info scenario-info ## Get information about infra environment and sc
 
 .PHONY: prereq-check
 prereq-check: ## Check if prerequisites are installed
-	@/bin/sh -c './prereq.sh check'
+	@/bin/sh -c './prereq.sh --check'
 
 .PHONY: prereq-install
 prereq-install: ## Install prerequisites
-	@/bin/sh -c './prereq.sh install'
+	@/bin/sh -c './prereq.sh --install'
 
 .PHONY: infra-up
 infra-up: prereq-check ## Bring up and configure local kubernetes clusters and vms
