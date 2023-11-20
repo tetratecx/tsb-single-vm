@@ -83,7 +83,7 @@ function up() {
     local cp_vm_count=$(get_cp_vm_count_by_index ${cp_index}) ;
 
     # Start kubernetes application cluster
-    start_cluster "${cp_k8s_version}" "${cp_cluster_name}" "${cp_k8s_version}" "${cp_cluster_name}" "" "${install_repo_url}" ;
+    start_cluster "${cp_k8s_provider}" "${cp_cluster_name}" "${cp_k8s_version}" "${cp_cluster_name}" "" "${install_repo_url}" ;
     wait_cluster_ready "${cp_k8s_version}" "${cp_cluster_name}" ;
 
     # Add nodes labels for locality based routing (region and zone)
