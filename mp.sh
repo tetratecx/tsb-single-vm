@@ -95,9 +95,9 @@ EOF
   echo " - public ip: https://$(curl -s ifconfig.me):8443" ;
 }
 
-# This function installs the tsb management plane.
+# This function installs the tsb management plane using tctl.
 #
-function install() {
+function install_tctl() {
 
   local certs_base_dir=$(get_certs_base_dir) ;
   local install_repo_url=$(get_install_repo_url) ;
@@ -153,9 +153,9 @@ function install() {
   print_info "Finished installation of tsb demo management/control plane in cluster ${mp_cluster_name}" ;
 }
 
-# This function uninstalls the tsb management plane.
+# This function uninstalls the tsb management plane using tctl.
 #
-function uninstall() {
+function uninstall_tctl() {
 
   local mp_cluster_name=$(get_mp_name) ;
   print_info "Start removing installation of tsb demo management/control plane in cluster ${mp_cluster_name}" ;
@@ -246,11 +246,11 @@ case "${ACTION}" in
     ;;
   --install)
     print_stage "Going to install tsb management plane" ;
-    install ;
+    install_tctl ;
     ;;
   --uninstall)
     print_stage "Going to uninstall tsb management plane" ;
-    uninstall ;
+    uninstall_tctl ;
     ;;
   --reset)
     print_stage "Going to reset all tsb configuration objects" ;

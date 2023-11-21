@@ -30,9 +30,9 @@ function patch_oap_refresh_rate_cp {
 }
 
 
-# This function installs the tsb control and data plane.
+# This function installs the tsb control and data plane using tctl.
 #
-function install() {
+function install_tctl() {
 
   local certs_base_dir=$(get_certs_base_dir) ;
   local install_repo_url=$(get_install_repo_url) ;
@@ -128,9 +128,9 @@ function install() {
   exit 0 ;
 }
 
-# This function installs the tsb control and data plane.
+# This function installs the tsb control and data plane using tctl.
 #
-function uninstall() {
+function uninstall_tctl() {
 
   local cp_count=$(get_cp_count) ;
   local cp_index=0 ;
@@ -210,11 +210,11 @@ case "${ACTION}" in
     ;;
   --install)
     print_stage "Going to install tsb control and data plane" ;
-    install ;
+    install_tctl ;
     ;;
   --uninstall)
     print_stage "Going to uninstall tsb control and data plane" ;
-    uninstall ;
+    uninstall_tctl ;
     ;;
   *)
     print_error "Invalid option. Use 'help' to see available commands." ;
