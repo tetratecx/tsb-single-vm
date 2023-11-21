@@ -1,14 +1,23 @@
 #!/usr/bin/env bash
 
-ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
+BASE_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
 
-source ${ROOT_DIR}/env.sh ${ROOT_DIR}
-source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
-source ${ROOT_DIR}/helpers.sh
-source ${ROOT_DIR}/tsb-helpers.sh
+source "${BASE_DIR}/env.sh" "${BASE_DIR}" ;
+source "${BASE_DIR}/certs.sh" "${BASE_DIR}" ;
+source "${BASE_DIR}/helpers.sh" ;
+source "${BASE_DIR}/tsb-helpers.sh" ;
 
-ACTION=${1}
-INSTALL_REPO_URL=$(get_install_repo_url) ;
+ACTION=${1} ;
+
+
+# This function provides help information for the script.
+#
+function help() {
+  echo "Usage: $0 <command> [options]" ;
+  echo "Commands:" ;
+  echo "  --install: install tsb control and data plane" ;
+  echo "  --uninstall: uninstall tsb control and data plane" ;
+}
 
 # Patch OAP refresh rate of control plane
 #   args:
@@ -16,178 +25,199 @@ INSTALL_REPO_URL=$(get_install_repo_url) ;
 function patch_oap_refresh_rate_cp {
   [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
 
-  local oap_patch='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}'
-  kubectl --context ${cluster_ctx} -n istio-system patch controlplanes controlplane --type merge --patch ${oap_patch}
+  local oap_patch='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}' ;
+  kubectl --context "${cluster_ctx}" -n istio-system patch controlplanes controlplane --type merge --patch "${oap_patch}" ;
 }
 
 
-if [[ ${ACTION} = "install" ]]; then
+# This function installs the tsb control and data plane.
+#
+function install() {
 
-  MP_CLUSTER_NAME=$(get_mp_name) ;
-  MP_OUTPUT_DIR=$(get_mp_output_dir) ;
+  local certs_base_dir=$(get_certs_base_dir) ;
+  local install_repo_url=$(get_install_repo_url) ;
+  local mp_cluster_name=$(get_mp_name) ;
+  local mp_output_dir=$(get_mp_output_dir) ;
 
   # Login again as tsb admin in case of a session time-out
   login_tsb_admin tetrate ;
 
-  export TSB_API_ENDPOINT=$(kubectl --context ${MP_CLUSTER_NAME} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
-  export TSB_INSTALL_REPO_URL=${INSTALL_REPO_URL}
+  export TSB_API_ENDPOINT=$(kubectl --context "${mp_cluster_name}" get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  export TSB_INSTALL_REPO_URL=${install_repo_url} ;
 
-  CP_COUNT=$(get_cp_count)
-  CP_INDEX=0
-  while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
-    CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
-    CP_TRUST_DOMAIN=$(get_cp_trust_domain_by_index ${CP_INDEX}) ;
-    CP_TEMPLATE_FILE=$(get_cp_template_file ${CP_INDEX}) ;
-    CP_OUTPUT_DIR=$(get_cp_output_dir ${CP_INDEX}) ;
-    print_info "Start installation of tsb control plane in cluster ${CP_CLUSTER_NAME}"
+  cp_count=$(get_cp_count) ;
+  cp_index=0 ;
+  while [[ ${cp_index} -lt ${cp_count} ]]; do
+    cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
+    cp_trust_domain=$(get_cp_trust_domain_by_index ${cp_index}) ;
+    cp_template_file=$(get_cp_template_file ${cp_index}) ;
+    cp_output_dir=$(get_cp_output_dir ${cp_index}) ;
+    print_info "Start installation of tsb control plane in cluster ${cp_cluster_name}" ;
 
     # Generate a service account private key for the active cluster
     #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets
-    kubectl config use-context ${MP_CLUSTER_NAME} ;
-    tctl install cluster-service-account --cluster ${CP_CLUSTER_NAME} > ${CP_OUTPUT_DIR}/cluster-service-account.jwk ;
+    kubectl config use-context "${mp_cluster_name}" ;
+    tctl install cluster-service-account --cluster "${cp_cluster_name}" > "${cp_output_dir}/cluster-service-account.jwk" ;
 
     # Create control plane secrets
     #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets
-    kubectl config use-context ${MP_CLUSTER_NAME} ;
+    kubectl config use-context "${mp_cluster_name}" ;
     tctl install manifest control-plane-secrets \
-      --cluster ${CP_CLUSTER_NAME} \
-      --cluster-service-account="$(cat ${CP_OUTPUT_DIR}/cluster-service-account.jwk)" \
-      --elastic-ca-certificate="$(cat ${MP_OUTPUT_DIR}/es-certs.pem)" \
-      --management-plane-ca-certificate="$(cat ${MP_OUTPUT_DIR}/mp-certs.pem)" \
-      --xcp-central-ca-bundle="$(cat ${MP_OUTPUT_DIR}/xcp-central-ca-certs.pem)" \
-      > ${CP_OUTPUT_DIR}/controlplane-secrets.yaml ;
+      --cluster "${cp_cluster_name}" \
+      --cluster-service-account="$(cat ${cp_output_dir}/cluster-service-account.jwk)" \
+      --elastic-ca-certificate="$(cat ${mp_output_dir}/es-certs.pem)" \
+      --management-plane-ca-certificate="$(cat ${mp_output_dir}/mp-certs.pem)" \
+      --xcp-central-ca-bundle="$(cat ${mp_output_dir}/xcp-central-ca-certs.pem)" \
+      > "${cp_output_dir}/controlplane-secrets.yaml" ;
 
     # Generate controlplane.yaml by inserting the correct mgmt plane API endpoint IP address
-    export TSB_CLUSTER_NAME=${CP_CLUSTER_NAME} ;
-    export TSB_TRUST_DOMAIN=${CP_TRUST_DOMAIN} ;
-    envsubst < ${CP_TEMPLATE_FILE} > ${CP_OUTPUT_DIR}/controlplane.yaml ;
+    export TSB_CLUSTER_NAME=${cp_cluster_name} ;
+    export TSB_TRUST_DOMAIN=${cp_trust_domain} ;
+    envsubst < "${cp_template_file}" > "${cp_output_dir}/controlplane.yaml" ;
 
     # bootstrap cluster with self signed certificate that share a common root certificate
     #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#intermediate-istio-ca-certificates
-    generate_istio_cert ${CP_CLUSTER_NAME} ;
-    CERTS_BASE_DIR=$(get_certs_base_dir) ;
+    generate_istio_cert "${cp_cluster_name}" ;
 
-    if ! kubectl --context ${CP_CLUSTER_NAME} get ns istio-system &>/dev/null; then
-      kubectl --context ${CP_CLUSTER_NAME} create ns istio-system ; 
+    if ! kubectl --context "${cp_cluster_name}" get ns istio-system &>/dev/null; then
+      kubectl --context "${cp_cluster_name}" create ns istio-system ;
     fi
-    if ! kubectl --context ${CP_CLUSTER_NAME} -n istio-system get secret cacerts &>/dev/null; then
-      kubectl --context ${CP_CLUSTER_NAME} create secret generic cacerts -n istio-system \
-        --from-file=${CERTS_BASE_DIR}/${CP_CLUSTER_NAME}/ca-cert.pem \
-        --from-file=${CERTS_BASE_DIR}/${CP_CLUSTER_NAME}/ca-key.pem \
-        --from-file=${CERTS_BASE_DIR}/${CP_CLUSTER_NAME}/root-cert.pem \
-        --from-file=${CERTS_BASE_DIR}/${CP_CLUSTER_NAME}/cert-chain.pem ;
+    if ! kubectl --context "${cp_cluster_name}" -n istio-system get secret cacerts &>/dev/null; then
+      kubectl --context "${cp_cluster_name}" create secret generic cacerts -n istio-system \
+        --from-file="${certs_base_dir}/${cp_cluster_name}/ca-cert.pem" \
+        --from-file="${certs_base_dir}/${cp_cluster_name}/ca-key.pem" \
+        --from-file="${certs_base_dir}/${cp_cluster_name}/root-cert.pem" \
+        --from-file="${certs_base_dir}/${cp_cluster_name}/cert-chain.pem" ;
     fi
 
     # Deploy operators
     #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#deploy-operators
     login_tsb_admin tetrate ;
-    tctl install manifest cluster-operators --registry ${INSTALL_REPO_URL} > ${CP_OUTPUT_DIR}/clusteroperators.yaml ;
+    tctl install manifest cluster-operators --registry ${install_repo_url} > ${cp_output_dir}/clusteroperators.yaml ;
 
     # Applying operator, secrets and control plane configuration
-    kubectl --context ${CP_CLUSTER_NAME} apply -f ${CP_OUTPUT_DIR}/clusteroperators.yaml ;
-    kubectl --context ${CP_CLUSTER_NAME} apply -f ${CP_OUTPUT_DIR}/controlplane-secrets.yaml ;
-    while ! kubectl --context ${CP_CLUSTER_NAME} get controlplanes.install.tetrate.io &>/dev/null; do sleep 1; done ;
-    kubectl --context ${CP_CLUSTER_NAME} apply -f ${CP_OUTPUT_DIR}/controlplane.yaml ;
-    print_info "Bootstrapped installation of tsb control plane in cluster ${CP_CLUSTER_NAME}"
-    CP_INDEX=$((CP_INDEX+1))
+    kubectl --context "${cp_cluster_name}" apply -f "${cp_output_dir}/clusteroperators.yaml" ;
+    kubectl --context "${cp_cluster_name}" apply -f "${cp_output_dir}/controlplane-secrets.yaml" ;
+    while ! kubectl --context "${cp_cluster_name}" get controlplanes.install.tetrate.io &>/dev/null; do sleep 1; done ;
+    kubectl --context "${cp_cluster_name}" apply -f "${cp_output_dir}/controlplane.yaml" ;
+    print_info "Bootstrapped installation of tsb control plane in cluster ${cp_cluster_name}" ;
+    cp_index=$((cp_index+1)) ;
   done
 
 
-  CP_COUNT=$(get_cp_count)
-  CP_INDEX=0
-  while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
-    CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
-    print_info "Wait installation of tsb control plane in cluster ${CP_CLUSTER_NAME} to finish"
+  cp_count=$(get_cp_count) ;
+  cp_index=0 ;
+  while [[ ${cp_index} -lt ${cp_count} ]]; do
+    cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
+    print_info "Wait installation of tsb control plane in cluster '${cp_cluster_name}' to finish" ;
 
     # Wait for the control and data plane to become available
-    kubectl --context ${CP_CLUSTER_NAME} wait deployment -n istio-system tsb-operator-control-plane --for condition=Available=True --timeout=600s ;
-    kubectl --context ${CP_CLUSTER_NAME} wait deployment -n istio-gateway tsb-operator-data-plane --for condition=Available=True --timeout=600s ;
-    while ! kubectl --context ${CP_CLUSTER_NAME} get deployment -n istio-system edge &>/dev/null; do sleep 5; done ;
-    kubectl --context ${CP_CLUSTER_NAME} wait deployment -n istio-system edge --for condition=Available=True --timeout=600s ;
-    kubectl --context ${CP_CLUSTER_NAME} get pods -A ;
+    kubectl --context "${cp_cluster_name}" wait deployment -n istio-system tsb-operator-control-plane --for condition=Available=True --timeout=600s ;
+    kubectl --context "${cp_cluster_name}" wait deployment -n istio-gateway tsb-operator-data-plane --for condition=Available=True --timeout=600s ;
+    while ! kubectl --context "${cp_cluster_name}" get deployment -n istio-system edge &>/dev/null; do sleep 5; done ;
+    kubectl --context "${cp_cluster_name}" wait deployment -n istio-system edge --for condition=Available=True --timeout=600s ;
+    kubectl --context "${cp_cluster_name}" get pods -A ;
 
     # Apply OAP patch for more real time update in the UI (Apache SkyWalking demo tweak)
-    patch_oap_refresh_rate_cp ${CP_CLUSTER_NAME} ;
+    patch_oap_refresh_rate_cp "${cp_cluster_name}" ;
 
-    print_info "Finished installation of tsb control plane in cluster ${CP_CLUSTER_NAME}"
-    CP_INDEX=$((CP_INDEX+1))
+    print_info "Finished installation of tsb control plane in cluster ${cp_cluster_name}" ;
+    cp_index=$((cp_index+1)) ;
   done
 
-  exit 0
-fi
+  exit 0 ;
+}
 
-if [[ ${ACTION} = "uninstall" ]]; then
+# This function installs the tsb control and data plane.
+#
+function uninstall() {
 
-  CP_COUNT=$(get_cp_count)
-  CP_INDEX=0
-  while [[ ${CP_INDEX} -lt ${CP_COUNT} ]]; do
-    CP_CLUSTER_NAME=$(get_cp_name_by_index ${CP_INDEX}) ;
-    print_info "Start removing installation of tsb control plane in cluster ${CP_CLUSTER_NAME}"
+  local cp_count=$(get_cp_count) ;
+  local cp_index=0 ;
+  while [[ ${cp_index} -lt ${cp_count} ]]; do
+    cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
+    print_info "Start removing installation of tsb control plane in cluster ${cp_cluster_name}" ;
 
     # Put operators to sleep
-    for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
-      kubectl --context ${CP_CLUSTER_NAME} get deployments -n ${NS} -o custom-columns=:metadata.name \
-        | grep operator | xargs -I {} kubectl --context ${CP_CLUSTER_NAME} scale deployment {} -n ${NS} --replicas=0 ; 
+    for namespace in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
+      kubectl --context "${cp_cluster_name}" get deployments -n ${namespace} -o custom-columns=:metadata.name \
+        | grep operator | xargs -I {} kubectl --context "${cp_cluster_name}" scale deployment {} -n ${namespace} --replicas=0 ;
     done
 
     sleep 5 ;
 
     # Clean up namespace specific resources
-    for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
-      kubectl --context ${CP_CLUSTER_NAME} get deployments -n ${NS} -o custom-columns=:metadata.name \
-        | grep operator | xargs -I {} kubectl --context ${CP_CLUSTER_NAME} delete deployment {} -n ${NS} --timeout=10s --wait=false ;
+    for namespace in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
+      kubectl --context "${cp_cluster_name}" get deployments -n ${namespace} -o custom-columns=:metadata.name \
+        | grep operator | xargs -I {} kubectl --context "${cp_cluster_name}" delete deployment {} -n ${namespace} --timeout=10s --wait=false ;
       sleep 5 ;
-      kubectl --context ${CP_CLUSTER_NAME} delete --all deployments -n ${NS} --timeout=10s --wait=false ;
-      kubectl --context ${CP_CLUSTER_NAME} delete --all jobs -n ${NS} --timeout=10s --wait=false ;
-      kubectl --context ${CP_CLUSTER_NAME} delete --all statefulset -n ${NS} --timeout=10s --wait=false ;
-      kubectl --context ${CP_CLUSTER_NAME} get deployments -n ${NS} -o custom-columns=:metadata.name \
-        | grep operator | xargs -I {} kubectl --context ${CP_CLUSTER_NAME} patch deployment {} -n ${NS} --type json \
+      kubectl --context "${cp_cluster_name}" delete --all deployments -n ${namespace} --timeout=10s --wait=false ;
+      kubectl --context "${cp_cluster_name}" delete --all jobs -n ${namespace} --timeout=10s --wait=false ;
+      kubectl --context "${cp_cluster_name}" delete --all statefulset -n ${namespace} --timeout=10s --wait=false ;
+      kubectl --context "${cp_cluster_name}" get deployments -n ${namespace} -o custom-columns=:metadata.name \
+        | grep operator | xargs -I {} kubectl --context "${cp_cluster_name}" patch deployment {} -n ${namespace} --type json \
         --patch='[ { "op": "remove", "path": "/metadata/finalizers" } ]' ;
-      kubectl --context ${CP_CLUSTER_NAME} delete --all deployments -n ${NS} --timeout=10s --wait=false ;
+      kubectl --context "${cp_cluster_name}" delete --all deployments -n ${namespace} --timeout=10s --wait=false ;
       sleep 5 ;
-      kubectl --context ${CP_CLUSTER_NAME} delete namespace ${NS} --timeout=10s --wait=false ;
+      kubectl --context "${cp_cluster_name}" delete namespace ${namespace} --timeout=10s --wait=false ;
     done 
 
     # Clean up cluster wide resources
-    kubectl --context ${CP_CLUSTER_NAME} get mutatingwebhookconfigurations -o custom-columns=:metadata.name \
-      | xargs -I {} kubectl --context ${CP_CLUSTER_NAME} delete mutatingwebhookconfigurations {}  --timeout=10s --wait=false ;
-    kubectl --context ${CP_CLUSTER_NAME} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
-      | xargs -I {} kubectl --context ${CP_CLUSTER_NAME} delete crd {} --timeout=10s --wait=false ;
-    kubectl --context ${CP_CLUSTER_NAME} get validatingwebhookconfigurations -o custom-columns=:metadata.name \
-      | xargs -I {} kubectl --context ${CP_CLUSTER_NAME} delete validatingwebhookconfigurations {} --timeout=10s --wait=false ;
-    kubectl --context ${CP_CLUSTER_NAME} get clusterrole -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tsb\|xcp" \
-      | xargs -I {} kubectl --context ${CP_CLUSTER_NAME} delete clusterrole {} --timeout=10s --wait=false ;
-    kubectl --context ${CP_CLUSTER_NAME} get clusterrolebinding -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tsb\|xcp" \
-      | xargs -I {} kubectl --context ${CP_CLUSTER_NAME} delete clusterrolebinding {} --timeout=10s --wait=false ;
+    kubectl --context "${cp_cluster_name}" get mutatingwebhookconfigurations -o custom-columns=:metadata.name \
+      | xargs -I {} kubectl --context "${cp_cluster_name}" delete mutatingwebhookconfigurations {}  --timeout=10s --wait=false ;
+    kubectl --context "${cp_cluster_name}" get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+      | xargs -I {} kubectl --context "${cp_cluster_name}" delete crd {} --timeout=10s --wait=false ;
+    kubectl --context "${cp_cluster_name}" get validatingwebhookconfigurations -o custom-columns=:metadata.name \
+      | xargs -I {} kubectl --context "${cp_cluster_name}" delete validatingwebhookconfigurations {} --timeout=10s --wait=false ;
+    kubectl --context "${cp_cluster_name}" get clusterrole -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tsb\|xcp" \
+      | xargs -I {} kubectl --context "${cp_cluster_name}" delete clusterrole {} --timeout=10s --wait=false ;
+    kubectl --context "${cp_cluster_name}" get clusterrolebinding -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tsb\|xcp" \
+      | xargs -I {} kubectl --context "${cp_cluster_name}" delete clusterrolebinding {} --timeout=10s --wait=false ;
 
     # Cleanup custom resource definitions
-    kubectl --context ${CP_CLUSTER_NAME} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
-      | xargs -I {} kubectl --context ${CP_CLUSTER_NAME} delete crd {} --timeout=10s --wait=false ;
+    kubectl --context "${cp_cluster_name}" get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+      | xargs -I {} kubectl --context "${cp_cluster_name}" delete crd {} --timeout=10s --wait=false ;
     sleep 5 ;
-    kubectl --context ${CP_CLUSTER_NAME} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
-      | xargs -I {} kubectl --context ${CP_CLUSTER_NAME} patch crd {} --type json --patch='[ { "op": "remove", "path": "/metadata/finalizers" } ]' ;
+    kubectl --context "${cp_cluster_name}" get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+      | xargs -I {} kubectl --context "${cp_cluster_name}" patch crd {} --type json --patch='[ { "op": "remove", "path": "/metadata/finalizers" } ]' ;
     sleep 5 ;
-    kubectl --context ${CP_CLUSTER_NAME} get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
-      | xargs -I {} kubectl --context ${CP_CLUSTER_NAME} delete crd {} --timeout=10s --wait=false ;
+    kubectl --context "${cp_cluster_name}" get crds -o custom-columns=:metadata.name | grep "cert-manager\|istio\|tetrate" \
+      | xargs -I {} kubectl --context "${cp_cluster_name}" delete crd {} --timeout=10s --wait=false ;
 
     # Clean up pending finalizer namespaces
-    for NS in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
-      kubectl --context ${CP_CLUSTER_NAME} get namespace ${NS} -o json \
+    for namespace in tsb istio-system istio-gateway xcp-multicluster cert-manager ; do
+      kubectl --context "${cp_cluster_name}" get namespace ${namespace} -o json \
         | tr -d "\n" | sed "s/\"finalizers\": \[[^]]\+\]/\"finalizers\": []/" \
-        | kubectl --context ${CP_CLUSTER_NAME} replace --raw /api/v1/namespaces/${NS}/finalize -f - ;
+        | kubectl --context "${cp_cluster_name}" replace --raw /api/v1/namespaces/${namespace}/finalize -f - ;
     done
 
     sleep 10 ;
 
-    print_info "Finished removing installation of tsb control plane in cluster ${CP_CLUSTER_NAME}"
-    CP_INDEX=$((CP_INDEX+1))
+    print_info "Finished removing installation of tsb control plane in cluster ${cp_cluster_name}" ;
+    cp_index=$((cp_index+1)) ;
   done
 
-  exit 0
-fi
+  exit 0 ;
+}
 
 
-echo "Please specify one of the following action:"
-echo "  - install"
-echo "  - uninstall"
-exit 1
+
+# Main execution
+#
+case "${ACTION}" in
+  --help)
+    help ;
+    ;;
+  --install)
+    print_stage "Going to install tsb control and data plane" ;
+    install ;
+    ;;
+  --uninstall)
+    print_stage "Going to uninstall tsb control and data plane" ;
+    uninstall ;
+    ;;
+  *)
+    print_error "Invalid option. Use 'help' to see available commands." ;
+    help ;
+    ;;
+esac

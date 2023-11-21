@@ -115,7 +115,7 @@ function gitea_get_http_url {
 
   local gitea_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${container_name}" 2>/dev/null | awk NF) ;
   if [[ -z "${gitea_ip}" ]]; then
-    print_error "Container '${container_name}' has no ip address or is not running" ; 
+    print_error "Container '${container_name}' has no ip address or is not running" ;
     return 1 ;
   fi
   echo "http://${gitea_ip}:${GITEA_HTTP_PORT}" ;

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-ROOT_DIR=${1}
-OUTPUT_DIR=${ROOT_DIR}/output
+BASE_DIR=${1}
+OUTPUT_DIR=${BASE_DIR}/output
 
-source ${ROOT_DIR}/helpers.sh
+source "${BASE_DIR}/helpers.sh"
 
 ENV_CONF=env.json
 if ! [[ -f "${ENV_CONF}" ]] ; then
@@ -15,22 +15,22 @@ if ! which jq &>/dev/null ; then
   exit 2
 fi
 
-if ! jq -r ".topology" ${ENV_CONF} &>/dev/null ; then
+if ! jq -r ".topology" "${ENV_CONF}" &>/dev/null ; then
   print_error "Unable to parse topology from ${ENV_CONF}, aborting..."
   exit 3
 fi
 
 function get_topology {
-  jq -r ".topology" ${ENV_CONF}
+  jq -r ".topology" "${ENV_CONF}"
 }
 function get_scenario {
-  jq -r ".scenario" ${ENV_CONF}
+  jq -r ".scenario" "${ENV_CONF}"
 }
 function get_topology_dir {
-  echo ${ROOT_DIR}/topologies/$(get_topology)
+  echo "${BASE_DIR}/topologies/$(get_topology)"
 }
 function get_scenario_dir {
-  echo ${ROOT_DIR}/topologies/$(get_topology)/scenarios/$(get_scenario)
+  echo "${BASE_DIR}/topologies/$(get_topology)/scenarios/$(get_scenario)"
 }
 
 TOPOLOGY_CONF=$(get_topology_dir)/infra.json
@@ -42,153 +42,153 @@ fi
 ###### MP Cluster ######
 
 function get_mp_k8s_provider {
-  jq -r ".mp_cluster.k8s_provider" ${TOPOLOGY_CONF}
+  jq -r ".mp_cluster.k8s_provider" "${TOPOLOGY_CONF}"
 }
 
 function get_mp_k8s_version {
-  jq -r ".mp_cluster.k8s_version" ${TOPOLOGY_CONF}
+  jq -r ".mp_cluster.k8s_version" "${TOPOLOGY_CONF}"
 }
 
 function get_mp_name {
-  jq -r ".mp_cluster.name" ${TOPOLOGY_CONF}
+  jq -r ".mp_cluster.name" "${TOPOLOGY_CONF}"
 }
 
 function get_mp_region {
-  jq -r ".mp_cluster.region" ${TOPOLOGY_CONF}
+  jq -r ".mp_cluster.region" "${TOPOLOGY_CONF}"
 }
 
 function get_mp_trust_domain {
-  jq -r ".mp_cluster.trust_domain" ${TOPOLOGY_CONF}
+  jq -r ".mp_cluster.trust_domain" "${TOPOLOGY_CONF}"
 }
 
 function get_mp_vm_count {
-  jq -r ".mp_cluster.vms | length" ${TOPOLOGY_CONF}
+  jq -r ".mp_cluster.vms | length" "${TOPOLOGY_CONF}"
 }
 
 function get_mp_vm_image_by_index {
   i=${1}
-  jq -r ".mp_cluster.vms[${i}].image" ${TOPOLOGY_CONF}
+  jq -r ".mp_cluster.vms[${i}].image" "${TOPOLOGY_CONF}"
 }
 
 function get_mp_vm_name_by_index {
   i=${1}
-  jq -r ".mp_cluster.vms[${i}].name" ${TOPOLOGY_CONF}
+  jq -r ".mp_cluster.vms[${i}].name" "${TOPOLOGY_CONF}"
 }
 
 function get_mp_zone {
-  jq -r ".mp_cluster.zone" ${TOPOLOGY_CONF}
+  jq -r ".mp_cluster.zone" "${TOPOLOGY_CONF}"
 }
 
 ###### CP Clusters ######
 
 function get_cp_count {
-  jq -r ".cp_clusters | length" ${TOPOLOGY_CONF}
+  jq -r ".cp_clusters | length" "${TOPOLOGY_CONF}"
 }
 
 function get_cp_k8s_provider_by_index {
   i=${1}
-  jq -r ".cp_clusters[${i}].k8s_provider" ${TOPOLOGY_CONF}
+  jq -r ".cp_clusters[${i}].k8s_provider" "${TOPOLOGY_CONF}"
 }
 
 function get_cp_k8s_version_by_index {
   i=${1}
-  jq -r ".cp_clusters[${i}].k8s_version" ${TOPOLOGY_CONF}
+  jq -r ".cp_clusters[${i}].k8s_version" "${TOPOLOGY_CONF}"
 }
 
 function get_cp_name_by_index {
   i=${1}
-  jq -r ".cp_clusters[${i}].name" ${TOPOLOGY_CONF}
+  jq -r ".cp_clusters[${i}].name" "${TOPOLOGY_CONF}"
 }
 
 function get_cp_vm_count_by_index {
   i=${1}
-  jq -r ".cp_clusters[${i}].vms | length" ${TOPOLOGY_CONF}
+  jq -r ".cp_clusters[${i}].vms | length" "${TOPOLOGY_CONF}"
 }
 
 function get_cp_vm_image_by_index {
   i=${1}
   j=${2}
-  jq -r ".cp_clusters[${i}].vms[${j}].image" ${TOPOLOGY_CONF}
+  jq -r ".cp_clusters[${i}].vms[${j}].image" "${TOPOLOGY_CONF}"
 }
 
 function get_cp_vm_name_by_index {
   i=${1}
   j=${2}
-  jq -r ".cp_clusters[${i}].vms[${j}].name" ${TOPOLOGY_CONF}
+  jq -r ".cp_clusters[${i}].vms[${j}].name" "${TOPOLOGY_CONF}"
 }
 
 function get_cp_region_by_index {
   i=${1}
-  jq -r ".cp_clusters[${i}].region" ${TOPOLOGY_CONF}
+  jq -r ".cp_clusters[${i}].region" "${TOPOLOGY_CONF}"
 }
 
 function get_cp_trust_domain_by_index {
   i=${1}
-  jq -r ".cp_clusters[${i}].trust_domain" ${TOPOLOGY_CONF}
+  jq -r ".cp_clusters[${i}].trust_domain" "${TOPOLOGY_CONF}"
 }
 
 function get_cp_zone_by_index {
   i=${1}
-  jq -r ".cp_clusters[${i}].zone" ${TOPOLOGY_CONF}
+  jq -r ".cp_clusters[${i}].zone" "${TOPOLOGY_CONF}"
 }
 
 
 ### TSB Configuration ###
 function is_install_repo_insecure_registry {
-  jq -r ".tsb.install_repo.insecure_registry" ${ENV_CONF}
+  jq -r ".tsb.install_repo.insecure_registry" "${ENV_CONF}"
 }
 
 function get_install_repo_password {
-  jq -r ".tsb.install_repo.password" ${ENV_CONF}
+  jq -r ".tsb.install_repo.password" "${ENV_CONF}"
 }
 
 function get_install_repo_url {
-  jq -r ".tsb.install_repo.url" ${ENV_CONF}
+  jq -r ".tsb.install_repo.url" "${ENV_CONF}"
 }
 
 function get_install_repo_user {
-  jq -r ".tsb.install_repo.user" ${ENV_CONF}
+  jq -r ".tsb.install_repo.user" "${ENV_CONF}"
 }
 
 function get_tetrate_repo_password {
-  jq -r ".tsb.tetrate_repo.password" ${ENV_CONF}
+  jq -r ".tsb.tetrate_repo.password" "${ENV_CONF}"
 }
 function get_tetrate_repo_url {
-  jq -r ".tsb.tetrate_repo.url" ${ENV_CONF}
+  jq -r ".tsb.tetrate_repo.url" "${ENV_CONF}"
 }
 
 function get_tetrate_repo_user {
-  jq -r ".tsb.tetrate_repo.user" ${ENV_CONF}
+  jq -r ".tsb.tetrate_repo.user" "${ENV_CONF}"
 }
 
 function get_tsb_version {
-  jq -r ".tsb.version" ${ENV_CONF}
+  jq -r ".tsb.version" "${ENV_CONF}"
 }
 
 function get_tsb_istio_version {
-  jq -r ".tsb.istio_version" ${ENV_CONF}
+  jq -r ".tsb.istio_version" "${ENV_CONF}"
 }
 
 
 ### Configuration and output directories ###
 function get_mp_config_dir {
-  echo $(get_topology_dir)/$(get_mp_name)
+  echo "$(get_topology_dir)/$(get_mp_name)"
 }
 
 function get_mp_output_dir {
-  mkdir -p ${OUTPUT_DIR}/$(get_mp_name)
-  echo ${OUTPUT_DIR}/$(get_mp_name)
+  mkdir -p "${OUTPUT_DIR}/$(get_mp_name)"
+  echo "${OUTPUT_DIR}/$(get_mp_name)"
 }
 
 function get_cp_template_file {
   i=${1}
-  echo $(get_topology_dir)/templates/$(get_cp_name_by_index ${i})-controlplane.tmpl.yaml
+  echo "$(get_topology_dir)/templates/$(get_cp_name_by_index ${i})-controlplane.tmpl.yaml"
 }
 
 function get_cp_output_dir {
   i=${1}
-  mkdir -p ${OUTPUT_DIR}/$(get_cp_name_by_index ${i})
-  echo ${OUTPUT_DIR}/$(get_cp_name_by_index ${i})
+  mkdir -p "${OUTPUT_DIR}/$(get_cp_name_by_index ${i})"
+  echo "${OUTPUT_DIR}/$(get_cp_name_by_index ${i})"
 }
 
 ### Parsing Tests

@@ -107,7 +107,7 @@ function get_repo_endpoint {
 
   local repo_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${container_name}" 2>/dev/null | awk NF) ;
   if [[ -z "${repo_ip}" ]]; then
-    print_error "Container '${container_name}' has no ip address or is not running" ; 
+    print_error "Container '${container_name}' has no ip address or is not running" ;
     return 1 ;
   fi
   echo "${repo_ip}:${LOCAL_REPO_PORT}" ;

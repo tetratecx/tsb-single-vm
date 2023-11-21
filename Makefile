@@ -35,31 +35,31 @@ infra-info: ## Get infra environment info
 
 .PHONY: tsb-mp-install
 tsb-mp-install: ## Install TSB management cluster
-	@/bin/bash -c './mp.sh install'
+	@/bin/bash -c './mp.sh --install'
 
 .PHONY: tsb-mp-uninstall
 tsb-mp-uninstall: ## Uninstall TSB management cluster
-	@/bin/bash -c './mp.sh uninstall'
+	@/bin/bash -c './mp.sh --uninstall'
 
 .PHONY: tsb-cp-install
 tsb-cp-install: ## Install TSB control/data plane(s)
-	@/bin/bash -c './cp.sh install'
+	@/bin/bash -c './cp.sh --install'
 
 .PHONY: tsb-cp-uninstall
 tsb-cp-uninstall: ## Install TSB control/data plane(s)
-	@/bin/bash -c './cp.sh uninstall'
+	@/bin/bash -c './cp.sh --uninstall'
 
 .PHONY: scenario-deploy
 scenario-deploy: ## Deploy this scenario
-	@/bin/bash -c './scenario.sh deploy'
+	@/bin/bash -c './scenario.sh --deploy'
 
 .PHONY: scenario-undeploy
 scenario-undeploy: ## Undeploy this scenario
-	@/bin/bash -c './scenario.sh undeploy'
+	@/bin/bash -c './scenario.sh --undeploy'
 
 .PHONY: scenario-info
 scenario-info: ## Info about this scenario
-	@/bin/bash -c './scenario.sh info'
+	@/bin/bash -c './scenario.sh --info'
 
 .PHONY: clean
 clean: ## Clean up all resources

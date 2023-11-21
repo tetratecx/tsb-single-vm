@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 BASE_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )" ;
-source ${BASE_DIR}/env.sh ${BASE_DIR} ;
-source ${BASE_DIR}/helpers.sh ;
-source ${BASE_DIR}/k8s-local.sh ;
+source "${BASE_DIR}/env.sh" "${BASE_DIR}" ;
+source "${BASE_DIR}/helpers.sh" ;
+source "${BASE_DIR}/k8s-local.sh" ;
 
 ACTION=${1} ;
 
@@ -11,10 +11,10 @@ ACTION=${1} ;
 function help() {
   echo "Usage: $0 <command> [options]" ;
   echo "Commands:" ;
-  echo "  - up: bring up the local instrastructure" ;
-  echo "  - down: bring down the local instrastructure" ;
-  echo "  - info: print info about the local instrastructure" ;
-  echo "  - clean: remove the local instrastructure" ;
+  echo "  --up: bring up the local instrastructure" ;
+  echo "  --down: bring down the local instrastructure" ;
+  echo "  --info: print info about the local instrastructure" ;
+  echo "  --clean: remove the local instrastructure" ;
 }
 
 # This function brings up the local instrastructure.
