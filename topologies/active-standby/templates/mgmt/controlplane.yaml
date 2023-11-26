@@ -142,6 +142,10 @@ spec:
             patches:
               - path: spec.centralAuthJwt.centralSni
                 value: central.xcp.tetrate.io
+              - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+                value:
+                  name: CLUSTER_STATE_RESYNC_INTERVAL
+                  value: 20s
         service:
           type: ClusterIP
   hub: $TSB_INSTALL_REPO_URL
