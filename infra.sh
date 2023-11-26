@@ -28,6 +28,7 @@ function help() {
 function up() {
 
   # Start local docker registry and sync images
+  print_info "Going to start local docker registry and sync images if needed" ;
   start_local_registry ;
   add_insecure_registry ;
   sync_tsb_images "$(get_local_registry_endpoint)" "$(get_tetrate_repo_user)" "$(get_tetrate_repo_password)" ;
@@ -35,25 +36,13 @@ function up() {
   ######################## mp cluster ########################
   local install_repo_url; install_repo_url=$(get_local_registry_endpoint) ;
   local mp_cluster_name; mp_cluster_name=$(get_mp_name) ;
-  local mp_cluster_region; mp_cluster_region=$(get_mp_region) ;
-  local mp_cluster_zone; mp_cluster_zone=$(get_mp_zone) ;
   local mp_k8s_provider; mp_k8s_provider=$(get_mp_k8s_provider) ;
   local mp_k8s_version; mp_k8s_version=$(get_mp_k8s_version) ;
   local mp_vm_count; mp_vm_count=$(get_mp_vm_count) ;
 
   # Start kubernetes management cluster
+  print_info "Going to start management cluster '${mp_cluster_name}'" ;
   start_cluster "${mp_k8s_provider}" "${mp_cluster_name}" "${mp_k8s_version}" "${mp_cluster_name}" "" "${install_repo_url}" ;
-  wait_cluster_ready "${mp_k8s_provider}" "${mp_cluster_name}" ;
-
-  # Add nodes labels for locality based routing (region and zone)
-  for node_name in $(kubectl --context "${mp_cluster_name}" get nodes -o custom-columns=":metadata.name" --no-headers=true); do
-    if ! kubectl --context "${mp_cluster_name}" get node "${node_name}" --show-labels | grep "topology.kubernetes.io/region=${mp_cluster_region}" &>/dev/null ; then
-      kubectl --context "${mp_cluster_name}" label node "${node_name}" "topology.kubernetes.io/region=${mp_cluster_region}" --overwrite=true ;
-    fi
-    if ! kubectl --context "${mp_cluster_name}" get node "${node_name}" --show-labels | grep "topology.kubernetes.io/zone=${mp_cluster_zone}" &>/dev/null ; then
-      kubectl --context "${mp_cluster_name}" label node "${node_name}" "topology.kubernetes.io/zone=${mp_cluster_zone}" --overwrite=true ;
-    fi
-  done
 
   # Spin up vms that belong to the management cluster
   if [[ ${mp_vm_count} -eq 0 ]] ; then
@@ -87,25 +76,13 @@ function up() {
   local cp_index=0 ;
   while [[ ${cp_index} -lt ${cp_count} ]]; do
     local cp_cluster_name; cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
-    local cp_cluster_region; cp_cluster_region=$(get_cp_region_by_index ${cp_index}) ;
-    local cp_cluster_zone; cp_cluster_zone=$(get_cp_zone_by_index ${cp_index}) ;
     local cp_k8s_provider; cp_k8s_provider=$(get_cp_k8s_provider_by_index ${cp_index}) ;
     local cp_k8s_version; cp_k8s_version=$(get_cp_k8s_version_by_index ${cp_index}) ;
     local cp_vm_count; cp_vm_count=$(get_cp_vm_count_by_index ${cp_index}) ;
 
     # Start kubernetes application cluster
+    print_info "Going to start application cluster '${cp_cluster_name}'" ;
     start_cluster "${cp_k8s_provider}" "${cp_cluster_name}" "${cp_k8s_version}" "${cp_cluster_name}" "" "${install_repo_url}" ;
-    wait_cluster_ready "${cp_k8s_provider}" "${cp_cluster_name}" ;
-
-    # Add nodes labels for locality based routing (region and zone)
-    for node_name in $(kubectl --context "${cp_cluster_name}" get nodes -o custom-columns=":metadata.name" --no-headers=true); do
-      if ! kubectl --context "${cp_cluster_name}" get node "${node_name}" --show-labels | grep "topology.kubernetes.io/region=${cp_cluster_region}" &>/dev/null ; then
-        kubectl --context "${cp_cluster_name}" label node "${node_name}" "topology.kubernetes.io/region=${cp_cluster_region}" --overwrite=true ;
-      fi
-      if ! kubectl --context "${cp_cluster_name}" get node "${node_name}" --show-labels | grep "topology.kubernetes.io/zone=${cp_cluster_zone}" &>/dev/null ; then
-        kubectl --context "${cp_cluster_name}" label node "${node_name}" "topology.kubernetes.io/zone=${cp_cluster_zone}" --overwrite=true ;
-      fi
-    done
 
     # Spin up vms that belong to this application cluster
     if [[ ${cp_vm_count} -eq 0 ]] ; then
@@ -137,6 +114,36 @@ function up() {
     echo "Flushing docker isolation iptable rules to allow cross cluster and ${cp_cluster_name} cluster to private docker repo communication" ;
     sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2 ;
   fi
+
+  # Wait for all clusters to become ready
+  print_info "Waiting for all kubernetes clusters to become ready" ;
+  local mp_cluster_name; mp_cluster_name=$(get_mp_name) ;
+  local mp_k8s_provider; mp_k8s_provider=$(get_mp_k8s_provider) ;
+  wait_cluster_ready "${mp_k8s_provider}" "${mp_cluster_name}" ;
+  local cp_count; cp_count=$(get_cp_count) ;
+  local cp_index=0 ;
+  while [[ ${cp_index} -lt ${cp_count} ]]; do
+    local cp_cluster_name; cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
+    local cp_k8s_provider; cp_k8s_provider=$(get_cp_k8s_provider_by_index ${cp_index}) ;
+    wait_cluster_ready "${cp_k8s_provider}" "${cp_cluster_name}" ;
+    cp_index=$((cp_index+1)) ;
+  done
+
+  # Add nodes labels for locality based routing (region and zone)
+  print_info "Adding locality labels to all kubernetes clusters" ;
+  local mp_cluster_name; mp_cluster_name=$(get_mp_name) ;
+  local mp_cluster_region; mp_cluster_region=$(get_mp_region) ;
+  local mp_cluster_zone; mp_cluster_zone=$(get_mp_zone) ;
+  add_locality_labels "${mp_cluster_name}" "${mp_cluster_region}" "${mp_cluster_zone}" ;
+  local cp_count; cp_count=$(get_cp_count) ;
+  local cp_index=0 ;
+  while [[ ${cp_index} -lt ${cp_count} ]]; do
+    local cp_cluster_name; cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
+    local cp_cluster_region; cp_cluster_region=$(get_cp_region_by_index ${cp_index}) ;
+    local cp_cluster_zone; cp_cluster_zone=$(get_cp_zone_by_index ${cp_index}) ;
+    add_locality_labels "${cp_cluster_name}" "${cp_cluster_region}" "${cp_cluster_zone}" ;
+    cp_index=$((cp_index+1)) ;
+  done
 
   print_info "All kubernetes clusters and vms started" ;
 }

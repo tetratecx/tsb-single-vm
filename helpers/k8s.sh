@@ -788,3 +788,24 @@ function is_k8s_version_available {
       ;;
   esac
 }
+
+# Add istio locality labels (region and zone) to all nodes in a cluster
+#   args:
+#     (1) kubectl context name
+#     (2) cluster region
+#     (3) cluster zone
+function add_locality_labels() {
+  [[ -z "${1}" ]] && print_error "Please provide cluster context name as 1st argument" && return 2 || local context_name="${1}" ;
+  [[ -z "${2}" ]] && print_error "Please provide cluster region as 2nd argument" && return 2 || local cluster_region="${2}" ;
+  [[ -z "${3}" ]] && print_error "Please provide cluster zone as 3rd argument" && return 2 || local cluster_zone="${3}" ;
+
+  for node_name in $(kubectl --context "${context_name}" get nodes -o custom-columns=":metadata.name" --no-headers=true); do
+    echo "Going to add locality labels to node '${node_name}' in cluster '${context_name}'" ;
+    if ! kubectl --context "${context_name}" get node "${node_name}" --show-labels | grep "topology.kubernetes.io/region=${cluster_region}" &>/dev/null ; then
+      kubectl --context "${context_name}" label node "${node_name}" "topology.kubernetes.io/region=${cluster_region}" --overwrite=true ;
+    fi
+    if ! kubectl --context "${context_name}" get node "${node_name}" --show-labels | grep "topology.kubernetes.io/zone=${cluster_zone}" &>/dev/null ; then
+      kubectl --context "${context_name}" label node "${node_name}" "topology.kubernetes.io/zone=${cluster_zone}" --overwrite=true ;
+    fi
+  done  
+}
