@@ -79,6 +79,10 @@ spec:
                 value:
                   name: ENABLE_NON_INGRESS_HOST_LEVEL_AUTHORIZATION
                   value: 'true'
+              - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+                value:
+                  name: CLUSTER_STATE_RESYNC_INTERVAL
+                  value: 20s
   hub: $TSB_INSTALL_REPO_URL
   managementPlane:
     clusterName: cluster1
