@@ -206,8 +206,7 @@ function deploy_metallb {
           --kube-context "${cluster_name}" \
           --namespace "${metallb_namespace}" \
           --set speaker.frr.enabled=false \
-          --version "v${METALLB_VERSION}" \
-          --wait ;
+          --version "v${METALLB_VERSION}" ;
 
   echo "Configuring metallb in cluster '${cluster_name}' with startip '${metallb_startip}' and endip '${metallb_stopip}'" ;
   echo ${metallb_ipaddresspool} | kubectl --context "${cluster_name}" apply -f - ;
@@ -230,8 +229,7 @@ function deploy_metrics_server {
           --kube-context "${cluster_name}" \
           --namespace "kube-system" \
           --set args="{--kubelet-insecure-tls}" \
-          --version "v${METRICS_SERVER_VERSION}" \
-          --wait ;
+          --version "v${METRICS_SERVER_VERSION}" ;
 }
 
 # Start a docker network
