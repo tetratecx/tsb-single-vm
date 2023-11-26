@@ -2,12 +2,22 @@
 
 BASE_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )" ;
 
-source "${BASE_DIR}/env.sh" "${BASE_DIR}" ;
-source "${BASE_DIR}/certs.sh" "${BASE_DIR}" ;
-source "${BASE_DIR}/helpers.sh" ;
-source "${BASE_DIR}/tsb-helpers.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/env.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/certs.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/print.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/registry.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/tsb.sh" ;
 
 ACTION=${1} ;
+
+TSB_HELM_REPO="https://charts.dl.tetrate.io/public/helm/charts" ;
+MP_HELM_CHART="tetrate-tsb-charts/managementplane" ;
+CP_HELM_CHART="tetrate-tsb-charts/controlplane" ;
 
 
 # This function provides help information for the script.
@@ -20,95 +30,20 @@ function help() {
   echo "  --reset: reset all tsb configuration objects" ;
 }
 
-# Patch affinity rules of management plane (demo only!)
-#   args:
-#     (1) cluster context
-function patch_remove_affinity_mp {
-  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
-
-  while ! kubectl --context "${cluster_ctx}" -n tsb get managementplane managementplane &>/dev/null; do
-    sleep 1 ;
-  done
-  for tsb_component in apiServer collector frontEnvoy iamServer mpc ngac oap webUI ; do
-    kubectl patch managementplane managementplane -n tsb --type=json \
-      -p="[{'op': 'replace', 'path': '/spec/components/${tsb_component}/kubeSpec/deployment/affinity/podAntiAffinity/requiredDuringSchedulingIgnoredDuringExecution/0/labelSelector/matchExpressions/0/key', 'value': 'platform.tsb.tetrate.io/demo-dummy'}]" \
-      &>/dev/null ;
-  done
-  echo "Managementplane tsb/managementplane sucessfully patched" ;
-}
-
-# Patch OAP refresh rate of management plane
-#   args:
-#     (1) cluster context
-function patch_oap_refresh_rate_mp {
-  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
-
-  local oap_patch='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}' ;
-  kubectl --context "${cluster_ctx}" -n tsb patch managementplanes managementplane --type merge --patch "${oap_patch}" ;
-}
-
-# Patch OAP refresh rate of control plane
-#   args:
-#     (1) cluster context
-function patch_oap_refresh_rate_cp {
-  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
-
-  local oap_patch='{"spec":{"components":{"oap":{"streamingLogEnabled":true,"kubeSpec":{"deployment":{"env":[{"name":"SW_CORE_PERSISTENT_PERIOD","value":"5"}]}}}}}}' ;
-  kubectl --context "${cluster_ctx}" -n istio-system patch controlplanes controlplane --type merge --patch "${oap_patch}" ;
-}
-
-# Patch jwt token expiration and pruneInterval
-#   args:
-#     (1) cluster context
-function patch_jwt_token_expiration_mp {
-  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
-
-  local token_patch='{"spec":{"tokenIssuer":{"jwt":{"expiration":"36000s","tokenPruneInterval":"36000s"}}}}' ;
-  kubectl --context "${cluster_ctx}" -n tsb patch managementplanes managementplane --type merge --patch "${token_patch}" ;
-}
-
-# Expose tsb gui with kubectl port-forward
-#   args:
-#     (1) cluster context
-function expose_tsb_gui {
-  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
-
-  local tsb_api_endpoint=$(kubectl --context "${cluster_ctx}" get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
-
-  sudo tee /etc/systemd/system/tsb-gui.service << EOF
-[Unit]
-Description=TSB GUI Exposure
-
-[Service]
-ExecStart=$(which kubectl) --kubeconfig ${HOME}/.kube/config --context "${cluster_ctx}" port-forward -n tsb service/envoy 8443:8443 --address 0.0.0.0
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-  sudo systemctl enable tsb-gui ;
-  sudo systemctl start tsb-gui ;
-  print_info "The tsb gui should be available at some of the following urls:" ;
-  echo " - local host: https://127.0.0.1:8443" ;
-  echo " - docker network: https://${tsb_api_endpoint}:8443" ;
-  echo " - public ip: https://$(curl -s ifconfig.me):8443" ;
-}
-
 # This function installs the tsb management plane using tctl.
 #
 function install_tctl() {
 
-  local certs_base_dir=$(get_certs_base_dir) ;
-  local install_repo_url=$(get_install_repo_url) ;
-  local mp_cluster_name=$(get_mp_name) ;
-  local mp_output_dir=$(get_mp_output_dir) ;
+  local certs_base_dir; certs_base_dir="$(get_certs_output_dir)" ;
+  local install_repo_url; install_repo_url=$(get_local_registry_endpoint) ;
+  local mp_cluster_name; mp_cluster_name=$(get_mp_name) ;
+  local mp_output_dir; mp_output_dir=$(get_mp_output_dir) ;
 
   print_info "Start installation of tsb demo management/control plane in cluster ${mp_cluster_name}" ;
 
   # bootstrap cluster with self signed certificate that share a common root certificate
   #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#intermediate-istio-ca-certificates
-  generate_istio_cert "${mp_cluster_name}" ;
+  generate_istio_cert "${certs_base_dir}" "${mp_cluster_name}" ;
   if ! kubectl --context "${mp_cluster_name}" get ns istio-system &>/dev/null; then
     kubectl --context "${mp_cluster_name}" create ns istio-system ;
   fi
@@ -120,7 +55,7 @@ function install_tctl() {
       --from-file="${certs_base_dir}/${mp_cluster_name}/cert-chain.pem" ;
   fi
   
-  # start patching deployments that depend on dockerhub asynchronously
+  # start patching managementplane CR asynchronously
   patch_remove_affinity_mp "${mp_cluster_name}" &
 
   # install tsb management plane using the demo profile
@@ -140,6 +75,7 @@ function install_tctl() {
   # Apply OAP patch for more real time update in the UI (Apache SkyWalking demo tweak)
   patch_oap_refresh_rate_mp "${mp_cluster_name}" ;
   patch_oap_refresh_rate_cp "${mp_cluster_name}" ;
+  # Apply JWT token expiration patch
   patch_jwt_token_expiration_mp "${mp_cluster_name}" ;
 
   # Demo mgmt plane secret extraction (need to connect application clusters to mgmt cluster)
@@ -157,7 +93,7 @@ function install_tctl() {
 #
 function uninstall_tctl() {
 
-  local mp_cluster_name=$(get_mp_name) ;
+  local mp_cluster_name; mp_cluster_name=$(get_mp_name) ;
   print_info "Start removing installation of tsb demo management/control plane in cluster ${mp_cluster_name}" ;
 
   # Put operators to sleep
@@ -218,14 +154,131 @@ function uninstall_tctl() {
   print_info "Finished removing installation of tsb demo management/control plane in cluster ${mp_cluster_name}" ;
 }
 
+# This function installs the tsb management and control plane using helm.
+#
+function install_helm {
+
+  local certs_base_dir; certs_base_dir="$(get_certs_output_dir)" ;
+  local cp_helm_template_file; cp_helm_template_file=$(get_mp_cp_helm_template_file) ;
+  local install_repo_url; install_repo_url=$(get_local_registry_endpoint) ;
+  local mp_cluster_name; mp_cluster_name=$(get_mp_name) ;
+  local mp_helm_template_file; mp_helm_template_file=$(get_mp_mp_helm_template_file) ;
+  local mp_output_dir; mp_output_dir=$(get_mp_output_dir) ;
+  local tsb_version; tsb_version=$(get_tsb_version) ;
+
+  if ! helm repo list | grep -q 'tetrate-tsb-charts'; then
+    helm repo add tetrate-tsb-charts "${TSB_HELM_REPO}" ;
+  fi
+  helm repo update tetrate-tsb-charts ;
+
+  export TSB_API_SERVER_PORT=8443 ;
+  export TSB_INSTALL_REPO_URL="${install_repo_url}" ;
+  export TSB_VERSION="${tsb_version}" ;
+  envsubst < "${mp_helm_template_file}" > "${mp_output_dir}/mp-helm-values.yaml" ;
+
+  # start patching managementplane CR asynchronously
+  patch_remove_affinity_mp "${mp_cluster_name}" &
+
+  # install tsb management plane using helm
+  helm upgrade --install tsb-mp "${MP_HELM_CHART}" \
+    --create-namespace \
+    --kube-context "${mp_cluster_name}" \
+    --namespace "tsb" \
+    --values "${mp_output_dir}/mp-helm-values.yaml" \
+    --wait ;
+
+  # Wait for the management plane deployments to become available
+  print_info "Waiting for tsb management plane deployments to become available" ;
+  wait_mp_ready "${mp_cluster_name}" "tsb" ;
+
+  # Apply OAP patch for more real time update in the UI (Apache SkyWalking demo tweak)
+  patch_oap_refresh_rate_mp "${mp_cluster_name}" ;
+  # Apply JWT token expiration patch
+  patch_jwt_token_expiration_mp "${mp_cluster_name}" ;
+
+  # Configure tctl
+  tctl config clusters set "${mp_cluster_name}" --tls-insecure --bridge-address "$(get_tsb_api_ip ${mp_cluster_name}):$(get_tsb_api_port ${mp_cluster_name})" ;
+  tctl config users set tsb-admin --username admin --password admin --org tetrate ;
+  tctl config profiles set tsb-profile --cluster "${mp_cluster_name}" --username tsb-admin ;
+  tctl config profiles set-current tsb-profile ;
+
+  # Extract the tsb ca certificate from the mgmt cluster
+  kubectl --context "${mp_cluster_name}" get -n tsb secret tsb-certs -o jsonpath="{.data.ca\.crt}" | base64 --decode > "${mp_output_dir}/tsb-ca-cert.pem"
+
+  # Generate a service account private key for the mgmt cp cluster
+  #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#using-tctl-to-generate-secrets
+  if [ ! -f "${mp_output_dir}/cluster-service-account.jwk" ]; then
+    tctl install cluster-service-account --cluster "${mp_cluster_name}" > "${mp_output_dir}/cluster-service-account.jwk"
+  fi
+
+  TSB_API_SERVER_IP=$(get_tsb_api_ip "${mp_cluster_name}") ; export TSB_API_SERVER_IP ;
+  TSB_API_SERVER_PORT=$(get_tsb_api_port "${mp_cluster_name}") ; export TSB_API_SERVER_PORT ;
+  export TSB_INSTALL_REPO_URL="${install_repo_url}" ;
+  export TSB_VERSION="${tsb_version}" ;
+  envsubst < "${cp_helm_template_file}" > "${mp_output_dir}/cp-helm-values.yaml" ;
+
+  # bootstrap cluster with self signed certificate that share a common root certificate
+  #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#intermediate-istio-ca-certificates
+  generate_istio_cert "${certs_base_dir}" "${mp_cluster_name}" ;
+  if ! kubectl --context "${mp_cluster_name}" get ns istio-system &>/dev/null; then
+    kubectl --context "${mp_cluster_name}" create ns istio-system ;
+  fi
+  if ! kubectl --context "${mp_cluster_name}" -n istio-system get secret cacerts &>/dev/null; then
+    kubectl --context "${mp_cluster_name}" create secret generic cacerts -n istio-system \
+      --from-file="${certs_base_dir}/${mp_cluster_name}/ca-cert.pem" \
+      --from-file="${certs_base_dir}/${mp_cluster_name}/ca-key.pem" \
+      --from-file="${certs_base_dir}/${mp_cluster_name}/root-cert.pem" \
+      --from-file="${certs_base_dir}/${mp_cluster_name}/cert-chain.pem" ;
+  fi
+
+  # install tsb control plane using helm
+  helm upgrade --install tsb-cp "${CP_HELM_CHART}" \
+    --create-namespace \
+    --kube-context "${mp_cluster_name}" \
+    --namespace "istio-system" \
+    --set-file secrets.elasticsearch.cacert="${mp_output_dir}/tsb-ca-cert.pem" \
+    --set-file secrets.tsb.cacert="${mp_output_dir}/tsb-ca-cert.pem" \
+    --set-file secrets.xcp.rootca="${mp_output_dir}/tsb-ca-cert.pem" \
+    --set-file secrets.clusterServiceAccount.JWK="${mp_output_dir}/cluster-service-account.jwk" \
+    --values "${mp_output_dir}/cp-helm-values.yaml" \
+    --wait ;
+
+  print_info "Waiting for tsb control plane deployments to become available" ;
+  wait_cp_ready "${mp_cluster_name}" "istio-system" ;
+
+  # Expose tsb gui with kubectl port-forward
+  expose_tsb_gui "${mp_cluster_name}" ;
+
+  kubectl --context "${mp_cluster_name}" get pods -A ;
+  print_info "Finished installation of tsb management/control plane in cluster ${mp_cluster_name}" ;
+}
+
+# This function uninstalls the tsb management and control plane using helm.
+#
+function uninstall_helm {
+  local mp_cluster_name; mp_cluster_name=$(get_mp_name) ;
+
+  helm uninstall tsb-cp \
+    --kube-context "${mp_cluster_name}" \
+    --namespace "istio-system" ;
+  kubectl --context "${mp_cluster_name}" delete namespace "istio-system" ;
+
+  helm uninstall tsb-mp \
+    --kube-context "${mp_cluster_name}" \
+    --namespace "tsb" ;
+  kubectl --context "${mp_cluster_name}" delete namespace "tsb" ;
+
+  print_info "Uninstalled helm chart for tsb management/control plane" ;
+}
+
 # This function removes all tsb configuration objects.
 #
 function reset() {
 
-  local mp_cluster_name=$(get_mp_name) ;
+  local mp_cluster_name; mp_cluster_name=$(get_mp_name) ;
 
   # Login again as tsb admin in case of a session time-out
-  login_tsb_admin tetrate ;
+  login_tsb_admin "tetrate" "admin" "admin" ;
 
   # Remove all TSB configuration objects
   kubectl config use-context "${mp_cluster_name}" ;
@@ -235,6 +288,7 @@ function reset() {
   kubectl --context "${mp_cluster_name}" get -A egressgateways.install.tetrate.io,ingressgateways.install.tetrate.io,tier1gateways.install.tetrate.io -o yaml \
     | kubectl --context "${mp_cluster_name}" delete -f - ;
 
+  print_info "Removed all tsb configuration objects" ;
 }
 
 
@@ -245,12 +299,28 @@ case "${ACTION}" in
     help ;
     ;;
   --install)
-    print_stage "Going to install tsb management plane" ;
-    install_tctl ;
+    if [[ "$(get_tsb_install_method)" == "helm" ]]; then
+      print_stage "Going to install tsb management plane using helm" ;
+      install_helm ;
+    elif [[ "$(get_tsb_install_method)" == "tctl" ]]; then
+      print_stage "Going to install tsb management plane using tctl" ;
+      install_tctl ;
+    else
+      print_error "Invalid tsb install method. Choose 'helm' or 'tctl'" ;
+      help ;
+    fi
     ;;
   --uninstall)
-    print_stage "Going to uninstall tsb management plane" ;
-    uninstall_tctl ;
+    if [[ "$(get_tsb_install_method)" == "helm" ]]; then
+      print_stage "Going to uninstall tsb management plane using helm" ;
+      uninstall_helm ;
+    elif [[ "$(get_tsb_install_method)" == "tctl" ]]; then
+      print_stage "Going to uninstall tsb management plane using tctl" ;
+      uninstall_tctl ;
+    else
+      print_error "Invalid tsb install method. Choose 'helm' or 'tctl'" ;
+      help ;
+    fi
     ;;
   --reset)
     print_stage "Going to reset all tsb configuration objects" ;

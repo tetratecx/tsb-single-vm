@@ -5,7 +5,10 @@
       "k8s_version": "1.27.8",
       "name": "c1",
       "region": "us-central1",
-      "trust_domain": "c1",
+      "templates": {
+        "cp_helm": "templates/c1/controlplane-helm-values.yaml",
+        "cp_tctl": "templates/c1/controlplane.yaml"
+      },
       "vms": [
         {
           "image": "boeboe/tsb-ubuntu-vm:1.0.0",
@@ -19,7 +22,10 @@
       "k8s_version": "1.27.8",
       "name": "c2",
       "region": "us-east1",
-      "trust_domain": "c2",
+      "templates": {
+        "cp_helm": "templates/c2/controlplane-helm-values.yaml",
+        "cp_tctl": "templates/c2/controlplane.yaml"
+      },
       "vms": [],
       "zone": "us-east1-a"
     }
@@ -29,7 +35,12 @@
     "k8s_version": "1.27.8",
     "name": "t1",
     "region": "us-central1",
-    "trust_domain": "t1",
+    "templates": {
+      "cp_helm": "templates/t1/controlplane-helm-values.yaml",
+      "cp_tctl": "templates/t1/controlplane.yaml",
+      "mp_helm": "templates/t1/managementplane-helm-values.yaml",
+      "mp_tctl": "templates/t1/managementplane.yaml"
+    },
     "vms": [],
     "zone": "us-central1-a"
   }

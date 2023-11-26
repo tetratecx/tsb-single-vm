@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 BASE_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )" ;
-source "${BASE_DIR}/env.sh" "${BASE_DIR}" ;
-source "${BASE_DIR}/helpers.sh" ;
-source "${BASE_DIR}/k8s-local.sh" ;
+
+# shellcheck source=/dev/null
+source "${BASE_DIR}/env.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/print.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/k8s.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/registry.sh" ;
 
 ACTION=${1} ;
 
@@ -21,26 +27,31 @@ function help() {
 #
 function up() {
 
+  # Start local docker registry and sync images
+  start_local_registry ;
+  add_insecure_registry ;
+  sync_tsb_images "$(get_local_registry_endpoint)" "$(get_tetrate_repo_user)" "$(get_tetrate_repo_password)" ;
+
   ######################## mp cluster ########################
-  local install_repo_url=$(get_install_repo_url) ;
-  local mp_cluster_name=$(get_mp_name) ;
-  local mp_cluster_region=$(get_mp_region) ;
-  local mp_cluster_zone=$(get_mp_zone) ;
-  local mp_k8s_provider=$(get_mp_k8s_provider) ;
-  local mp_k8s_version=$(get_mp_k8s_version) ;
-  local mp_vm_count=$(get_mp_vm_count) ;
+  local install_repo_url; install_repo_url=$(get_local_registry_endpoint) ;
+  local mp_cluster_name; mp_cluster_name=$(get_mp_name) ;
+  local mp_cluster_region; mp_cluster_region=$(get_mp_region) ;
+  local mp_cluster_zone; mp_cluster_zone=$(get_mp_zone) ;
+  local mp_k8s_provider; mp_k8s_provider=$(get_mp_k8s_provider) ;
+  local mp_k8s_version; mp_k8s_version=$(get_mp_k8s_version) ;
+  local mp_vm_count; mp_vm_count=$(get_mp_vm_count) ;
 
   # Start kubernetes management cluster
   start_cluster "${mp_k8s_provider}" "${mp_cluster_name}" "${mp_k8s_version}" "${mp_cluster_name}" "" "${install_repo_url}" ;
   wait_cluster_ready "${mp_k8s_provider}" "${mp_cluster_name}" ;
 
   # Add nodes labels for locality based routing (region and zone)
-  for node_name in $(kubectl --context ${mp_cluster_name} get nodes -o custom-columns=":metadata.name" --no-headers=true); do
-    if ! kubectl --context ${mp_cluster_name} get node ${node_name} --show-labels | grep "topology.kubernetes.io/region=${mp_cluster_region}" &>/dev/null ; then
-      kubectl --context ${mp_cluster_name} label node ${node_name} topology.kubernetes.io/region=${mp_cluster_region} --overwrite=true ;
+  for node_name in $(kubectl --context "${mp_cluster_name}" get nodes -o custom-columns=":metadata.name" --no-headers=true); do
+    if ! kubectl --context "${mp_cluster_name}" get node "${node_name}" --show-labels | grep "topology.kubernetes.io/region=${mp_cluster_region}" &>/dev/null ; then
+      kubectl --context "${mp_cluster_name}" label node "${node_name}" "topology.kubernetes.io/region=${mp_cluster_region}" --overwrite=true ;
     fi
-    if ! kubectl --context ${mp_cluster_name} get node ${node_name} --show-labels | grep "topology.kubernetes.io/zone=${mp_cluster_zone}" &>/dev/null ; then
-      kubectl --context ${mp_cluster_name} label node ${node_name} topology.kubernetes.io/zone=${mp_cluster_zone} --overwrite=true ;
+    if ! kubectl --context "${mp_cluster_name}" get node "${node_name}" --show-labels | grep "topology.kubernetes.io/zone=${mp_cluster_zone}" &>/dev/null ; then
+      kubectl --context "${mp_cluster_name}" label node "${node_name}" "topology.kubernetes.io/zone=${mp_cluster_zone}" --overwrite=true ;
     fi
   done
 
@@ -52,14 +63,14 @@ function up() {
     while [[ ${mp_vm_index} -lt ${mp_vm_count} ]]; do
       vm_image=$(get_mp_vm_image_by_index ${mp_vm_index}) ;
       vm_name=$(get_mp_vm_name_by_index ${mp_vm_index}) ;
-      if docker ps --filter "status=running" | grep ${vm_name} &>/dev/null ; then
+      if docker ps --filter "status=running" | grep "${vm_name}" &>/dev/null ; then
         echo "Do nothing, vm ${vm_name} for management cluster ${mp_cluster_name} is already running" ;
-      elif docker ps --filter "status=exited" | grep ${vm_name} &>/dev/null ; then
+      elif docker ps --filter "status=exited" | grep "${vm_name}" &>/dev/null ; then
         print_info "Going to start vm ${vm_name} for management cluster ${mp_cluster_name} again" ;
-        docker start ${vm_name} ;
+        docker start "${vm_name}" ;
       else
         print_info "Going to start vm ${vm_name} for management cluster ${mp_cluster_name} for the first time" ;
-        docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${mp_cluster_name} --hostname ${vm_name} --name ${vm_name} ${vm_image} ;
+        docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net "${mp_cluster_name}" --hostname "${vm_name}" --name "${vm_name}" "${vm_image}" ;
       fi
       mp_vm_index=$((mp_vm_index+1)) ;
     done
@@ -72,27 +83,27 @@ function up() {
   sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2 ;
 
   ######################## cp clusters ########################
-  local cp_count=$(get_cp_count) ;
+  local cp_count; cp_count=$(get_cp_count) ;
   local cp_index=0 ;
   while [[ ${cp_index} -lt ${cp_count} ]]; do
-    local cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
-    local cp_cluster_region=$(get_cp_region_by_index ${cp_index}) ;
-    local cp_cluster_zone=$(get_cp_zone_by_index ${cp_index}) ;
-    local cp_k8s_provider=$(get_cp_k8s_provider_by_index ${cp_index}) ;
-    local cp_k8s_version=$(get_cp_k8s_version_by_index ${cp_index}) ;
-    local cp_vm_count=$(get_cp_vm_count_by_index ${cp_index}) ;
+    local cp_cluster_name; cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
+    local cp_cluster_region; cp_cluster_region=$(get_cp_region_by_index ${cp_index}) ;
+    local cp_cluster_zone; cp_cluster_zone=$(get_cp_zone_by_index ${cp_index}) ;
+    local cp_k8s_provider; cp_k8s_provider=$(get_cp_k8s_provider_by_index ${cp_index}) ;
+    local cp_k8s_version; cp_k8s_version=$(get_cp_k8s_version_by_index ${cp_index}) ;
+    local cp_vm_count; cp_vm_count=$(get_cp_vm_count_by_index ${cp_index}) ;
 
     # Start kubernetes application cluster
     start_cluster "${cp_k8s_provider}" "${cp_cluster_name}" "${cp_k8s_version}" "${cp_cluster_name}" "" "${install_repo_url}" ;
     wait_cluster_ready "${cp_k8s_provider}" "${cp_cluster_name}" ;
 
     # Add nodes labels for locality based routing (region and zone)
-    for node_name in $(kubectl --context ${cp_cluster_name} get nodes -o custom-columns=":metadata.name" --no-headers=true); do
-      if ! kubectl --context ${cp_cluster_name} get node ${node_name} --show-labels | grep "topology.kubernetes.io/region=${cp_cluster_region}" &>/dev/null ; then
-        kubectl --context ${cp_cluster_name} label node ${node_name} topology.kubernetes.io/region=${cp_cluster_region} --overwrite=true ;
+    for node_name in $(kubectl --context "${cp_cluster_name}" get nodes -o custom-columns=":metadata.name" --no-headers=true); do
+      if ! kubectl --context "${cp_cluster_name}" get node "${node_name}" --show-labels | grep "topology.kubernetes.io/region=${cp_cluster_region}" &>/dev/null ; then
+        kubectl --context "${cp_cluster_name}" label node "${node_name}" "topology.kubernetes.io/region=${cp_cluster_region}" --overwrite=true ;
       fi
-      if ! kubectl --context ${cp_cluster_name} get node ${node_name} --show-labels | grep "topology.kubernetes.io/zone=${cp_cluster_zone}" &>/dev/null ; then
-        kubectl --context ${cp_cluster_name} label node ${node_name} topology.kubernetes.io/zone=${cp_cluster_zone} --overwrite=true ;
+      if ! kubectl --context "${cp_cluster_name}" get node "${node_name}" --show-labels | grep "topology.kubernetes.io/zone=${cp_cluster_zone}" &>/dev/null ; then
+        kubectl --context "${cp_cluster_name}" label node "${node_name}" "topology.kubernetes.io/zone=${cp_cluster_zone}" --overwrite=true ;
       fi
     done
 
@@ -102,16 +113,16 @@ function up() {
     else
       local cp_vm_index=0 ;
       while [[ ${cp_vm_index} -lt ${cp_vm_count} ]]; do
-        local vm_image=$(get_cp_vm_image_by_index ${cp_index} ${cp_vm_index}) ;
-        local vm_name=$(get_cp_vm_name_by_index ${cp_index} ${cp_vm_index}) ;
-        if docker ps --filter "status=running" | grep ${vm_name} &>/dev/null ; then
+        local vm_image; vm_image=$(get_cp_vm_image_by_index ${cp_index} ${cp_vm_index}) ;
+        local vm_name; vm_name=$(get_cp_vm_name_by_index ${cp_index} ${cp_vm_index}) ;
+        if docker ps --filter "status=running" | grep "${vm_name}" &>/dev/null ; then
           echo "Do nothing, vm ${vm_name} for application cluster ${cp_cluster_name} is already running" ;
-        elif docker ps --filter "status=exited" | grep ${vm_name} &>/dev/null ; then
+        elif docker ps --filter "status=exited" | grep "${vm_name}" &>/dev/null ; then
           print_info "Going to start vm ${vm_name} for application cluster ${cp_cluster_name} again" ;
-          docker start ${vm_name} ;
+          docker start "${vm_name}" ;
         else
           print_info "Going to start vm ${vm_name} for application cluster ${cp_cluster_name} for the first time" ;
-          docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net ${cp_cluster_name} --hostname ${vm_name} --name ${vm_name} ${vm_image} ;
+          docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -d --net "${cp_cluster_name}" --hostname "${vm_name}" --name "${vm_name}" "${vm_image}" ;
         fi
         cp_vm_index=$((cp_vm_index+1)) ;
       done
@@ -135,12 +146,12 @@ function up() {
 function down() {
 
   # Stop kubernetes clusters
-  local mp_cluster_name=$(get_mp_name) ;
-  local mp_k8s_provider=$(get_mp_k8s_provider) ;
+  local mp_cluster_name; mp_cluster_name=$(get_mp_name) ;
+  local mp_k8s_provider; mp_k8s_provider=$(get_mp_k8s_provider) ;
   print_info "Going to stop management cluster '${mp_cluster_name}'" ;
   stop_cluster "${mp_k8s_provider}" "${mp_cluster_name}" ;
 
-  local cp_count=$(get_cp_count) ;
+  local cp_count; cp_count=$(get_cp_count) ;
   local cp_index=0 ;
   while [[ ${cp_index} -lt ${cp_count} ]]; do
     cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
@@ -151,20 +162,20 @@ function down() {
   done
 
   # Management plane VMs
-  local mp_vm_count=$(get_mp_vm_count) ;
+  local mp_vm_count; mp_vm_count=$(get_mp_vm_count) ;
   if ! [[ ${mp_vm_count} -eq 0 ]] ; then
     mp_cluster_name=$(get_mp_name) ;
     mp_vm_index=0 ;
     while [[ ${mp_vm_index} -lt ${mp_vm_count} ]]; do
       vm_name=$(get_mp_vm_name_by_index ${mp_vm_index}) ;
       print_info "Going to stop vm ${vm_name} attached to management cluster ${mp_cluster_name}" ;
-      docker stop ${vm_name} ;
+      docker stop "${vm_name}" ;
       mp_vm_index=$((mp_vm_index+1)) ;
     done
   fi
 
   # Control plane VMs
-  local cp_count=$(get_cp_count) ;
+  local cp_count; cp_count=$(get_cp_count) ;
   local cp_index=0 ;
   while [[ ${cp_index} -lt ${cp_count} ]]; do
     cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
@@ -174,7 +185,7 @@ function down() {
       while [[ ${cp_vm_index} -lt ${cp_vm_count} ]]; do
         vm_name=$(get_cp_vm_name_by_index ${cp_index} ${cp_vm_index}) ;
         print_info "Going to stop vm ${vm_name} attached to application cluster ${cp_cluster_name}" ;
-        docker stop ${vm_name} ;
+        docker stop "${vm_name}" ;
         cp_vm_index=$((cp_vm_index+1)) ;
       done
     fi
@@ -188,15 +199,15 @@ function down() {
 #
 function info() {
 
-  local mp_cluster_name=$(get_mp_name) ;
-  if ! kubectl config get-contexts ${mp_cluster_name} &>/dev/null ; then
+  local mp_cluster_name; mp_cluster_name=$(get_mp_name) ;
+  if ! kubectl config get-contexts "${mp_cluster_name}" &>/dev/null ; then
     kubectl config get-contexts ;
     docker ps ;
     print_error "No kubernetes context \"${mp_cluster_name}\" found... topology in configured env.json is not running." ;
     exit 0 ;
   fi  
 
-  local tsb_api_endpoint=$(kubectl --context ${mp_cluster_name} get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  local tsb_api_endpoint; tsb_api_endpoint=$(kubectl --context "${mp_cluster_name}" get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
 
   print_info "Running docker containers:" ;
   docker ps ;
@@ -207,7 +218,7 @@ function info() {
   echo "TSB GUI (port-fowarded): https://$(curl -s ifconfig.me):8443 (admin/admin)" ;
   print_command "kubectl --context ${mp_cluster_name} get pods -A" ;
 
-  local cp_count=$(get_cp_count) ;
+  local cp_count; cp_count=$(get_cp_count) ;
   local cp_index=0 ;
   while [[ ${cp_index} -lt ${cp_count} ]]; do
     cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
@@ -218,7 +229,7 @@ function info() {
   done
 
   # Management plane VMs
-  local mp_vm_count=$(get_mp_vm_count) ;
+  local mp_vm_count; mp_vm_count=$(get_mp_vm_count) ;
   if ! [[ ${mp_vm_count} -eq 0 ]] ; then
     mp_cluster_name=$(get_mp_name) ;
     echo "" ;
@@ -226,15 +237,15 @@ function info() {
     mp_vm_index=0 ;
     while [[ ${mp_vm_index} -lt ${mp_vm_count} ]]; do
       vm_name=$(get_mp_vm_name_by_index ${mp_vm_index}) ;
-      vm_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${vm_name}) ;
+      vm_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${vm_name}") ;
       echo "${vm_name} has ip address ${vm_ip}" ;
-      print_command "ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${vm_ip}" ;
+      print_command "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${vm_ip}" ;
       mp_vm_index=$((mp_vm_index+1)) ;
     done
   fi
 
   # Control plane VMs
-  local cp_count=$(get_cp_count) ;
+  local cp_count; cp_count=$(get_cp_count) ;
   local cp_index=0 ;
   while [[ ${cp_index} -lt ${cp_count} ]]; do
     cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
@@ -245,9 +256,9 @@ function info() {
       cp_vm_index=0 ;
       while [[ ${cp_vm_index} -lt ${cp_vm_count} ]]; do
         vm_name=$(get_cp_vm_name_by_index ${cp_index} ${cp_vm_index}) ;
-        vm_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${vm_name}) ;
+        vm_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${vm_name}") ;
         echo "${vm_name} has ip address ${vm_ip}" ;
-        print_command "ssh -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" ubuntu@${vm_ip}" ;
+        print_command "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@${vm_ip}" ;
         cp_vm_index=$((cp_vm_index+1)) ;
       done
     fi
@@ -260,21 +271,21 @@ function info() {
 function clean() {
 
   # Management plane VMs
-  local mp_vm_count=$(get_mp_vm_count) ;
+  local mp_vm_count; mp_vm_count=$(get_mp_vm_count) ;
   if ! [[ ${mp_vm_count} -eq 0 ]] ; then
     mp_cluster_name=$(get_mp_name) ;
     mp_vm_index=0 ;
     while [[ ${mp_vm_index} -lt ${mp_vm_count} ]]; do
       vm_name=$(get_mp_vm_name_by_index ${mp_vm_index}) ;
       print_info "Going to delete vm ${vm_name} attached to management cluster ${mp_cluster_name}" ;
-      docker stop ${vm_name} ;
-      docker rm ${vm_name} ;
+      docker stop "${vm_name}" ;
+      docker rm "${vm_name}" ;
       mp_vm_index=$((mp_vm_index+1)) ;
     done
   fi
 
   # Control plane VMs
-  local cp_count=$(get_cp_count) ;
+  local cp_count; cp_count=$(get_cp_count) ;
   local cp_index=0 ;
   while [[ ${cp_index} -lt ${cp_count} ]]; do
     cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
@@ -284,8 +295,8 @@ function clean() {
       while [[ ${cp_vm_index} -lt ${cp_vm_count} ]]; do
         vm_name=$(get_cp_vm_name_by_index ${cp_index} ${cp_vm_index}) ;
         print_info "Going to delete vm ${vm_name} attached to application cluster ${cp_cluster_name}" ;
-        docker stop ${vm_name} ;
-        docker rm ${vm_name} ;
+        docker stop "${vm_name}" ;
+        docker rm "${vm_name}" ;
         cp_vm_index=$((cp_vm_index+1)) ;
       done
     fi
@@ -293,12 +304,12 @@ function clean() {
   done
 
   # Delete kubernetes cluster
-  local mp_cluster_name=$(get_mp_name) ;
-  local mp_k8s_provider=$(get_mp_k8s_provider) ;
+  local mp_cluster_name; mp_cluster_name=$(get_mp_name) ;
+  local mp_k8s_provider; mp_k8s_provider=$(get_mp_k8s_provider) ;
   print_info "Going to delete management cluster '${mp_cluster_name}'" ;
   remove_cluster "${mp_k8s_provider}" "${mp_cluster_name}" "${mp_cluster_name}" ;
 
-  local cp_count=$(get_cp_count) ;
+  local cp_count; cp_count=$(get_cp_count) ;
   local cp_index=0 ;
   while [[ ${cp_index} -lt ${cp_count} ]]; do
     cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;

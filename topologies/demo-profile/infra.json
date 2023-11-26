@@ -9,7 +9,12 @@
     "k8s_version": "1.27.7",
     "name": "demo",
     "region": "region1",
-    "trust_domain": "demo",
+    "templates": {
+      "cp_helm": "templates/demo/controlplane-helm-values.yaml",
+      "cp_tctl": "templates/demo/controlplane.yaml",
+      "mp_helm": "templates/demo/managementplane-helm-values.yaml",
+      "mp_tctl": "templates/demo/managementplane.yaml"
+    },
     "vms": [],
     "zone": "zone1a"
   }

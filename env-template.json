@@ -2,16 +2,10 @@
   "scenario": "abc-failover",
   "topology": "active-standby",
   "tsb": {
-    "install_repo": {
-      "insecure_registry": true,
-      "password": "",
-      "url": "192.168.48.2:5000",
-      "user": ""
-    },
-    "istio_version": "1.17.4",
+    "istio_version": "1.17.8",
+    "install_method": "tctl",
     "tetrate_repo": {
       "password": "<TSB_REPO_APIKEY>",
-      "url": "containers.dl.tetrate.io",
       "user": "<TSB_REPO_USERNAME>"
     },
     "version": "1.7.2"

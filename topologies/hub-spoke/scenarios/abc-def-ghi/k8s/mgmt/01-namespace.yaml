@@ -3,13 +3,19 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: gateway-tier1-abc
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: gateway-tier1-def
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: gateway-tier1-ghi
+  labels:
+    istio-injection: enabled

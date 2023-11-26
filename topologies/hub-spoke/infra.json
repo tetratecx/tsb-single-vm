@@ -5,7 +5,10 @@
       "k8s_version": "1.27.8",
       "name": "cluster1",
       "region": "region1",
-      "trust_domain": "cluster1",
+      "templates": {
+        "cp_helm": "templates/cluster1/controlplane-helm-values.yaml",
+        "cp_tctl": "templates/cluster1/controlplane.yaml"
+      },
       "vms": [],
       "zone": "zone1a"
     },
@@ -14,7 +17,10 @@
       "k8s_version": "1.27.8",
       "name": "cluster2",
       "region": "region1",
-      "trust_domain": "cluster2",
+      "templates": {
+        "cp_helm": "templates/cluster2/controlplane-helm-values.yaml",
+        "cp_tctl": "templates/cluster2/controlplane.yaml"
+      },
       "vms": [],
       "zone": "zone1a"
     },
@@ -23,7 +29,10 @@
       "k8s_version": "1.27.8",
       "name": "cluster3",
       "region": "region1",
-      "trust_domain": "cluster3",
+      "templates": {
+        "cp_helm": "templates/cluster3/controlplane-helm-values.yaml",
+        "cp_tctl": "templates/cluster3/controlplane.yaml"
+      },
       "vms": [],
       "zone": "zone1a"
     }
@@ -33,7 +42,12 @@
     "k8s_version": "1.27.8",
     "name": "mgmt",
     "region": "region1",
-    "trust_domain": "mgmt",
+    "templates": {
+      "cp_helm": "templates/mgmt/controlplane-helm-values.yaml",
+      "cp_tctl": "templates/mgmt/controlplane.yaml",
+      "mp_helm": "templates/mgmt/managementplane-helm-values.yaml",
+      "mp_tctl": "templates/mgmt/managementplane.yaml"
+    },
     "vms": [],
     "zone": "zone1a"
   }

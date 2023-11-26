@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 BASE_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )" ;
-source "${BASE_DIR}/env.sh" "${BASE_DIR}" ;
-source "${BASE_DIR}/helpers.sh" ;
+
+# shellcheck source=/dev/null
+source "${BASE_DIR}/env.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/print.sh" ;
 
 SCENARIO=$(get_scenario) ;
 SCENARIO_DIR=$(get_scenario_dir) ;
@@ -23,7 +26,7 @@ function help() {
 #
 function deploy() {
   print_info "Start deploying scenario '${SCENARIO}'" ;
-  "${SCENARIO_DIR}/run.sh" "${BASE_DIR}" deploy ;
+  BASE_DIR=${BASE_DIR} "${SCENARIO_DIR}/run.sh" --deploy ;
   print_info "Finished deploying scenario '${SCENARIO}'" ;
 }
 
@@ -31,7 +34,7 @@ function deploy() {
 #
 function undeploy() {
   print_info "Start undeploying scenario '${SCENARIO}'" ;
-  "${SCENARIO_DIR}/run.sh" "${BASE_DIR}" undeploy ;
+  BASE_DIR=${BASE_DIR} "${SCENARIO_DIR}/run.sh" --undeploy ;
   print_info "Finished undeploying scenario '${SCENARIO}'" ;
 }
 
@@ -39,7 +42,7 @@ function undeploy() {
 # This function shows info for the scenario.
 #
 function info() {
-  "${SCENARIO_DIR}/run.sh" "${BASE_DIR}" info ;
+  BASE_DIR=${BASE_DIR} "${SCENARIO_DIR}/run.sh" --info ;
 }
 
 
@@ -58,7 +61,7 @@ case "${ACTION}" in
     undeploy ;
     ;;
   --info)
-    print_stage "Going to show info for scenario '${SCENARIO}'" ;
+    print_stage "Going to print info for scenario '${SCENARIO}'" ;
     info ;
     ;;
   *)

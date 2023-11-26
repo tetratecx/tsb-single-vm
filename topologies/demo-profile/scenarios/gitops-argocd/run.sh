@@ -1,17 +1,43 @@
 #!/usr/bin/env bash
-SCENARIO_ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
-ROOT_DIR=${1}
-ACTION=${2}
-source ${ROOT_DIR}/env.sh ${ROOT_DIR}
-source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
-source ${ROOT_DIR}/helpers.sh
-source ${ROOT_DIR}/tsb-helpers.sh
-source ${ROOT_DIR}/addons/docker/gitea/api.sh
-source ${ROOT_DIR}/addons/docker/gitea/infra.sh
-source ${ROOT_DIR}/addons/k8s/argocd/api.sh
-source ${ROOT_DIR}/addons/k8s/argocd/infra.sh
+SCENARIO_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")") ;
 
-INSTALL_REPO_URL=$(get_install_repo_url) ;
+if [[ -z "${BASE_DIR}" ]]; then
+    echo "BASE_DIR environment variable is not set or is empty" ;
+    exit 1 ;
+fi
+
+# shellcheck source=/dev/null
+source "${BASE_DIR}/env.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/certs.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/print.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/registry.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/tsb.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/addons/docker/gitea/api.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/addons/docker/gitea/infra.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/addons/k8s/argocd/api.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/addons/k8s/argocd/infra.sh" ;
+
+ACTION=${1} ;
+
+# This function provides help information for the script.
+#
+function help() {
+  echo "Usage: $0 <command> [options]" ;
+  echo "Commands:" ;
+  echo "  --deploy: delpoy the scenario" ;
+  echo "  --undeploy: undeploy the scenario" ;
+  echo "  --info: print info about the scenario" ;
+}
+
+INSTALL_REPO_URL=$(get_local_registry_endpoint) ;
 
 GITEA_CONFIG_FILE="${SCENARIO_ROOT_DIR}/gitea/app.ini"
 GITEA_REPOS_DIR="${SCENARIO_ROOT_DIR}/repositories"
@@ -60,7 +86,10 @@ function create_and_sync_gitea_repos {
   done
 }
 
-if [[ ${ACTION} = "deploy" ]]; then
+
+# This function deploys the scenario.
+#
+function deploy() {
 
   # Start gitea server
   gitea_start_server "" "demo " ;
@@ -71,7 +100,7 @@ if [[ ${ACTION} = "deploy" ]]; then
   sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2 ;
 
   # Login again as tsb admin in case of a session time-out
-  login_tsb_admin tetrate ;
+  login_tsb_admin "tetrate" "admin" "admin" ;
 
   # Enable gitops in the CP cluster
   print_info "Enabling GitOps in the CP cluster 'demo'" ;
@@ -103,23 +132,24 @@ if [[ ${ACTION} = "deploy" ]]; then
   # argocd --insecure app sync app-openapi ;
   # argocd --insecure app sync app-openapi-tsb ;
 
-  exit 0
-fi
+}
 
 
-if [[ ${ACTION} = "undeploy" ]]; then
+# This function undeploys the scenario.
+#
+function undeploy() {
 
   # Remove gitea server
   gitea_remove_server ;
 
   # Undeploy argocd from kubernetes
   argocd_undeploy demo  ;
-
-  exit 0
-fi
+}
 
 
-if [[ ${ACTION} = "info" ]]; then
+# This function prints info about the scenario.
+#
+function info() {
 
   GITEA_HTTP_URL=$(gitea_get_http_url) ;
   print_info "Gitea server web ui running at ${GITEA_HTTP_URL}" ;
@@ -128,13 +158,13 @@ if [[ ${ACTION} = "info" ]]; then
   print_info "ArgoCD web ui running at https://${ARGOCD_IP}" ;
 
   while ! APPABC_INGRESS_GW_IP=$(kubectl --context demo  get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
-    sleep 1;
+    sleep 1 ;
   done
   while ! APP1_INGRESS_GW_IP=$(kubectl --context demo  get svc -n app1 app1-ingress --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
-    sleep 1;
+    sleep 1 ;
   done
   while ! APP2_INGRESS_GW_IP=$(kubectl --context demo  get svc -n app2 app2-ingress --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
-    sleep 1;
+    sleep 1 ;
   done
 
   # Example JWT tokens to be used in the different examples.
@@ -166,13 +196,26 @@ if [[ ${ACTION} = "info" ]]; then
   sleep 1 ;
 done"
   echo
-
-  exit 0
-fi
+}
 
 
-echo "Please specify one of the following action:"
-echo "  - deploy"
-echo "  - undeploy"
-echo "  - info"
-exit 1
+# Main execution
+#
+case "${ACTION}" in
+  --help)
+    help ;
+    ;;
+  --deploy)
+    deploy ;
+    ;;
+  --undeploy)
+    undeploy ;
+    ;;
+  --info)
+    info ;
+    ;;
+  *)
+    print_error "Invalid option. Use 'help' to see available commands." ;
+    help ;
+    ;;
+esac

@@ -1,20 +1,40 @@
 #!/usr/bin/env bash
-SCENARIO_ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
-ROOT_DIR=${1}
-ACTION=${2}
-source ${ROOT_DIR}/env.sh ${ROOT_DIR}
-source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
-source ${ROOT_DIR}/helpers.sh
-source ${ROOT_DIR}/tsb-helpers.sh
+SCENARIO_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")") ;
 
-INSTALL_REPO_URL=$(get_install_repo_url) ;
+if [[ -z "${BASE_DIR}" ]]; then
+    echo "BASE_DIR environment variable is not set or is empty" ;
+    exit 1 ;
+fi
+
+# shellcheck source=/dev/null
+source "${BASE_DIR}/env.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/certs.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/print.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/registry.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/tsb.sh" ;
+
+ACTION=${1} ;
+
+# This function provides help information for the script.
+#
+function help() {
+  echo "Usage: $0 <command> [options]" ;
+  echo "Commands:" ;
+  echo "  --deploy: delpoy the scenario" ;
+  echo "  --undeploy: undeploy the scenario" ;
+  echo "  --info: print info about the scenario" ;
+}
 
 # Onboard vm by uploading onboarding script and running it
 #   args:
 #     (1) vm name
 #     (2) onboarding script path
 function onboard_vm {
-  local vm_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1})
+  local vm_ip; vm_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${1}")
 
   # scp onboarding script
   expect <<DONE
@@ -41,7 +61,7 @@ DONE
 #     (1) vm name
 #     (2) offboarding script path
 function offboard_vm {
-  local vm_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${1})
+  local vm_ip; vm_ip=$(docker container inspect --format '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${1}")
 
   # scp offboarding script
   expect <<DONE
@@ -68,178 +88,212 @@ DONE
 #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/workload_onboarding/quickstart/on-premise/configure-workload-onboarding#allow-workloads-to-authenticate-themselves-by-means-of-a-jwt-token
 #   REF: https://github.com/tet./onboarding-agent-sample-jwt-credential-plugin --docsrateio/onboarding-agent-sample-jwt-credential-plugin
 function generate_vm_jwt_tokens {
-  MP_OUTPUT_DIR=$(get_mp_output_dir)
+  local mp_output_dir; mp_output_dir=$(get_mp_output_dir) ;
 
   if ! [[ -f "${ONBOARDING_AGENT_JWT_PLUGIN}" ]]; then
     curl -fL "https://dl.cloudsmith.io/public/tetrate/onboarding-examples/raw/files/onboarding-agent-sample-jwt-credential-plugin_0.0.1_$(uname -s)_$(uname -m).tar.gz" \
-      | tar --directory ${ROOT_DIR}/output -xz onboarding-agent-sample-jwt-credential-plugin ;
-    chmod +x ${ROOT_DIR}/output/onboarding-agent-sample-jwt-credential-plugin ;
+      | tar --directory "${BASE_DIR}/output" -xz onboarding-agent-sample-jwt-credential-plugin ;
+    chmod +x "${BASE_DIR}/output/onboarding-agent-sample-jwt-credential-plugin" ;
   fi
 
-  if ! [[ -f "${MP_OUTPUT_DIR}/vm1/sample-jwt-issuer.jwks" ]]; then
-    export SAMPLE_JWT_ISSUER="https://issuer-vm1.demo.tetrate.io"
-    export SAMPLE_JWT_SUBJECT="vm1.demo.tetrate.io"
-    export SAMPLE_JWT_ATTRIBUTES_FIELD="custom_attributes"
-    export SAMPLE_JWT_ATTRIBUTES="instance_name=vm1,instance_role=app-b,region=region1"
-    export SAMPLE_JWT_EXPIRATION="87600h"
-    ${ROOT_DIR}/output/onboarding-agent-sample-jwt-credential-plugin generate key -o ${MP_OUTPUT_DIR}/vm1/sample-jwt-issuer ;
+  if ! [[ -f "${mp_output_dir}/vm1/sample-jwt-issuer.jwks" ]]; then
+    export SAMPLE_JWT_ISSUER="https://issuer-vm1.demo.tetrate.io" ;
+    export SAMPLE_JWT_SUBJECT="vm1.demo.tetrate.io" ;
+    export SAMPLE_JWT_ATTRIBUTES_FIELD="custom_attributes" ;
+    export SAMPLE_JWT_ATTRIBUTES="instance_name=vm1,instance_role=app-b,region=region1" ;
+    export SAMPLE_JWT_EXPIRATION="87600h" ;
+    "${BASE_DIR}/output/onboarding-agent-sample-jwt-credential-plugin" generate key -o "${mp_output_dir}/vm1/sample-jwt-issuer" ;
   fi
 
-  if ! [[ -f "${MP_OUTPUT_DIR}/vm2/sample-jwt-issuer.jwks" ]]; then
-    export SAMPLE_JWT_ISSUER="https://issuer-vm2.demo.tetrate.io"
-    export SAMPLE_JWT_SUBJECT="vm2.demo.tetrate.io"
-    export SAMPLE_JWT_ATTRIBUTES_FIELD="custom_attributes"
-    export SAMPLE_JWT_ATTRIBUTES="instance_name=vm2,instance_role=app-b,region=region1"
-    export SAMPLE_JWT_EXPIRATION="87600h"
-    ${ROOT_DIR}/output/onboarding-agent-sample-jwt-credential-plugin generate key -o ${MP_OUTPUT_DIR}/vm2/sample-jwt-issuer ;
+  if ! [[ -f "${mp_output_dir}/vm2/sample-jwt-issuer.jwks" ]]; then
+    export SAMPLE_JWT_ISSUER="https://issuer-vm2.demo.tetrate.io" ;
+    export SAMPLE_JWT_SUBJECT="vm2.demo.tetrate.io" ;
+    export SAMPLE_JWT_ATTRIBUTES_FIELD="custom_attributes" ;
+    export SAMPLE_JWT_ATTRIBUTES="instance_name=vm2,instance_role=app-b,region=region1" ;
+    export SAMPLE_JWT_EXPIRATION="87600h" ;
+    "${BASE_DIR}/output/onboarding-agent-sample-jwt-credential-plugin" generate key -o "${mp_output_dir}/vm2/sample-jwt-issuer" ;
   fi
 
-  if ! [[ -f "${MP_OUTPUT_DIR}/vm3/sample-jwt-issuer.jwks" ]]; then
-    export SAMPLE_JWT_ISSUER="https://issuer-vm3.demo.tetrate.io"
-    export SAMPLE_JWT_SUBJECT="vm3.demo.tetrate.io"
-    export SAMPLE_JWT_ATTRIBUTES_FIELD="custom_attributes"
-    export SAMPLE_JWT_ATTRIBUTES="instance_name=vm3,instance_role=app-c,region=region1"
-    export SAMPLE_JWT_EXPIRATION="87600h"
-    ${ROOT_DIR}/output/onboarding-agent-sample-jwt-credential-plugin generate key -o ${MP_OUTPUT_DIR}/vm3/sample-jwt-issuer ;
+  if ! [[ -f "${mp_output_dir}/vm3/sample-jwt-issuer.jwks" ]]; then
+    export SAMPLE_JWT_ISSUER="https://issuer-vm3.demo.tetrate.io" ;
+    export SAMPLE_JWT_SUBJECT="vm3.demo.tetrate.io" ;
+    export SAMPLE_JWT_ATTRIBUTES_FIELD="custom_attributes" ;
+    export SAMPLE_JWT_ATTRIBUTES="instance_name=vm3,instance_role=app-c,region=region1" ;
+    export SAMPLE_JWT_EXPIRATION="87600h" ;
+    "${BASE_DIR}/output/onboarding-agent-sample-jwt-credential-plugin" generate key -o "${mp_output_dir}/vm3/sample-jwt-issuer" ;
   fi
 }
 
 
-if [[ ${ACTION} = "deploy" ]]; then
+# This function deploys the scenario.
+#
+function deploy() {
 
+  local certs_base_dir; certs_base_dir="$(get_certs_output_dir)" ;
+  local install_repo_url; install_repo_url="$(get_local_registry_endpoint)" ;
+  local mp_output_dir; mp_output_dir="$(get_mp_output_dir)" ;
+  
   # Set TSB_INSTALL_REPO_URL for envsubst of image repo
-  export TSB_INSTALL_REPO_URL=${INSTALL_REPO_URL}
 
-  CERTS_BASE_DIR=$(get_certs_base_dir) ;
-  MP_OUTPUT_DIR=$(get_mp_output_dir) ;
-  mkdir -p ${MP_OUTPUT_DIR}/vm1 ;
-  mkdir -p ${MP_OUTPUT_DIR}/vm2 ;
-  mkdir -p ${MP_OUTPUT_DIR}/vm3 ;
+  mkdir -p "${mp_output_dir}/vm1" ;
+  mkdir -p "${mp_output_dir}/vm2" ;
+  mkdir -p "${mp_output_dir}/vm3" ;
 
   # Login again as tsb admin in case of a session time-out
-  login_tsb_admin tetrate ;
+  login_tsb_admin "tetrate" "admin" "admin" ;
 
   # Generate vm gateway and application ingress certificate
-  generate_server_cert vm-onboarding demo.tetrate.io ;
-  generate_server_cert abc demo.tetrate.io ;
+  CERTS_BASE_DIR="${BASE_DIR}/output/certs" ;
+  generate_server_cert "${CERTS_BASE_DIR}" "vm-onboarding" "demo.tetrate.io" ;
+  generate_server_cert "${CERTS_BASE_DIR}" "abc" "demo.tetrate.io" ;
 
   # Deploy tsb cluster and tenant objects
-  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/01-cluster.yaml ;
-  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/02-tenant.yaml ;
+  tctl apply -f "${SCENARIO_DIR}/tsb/01-cluster.yaml" ;
+  tctl apply -f "${SCENARIO_DIR}/tsb/02-tenant.yaml" ;
 
   # Generate jwt tokens for vms and patch control plane of mgmt cluster with jwks configurations
   generate_vm_jwt_tokens ;
-  export JWKS_VM1=$(cat ${MP_OUTPUT_DIR}/vm1/sample-jwt-issuer.jwks | tr '\n' ' ' | tr -d ' ')
-  export JWKS_VM2=$(cat ${MP_OUTPUT_DIR}/vm2/sample-jwt-issuer.jwks | tr '\n' ' ' | tr -d ' ')
-  export JWKS_VM3=$(cat ${MP_OUTPUT_DIR}/vm3/sample-jwt-issuer.jwks | tr '\n' ' ' | tr -d ' ')
-  envsubst < ${SCENARIO_ROOT_DIR}/patch/onboarding-vm-patch-template.yaml > ${MP_OUTPUT_DIR}/onboarding-vm-patch.yaml ;
-  kubectl --context mgmt -n istio-system patch controlplanes controlplane --patch-file ${MP_OUTPUT_DIR}/onboarding-vm-patch.yaml --type merge ;
+  # shellcheck disable=SC2002
+  JWKS_VM1=$(cat "${mp_output_dir}/vm1/sample-jwt-issuer.jwks" | tr '\n' ' ' | tr -d ' ') ; export JWKS_VM1 ;
+  # shellcheck disable=SC2002
+  JWKS_VM2=$(cat "${mp_output_dir}/vm2/sample-jwt-issuer.jwks" | tr '\n' ' ' | tr -d ' ') ; export JWKS_VM2 ;
+  # shellcheck disable=SC2002
+  JWKS_VM3=$(cat "${mp_output_dir}/vm3/sample-jwt-issuer.jwks" | tr '\n' ' ' | tr -d ' ') ; export JWKS_VM3 ;
+
+  export TSB_INSTALL_REPO_URL=${install_repo_url} ;
+  envsubst < "${SCENARIO_DIR}/patch/onboarding-vm-patch-template.yaml" > "${mp_output_dir}/onboarding-vm-patch.yaml" ;
+
+  kubectl --context mgmt -n istio-system patch controlplanes controlplane --patch-file "${mp_output_dir}/onboarding-vm-patch.yaml" --type merge ;
 
   # Deploy kubernetes objects in mgmt cluster
-  kubectl --context mgmt apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt/01-namespace.yaml ;
+  kubectl --context mgmt apply -f "${SCENARIO_DIR}/k8s/mgmt/01-namespace.yaml" ;
   if ! kubectl --context mgmt get secret app-abc-cert -n gateway-abc &>/dev/null ; then
     kubectl --context mgmt create secret tls app-abc-cert -n gateway-abc \
-      --key ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-key.pem \
-      --cert ${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-cert.pem ;
+      --key "${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-key.pem" \
+      --cert "${CERTS_BASE_DIR}/abc/server.abc.demo.tetrate.io-cert.pem" ;
   fi
   if ! kubectl --context mgmt get secret vm-onboarding -n istio-system &>/dev/null ; then
     kubectl --context mgmt create secret tls vm-onboarding -n istio-system \
-      --key ${CERTS_BASE_DIR}/vm-onboarding/server.vm-onboarding.demo.tetrate.io-key.pem \
-      --cert ${CERTS_BASE_DIR}/vm-onboarding/server.vm-onboarding.demo.tetrate.io-cert.pem ;
+      --key "${CERTS_BASE_DIR}/vm-onboarding/server.vm-onboarding.demo.tetrate.io-key.pem" \
+      --cert "${CERTS_BASE_DIR}/vm-onboarding/server.vm-onboarding.demo.tetrate.io-cert.pem" ;
   fi
-  kubectl --context mgmt apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt/01-namespace.yaml ;
-  kubectl --context mgmt apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt/02-serviceaccount.yaml ;
-  mkdir -p ${ROOT_DIR}/output/mgmt/k8s ;
-  envsubst < ${SCENARIO_ROOT_DIR}/k8s/mgmt/03-deployment.yaml > ${ROOT_DIR}/output/mgmt/k8s/03-deployment.yaml ;
-  kubectl --context mgmt apply -f ${ROOT_DIR}/output/mgmt/k8s/03-deployment.yaml ;
-  kubectl --context mgmt apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt/04-workload-group.yaml ;
-  kubectl --context mgmt apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt/05-service.yaml ;
-  kubectl --context mgmt apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt/06-onboarding-policy.yaml ;
-  kubectl --context mgmt apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt/07-sidecar.yaml ;
-  kubectl --context mgmt apply -f ${SCENARIO_ROOT_DIR}/k8s/mgmt/08-ingress-gateway.yaml ;
+  kubectl --context mgmt apply -f "${SCENARIO_DIR}/k8s/mgmt/01-namespace.yaml" ;
+  kubectl --context mgmt apply -f "${SCENARIO_DIR}/k8s/mgmt/02-serviceaccount.yaml" ;
+  mkdir -p "${BASE_DIR}/output/mgmt/k8s" ;
+  envsubst < "${SCENARIO_DIR}/k8s/mgmt/03-deployment.yaml" > "${BASE_DIR}/output/mgmt/k8s/03-deployment.yaml" ;
+  kubectl --context mgmt apply -f "${BASE_DIR}/output/mgmt/k8s/03-deployment.yaml" ;
+  kubectl --context mgmt apply -f "${SCENARIO_DIR}/k8s/mgmt/04-workload-group.yaml" ;
+  kubectl --context mgmt apply -f "${SCENARIO_DIR}/k8s/mgmt/05-service.yaml" ;
+  kubectl --context mgmt apply -f "${SCENARIO_DIR}/k8s/mgmt/06-onboarding-policy.yaml" ;
+  kubectl --context mgmt apply -f "${SCENARIO_DIR}/k8s/mgmt/07-sidecar.yaml" ;
+  kubectl --context mgmt apply -f "${SCENARIO_DIR}/k8s/mgmt/08-ingress-gateway.yaml" ;
 
   # Get vm gateway external load balancer ip address
-  echo "Getting vm gateway exernal load balancer ip address"
-  while ! VM_GW_IP=$(kubectl --context mgmt get svc -n istio-system vmgateway --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
-    echo -n "."
+  echo "Getting vm gateway exernal load balancer ip address" ;
+  local vm_gw_ip ;
+  while ! vm_gw_ip=$(kubectl --context mgmt get svc -n istio-system vmgateway --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+    echo -n "." ;
   done
-  echo "DONE"
+  echo "DONE" ;
 
   # Wait for onboarding-plane and onboarding-repository to be ready
   kubectl --context mgmt wait deployment -n istio-system onboarding-plane --for condition=Available=True --timeout=600s ;
   kubectl --context mgmt wait deployment -n istio-system onboarding-repository --for condition=Available=True --timeout=600s ;
 
   # Onboard vms
-  export TSB_VM_ONBOARDING_ENDPOINT=${VM_GW_IP}
-  export JWK_VM1=$(cat ${MP_OUTPUT_DIR}/vm1/sample-jwt-issuer.jwk | tr '\n' ' ' | tr -d ' ')
-  export JWK_VM2=$(cat ${MP_OUTPUT_DIR}/vm2/sample-jwt-issuer.jwk | tr '\n' ' ' | tr -d ' ')
-  export JWK_VM3=$(cat ${MP_OUTPUT_DIR}/vm3/sample-jwt-issuer.jwk | tr '\n' ' ' | tr -d ' ')
-  envsubst < ${SCENARIO_ROOT_DIR}/vm/vm1/onboard-vm-template.sh > ${MP_OUTPUT_DIR}/vm1/onboard-vm.sh ;
-  onboard_vm "vm1" ${MP_OUTPUT_DIR}/vm1/onboard-vm.sh ;
-  envsubst < ${SCENARIO_ROOT_DIR}/vm/vm2/onboard-vm-template.sh > ${MP_OUTPUT_DIR}/vm2/onboard-vm.sh ;
-  onboard_vm "vm2" ${MP_OUTPUT_DIR}/vm2/onboard-vm.sh ;
-  envsubst < ${SCENARIO_ROOT_DIR}/vm/vm3/onboard-vm-template.sh > ${MP_OUTPUT_DIR}/vm3/onboard-vm.sh ;
-  onboard_vm "vm3" ${MP_OUTPUT_DIR}/vm3/onboard-vm.sh ;
+  export TSB_VM_ONBOARDING_ENDPOINT=${vm_gw_ip} ;
+  # shellcheck disable=SC2002
+  JWK_VM1=$(cat "${mp_output_dir}/vm1/sample-jwt-issuer.jwk" | tr '\n' ' ' | tr -d ' ') ; export JWK_VM1 ;
+  # shellcheck disable=SC2002
+  JWK_VM2=$(cat "${mp_output_dir}/vm2/sample-jwt-issuer.jwk" | tr '\n' ' ' | tr -d ' ') ; export JWK_VM2 ;
+  # shellcheck disable=SC2002
+  JWK_VM3=$(cat "${mp_output_dir}/vm3/sample-jwt-issuer.jwk" | tr '\n' ' ' | tr -d ' ') ; export JWK_VM3 ;
+  envsubst < "${SCENARIO_DIR}/vm/vm1/onboard-vm-template.sh" > "${mp_output_dir}/vm1/onboard-vm.sh" ;
+  onboard_vm "vm1" "${mp_output_dir}/vm1/onboard-vm.sh" ;
+  envsubst < "${SCENARIO_DIR}/vm/vm2/onboard-vm-template.sh" > "${mp_output_dir}/vm2/onboard-vm.sh" ;
+  onboard_vm "vm2" "${mp_output_dir}/vm2/onboard-vm.sh" ;
+  envsubst < "${SCENARIO_DIR}/vm/vm3/onboard-vm-template.sh" > "${mp_output_dir}/vm3/onboard-vm.sh" ;
+  onboard_vm "vm3" "${mp_output_dir}/vm3/onboard-vm.sh" ;
 
   # Deploy tsb objects
-  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/03-workspace.yaml ;
-  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/04-workspace-setting.yaml ;
-  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/05-group.yaml ;
-  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/06-ingress-gateway.yaml ;
-  tctl apply -f ${SCENARIO_ROOT_DIR}/tsb/07-security-setting.yaml ;
-
-  exit 0
-fi
+  tctl apply -f "${SCENARIO_DIR}/tsb/03-workspace.yaml" ;
+  tctl apply -f "${SCENARIO_DIR}/tsb/04-workspace-setting.yaml" ;
+  tctl apply -f "${SCENARIO_DIR}/tsb/05-group.yaml" ;
+  tctl apply -f "${SCENARIO_DIR}/tsb/06-ingress-gateway.yaml" ;
+  tctl apply -f "${SCENARIO_DIR}/tsb/07-security-setting.yaml" ;
+}
 
 
-if [[ ${ACTION} = "undeploy" ]]; then
+# This function undeploys the scenario.
+#
+function undeploy() {
 
   # Login again as tsb admin in case of a session time-out
-  login_tsb_admin tetrate ;
+  login_tsb_admin "tetrate" "admin" "admin" ;
 
   # Delete tsb configuration
-  for TSB_FILE in $(ls -1 ${SCENARIO_ROOT_DIR}/tsb | sort -r) ; do
-    echo "Going to delete tsb/${TSB_FILE}"
-    tctl delete -f ${SCENARIO_ROOT_DIR}/tsb/${TSB_FILE} 2>/dev/null ;
+  for tsb_yaml_files in $(find "${SCENARIO_DIR}/tsb" -name '*.yaml' ! -name '01-cluster.yaml' | sort -r) ; do
+    echo "Going to delete ${tsb_yaml_files}" ;
+    tctl delete -f "${tsb_yaml_files}" 2>/dev/null ;
+    sleep 1 ;
   done
 
+  echo "Sleep 30 seconds to allow TSB to delete all the objects" ;
+  sleep 30 ;
+
   # Delete kubernetes configuration in mgmt cluster
-  kubectl --context mgmt delete -f ${ROOT_DIR}/output/mgmt/k8s/03-deployment.yaml 2>/dev/null ;
-  kubectl --context mgmt delete -f ${SCENARIO_ROOT_DIR}/k8s/mgmt 2>/dev/null ;
+  kubectl --context mgmt delete -f "${SCENARIO_DIR}/k8s/mgmt/01-namespace.yaml" --wait=true 2>/dev/null ;
 
-  offboard_vm "vm1" ${SCENARIO_ROOT_DIR}/vm/offboard-vm.sh ;
-  offboard_vm "vm2" ${SCENARIO_ROOT_DIR}/vm/offboard-vm.sh ;
-  offboard_vm "vm3" ${SCENARIO_ROOT_DIR}/vm/offboard-vm.sh ;
-
-  exit 0
-fi
+  offboard_vm "vm1" "${SCENARIO_DIR}/vm/offboard-vm.sh" ;
+  offboard_vm "vm2" "${SCENARIO_DIR}/vm/offboard-vm.sh" ;
+  offboard_vm "vm3" "${SCENARIO_DIR}/vm/offboard-vm.sh" ;
+}
 
 
-if [[ ${ACTION} = "info" ]]; then
+# This function prints info about the scenario.
+#
+function info() {
 
-  INGRESS_MGMT_GW_IP=$(kubectl --context mgmt get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  local certs_base_dir; certs_base_dir="$(get_certs_output_dir)" ;
+  local ingress_mgmt_gw_ip ;
 
-  CERTS_BASE_DIR=$(get_certs_base_dir) ;
+  while ! ingress_mgmt_gw_ip=$(kubectl --context mgmt get svc -n gateway-abc gw-ingress-abc --output jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null) ; do
+    sleep 1 ;
+  done
 
-  echo "****************************"
-  echo "*** ABC Traffic Commands ***"
-  echo "****************************"
-  echo
-  echo "Traffic through Management Ingress Gateway"
-  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${INGRESS_MGMT_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\""
-  echo
-  echo "In a loop"
+  echo "*************************************" ;
+  echo "*** VM-EXPANSION Traffic Commands ***" ;
+  echo "*************************************" ;
+  echo ;
+  echo "Traffic through Management Ingress Gateway" ;
+  print_command "curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${ingress_mgmt_gw_ip}\" --cacert ${certs_base_dir}/root-cert.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\"" ;
+  echo ;
+  echo "In a loop" ;
   print_command "while true ; do
-  curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${INGRESS_MGMT_GW_IP}\" --cacert ${CERTS_BASE_DIR}/root-cert.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\"
+  curl -v -H \"X-B3-Sampled: 1\" --resolve \"abc.demo.tetrate.io:443:${ingress_mgmt_gw_ip}\" --cacert ${certs_base_dir}/root-cert.pem \"https://abc.demo.tetrate.io/proxy/app-b.ns-b/proxy/app-c.ns-c\" ;
   sleep 1 ;
 done"
-  echo
-  exit 0
-fi
+  echo ;
+}
 
 
-echo "Please specify one of the following action:"
-echo "  - deploy"
-echo "  - undeploy"
-echo "  - info"
-exit 1
+# Main execution
+#
+case "${ACTION}" in
+  --help)
+    help ;
+    ;;
+  --deploy)
+    deploy ;
+    ;;
+  --undeploy)
+    undeploy ;
+    ;;
+  --info)
+    info ;
+    ;;
+  *)
+    print_error "Invalid option. Use 'help' to see available commands." ;
+    help ;
+    ;;
+esac

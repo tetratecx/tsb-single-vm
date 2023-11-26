@@ -6,7 +6,9 @@
 
 BASE_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 export BASE_DIR
-source "${BASE_DIR}/helpers.sh"
+
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/print.sh" ;
 
 ACTION=${1}
 

@@ -5,7 +5,12 @@
     "k8s_version": "1.27.8",
     "name": "mgmt",
     "region": "region1",
-    "trust_domain": "mgmt",
+    "templates": {
+      "cp_helm": "templates/mgmt/controlplane-helm-values.yaml",
+      "cp_tctl": "templates/mgmt/controlplane.yaml",
+      "mp_helm": "templates/mgmt/managementplane-helm-values.yaml",
+      "mp_tctl": "templates/mgmt/managementplane.yaml"
+    },
     "vms": [
       {
         "image": "boeboe/tsb-ubuntu-vm:1.0.0",

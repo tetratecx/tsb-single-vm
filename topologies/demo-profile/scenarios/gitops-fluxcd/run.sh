@@ -1,34 +1,73 @@
 #!/usr/bin/env bash
-SCENARIO_ROOT_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
-ROOT_DIR=${1}
-ACTION=${2}
-source ${ROOT_DIR}/env.sh ${ROOT_DIR}
-source ${ROOT_DIR}/certs.sh ${ROOT_DIR}
-source ${ROOT_DIR}/helpers.sh
-source ${ROOT_DIR}/tsb-helpers.sh
+SCENARIO_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")") ;
 
-INSTALL_REPO_URL=$(get_install_repo_url) ;
-
-if [[ ${ACTION} = "deploy" ]]; then
-
-  exit 0
+if [[ -z "${BASE_DIR}" ]]; then
+    echo "BASE_DIR environment variable is not set or is empty" ;
+    exit 1 ;
 fi
 
+# shellcheck source=/dev/null
+source "${BASE_DIR}/env.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/certs.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/print.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/registry.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/tsb.sh" ;
 
-if [[ ${ACTION} = "undeploy" ]]; then
+ACTION=${1} ;
 
-  exit 0
-fi
+# This function provides help information for the script.
+#
+function help() {
+  echo "Usage: $0 <command> [options]" ;
+  echo "Commands:" ;
+  echo "  --deploy: delpoy the scenario" ;
+  echo "  --undeploy: undeploy the scenario" ;
+  echo "  --info: print info about the scenario" ;
+}
 
 
-if [[ ${ACTION} = "info" ]]; then
+# This function deploys the scenario.
+#
+function deploy() {
+  echo "WIP"
+}
 
-  exit 0
-fi
+
+# This function undeploys the scenario.
+#
+function undeploy() {
+  echo "WIP"
+}
 
 
-echo "Please specify one of the following action:"
-echo "  - deploy"
-echo "  - undeploy"
-echo "  - info"
-exit 1
+# This function prints info about the scenario.
+#
+function info() {
+  echo "WIP"
+}
+
+
+# Main execution
+#
+case "${ACTION}" in
+  --help)
+    help ;
+    ;;
+  --deploy)
+    deploy ;
+    ;;
+  --undeploy)
+    undeploy ;
+    ;;
+  --info)
+    info ;
+    ;;
+  *)
+    print_error "Invalid option. Use 'help' to see available commands." ;
+    help ;
+    ;;
+esac
