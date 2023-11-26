@@ -89,15 +89,10 @@ A short enumeration of the paramaters to be configured:
 |scenario|string|name of the scenario you want to use|
 |topology|string|name of the topology you want to use|
 |tsb|object|tsb configuration data|
-|tsb.install_repo|object|configuration of the tsb repository to use (pulling images into k8s)|
-|tsb.install_repo.insecure_registry|bool|insecure registry, or not (no user/password needed)|
-|tsb.install_repo.password|string|password of the docker registry|
-|tsb.install_repo.url|string|url of the docker registry (ip or dns based, with optional port)|
-|tsb.install_repo.user|string|username of the docker registry|
 |tsb.istio_version|string|version of istioctl to install on the host (make this TSB version compatible)|
+|tsb.install_method|string|tsb installation method, one of `tctl` or `helm`|
 |tsb.tetrate_repo|object|configuration of the tsb cloudsmith repository (to sync images in a local or private repo)|
 |tsb.tetrate_repo.password|string|your tsb cloudsmith password|
-|tsb.tetrate_repo.url|string|the tsb cloudsmith url|
 |tsb.tetrate_repo.user|string|your tsb cloudsmith username|
 |tsb.version|string|tsb version to install|
 
