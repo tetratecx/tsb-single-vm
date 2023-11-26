@@ -31,59 +31,55 @@ The JSON file contains configuration data on the topology and scenario to be use
 
 
 ```console
-# tree topologies/ -L 3
+# tree -d -L 3 topologies/
 topologies
 ├── active-standby
-│   ├── infra.json
 │   ├── scenarios
-│   │   ├── abc-failover
-│   │   └── bookinfo
+│   │   └── abc-failover
 │   └── templates
-│       ├── active-controlplane.tmpl.yaml
-│       └── standby-controlplane.tmpl.yaml
+│       ├── active
+│       ├── mgmt
+│       └── standby
 ├── demo-profile
-│   ├── infra.json
-│   └── scenarios
-│       ├── gitops-argocd
-│       └── gitops-fluxcd
+│   ├── scenarios
+│   │   ├── gitops-argocd
+│   │   └── gitops-fluxcd
+│   └── templates
+│       └── demo
 ├── hub-spoke
-│   ├── infra.json
 │   ├── scenarios
 │   │   └── abc-def-ghi
 │   └── templates
-│       ├── cluster1-controlplane.tmpl.yaml
-│       ├── cluster2-controlplane.tmpl.yaml
-│       └── cluster3-controlplane.tmpl.yaml
-├── infra-template.json
-├── mp-only
-│   ├── infra.json
-│   ├── scenarios
-│   └── templates
-│       └── mgmt-managementplane.tmpl.yaml
+│       ├── cluster1
+│       ├── cluster2
+│       ├── cluster3
+│       └── mgmt
 ├── transit-zones
-│   ├── infra.json
 │   ├── scenarios
 │   │   └── abcd-efgh
 │   └── templates
-│       ├── app1-controlplane.tmpl.yaml
-│       ├── app2-controlplane.tmpl.yaml
-│       ├── transit1-controlplane.tmpl.yaml
-│       └── transit2-controlplane.tmpl.yaml
+│       ├── app1
+│       ├── app2
+│       ├── mgmt
+│       ├── transit1
+│       └── transit2
 ├── tsb-training
-│   ├── infra.json
 │   ├── scenarios
 │   │   └── main
 │   └── templates
-│       ├── c1-controlplane.tmpl.yaml
-│       └── c2-controlplane.tmpl.yaml
+│       ├── c1
+│       ├── c2
+│       └── t1
 ├── vm-expansion
-│   ├── infra.json
-│   └── scenarios
-│       └── abc-hybrid
+│   ├── scenarios
+│   │   └── abc-hybrid
+│   └── templates
+│       └── mgmt
 └── vm-only
-    ├── infra.json
-    └── scenarios
-        └── abc-vm
+    ├── scenarios
+    │   └── abc-vm
+    └── templates
+        └── mgmt
 ```
 
 A short enumeration of the paramaters to be configured:
