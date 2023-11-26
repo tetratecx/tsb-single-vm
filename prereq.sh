@@ -149,7 +149,6 @@ END
   fi
 
   print_info "All prerequisites have been installed" ;
-  exit 0
 }
 
 
@@ -161,11 +160,13 @@ case "${ACTION}" in
     ;;
   --check)
     print_stage "Going to check if all prerequisites are installed" ;
-    check_prereq ;
+    start_time=$(date +%s); check_prereq; elapsed_time=$(( $(date +%s) - start_time )) ;
+    print_stage "Checked prerequisites in ${elapsed_time} seconds" ;
     ;;
   --install)
     print_stage "Going to install all prerequisites" ;
-    install_prereq ;
+    start_time=$(date +%s); install_prereq; elapsed_time=$(( $(date +%s) - start_time )) ;
+    print_stage "Installed prerequisites in ${elapsed_time} seconds" ;
     ;;
   *)
     print_error "Invalid option. Use 'help' to see available commands." ;

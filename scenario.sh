@@ -54,11 +54,13 @@ case "${ACTION}" in
     ;;
   --deploy)
     print_stage "Going to deploy scenario '${SCENARIO}'" ;
-    deploy ;
+    start_time=$(date +%s); deploy; elapsed_time=$(( $(date +%s) - start_time )) ;
+    print_stage "Deployed scenario '${SCENARIO}' in ${elapsed_time} seconds" ;
     ;;
   --undeploy)
     print_stage "Going to undeploy scenario '${SCENARIO}'" ;
-    undeploy ;
+    start_time=$(date +%s); undeploy; elapsed_time=$(( $(date +%s) - start_time )) ;
+    print_stage "Undeployed scenario '${SCENARIO}' in ${elapsed_time} seconds" ;
     ;;
   --info)
     print_stage "Going to print info for scenario '${SCENARIO}'" ;

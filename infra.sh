@@ -331,11 +331,13 @@ case "${ACTION}" in
     ;;
   --up)
     print_stage "Going to bring up the local instrastructure" ;
-    up ;
+    start_time=$(date +%s); up; elapsed_time=$(( $(date +%s) - start_time )) ;
+    print_stage "Brought up local instrastructure in ${elapsed_time} seconds" ;
     ;;
   --down)
     print_stage "Going to bring down the local instrastructure" ;
-    down ;
+    start_time=$(date +%s); down; elapsed_time=$(( $(date +%s) - start_time )) ;
+    print_stage "Brought down local instrastructure in ${elapsed_time} seconds" ;
     ;;
   --info)
     print_stage "Going to print info about the local instrastructure" ;
@@ -343,7 +345,8 @@ case "${ACTION}" in
     ;;
   --clean)
     print_stage "Going to remove the local instrastructure" ;
-    clean ;
+    start_time=$(date +%s); clean; elapsed_time=$(( $(date +%s) - start_time )) ;
+    print_stage "Removed local instrastructure in ${elapsed_time} seconds" ;
     ;;
   *)
     print_error "Invalid option. Use 'help' to see available commands." ;

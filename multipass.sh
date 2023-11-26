@@ -101,11 +101,13 @@ case "${ACTION}" in
     ;;
   --start)
     print_stage "Going start the multipass Ubuntu VM" ;
-    start ;
+    start_time=$(date +%s); start; elapsed_time=$(( $(date +%s) - start_time )) ;
+    print_stage "Started multipass Ubuntu VM in ${elapsed_time} seconds" ;
     ;;
   --stop)
     print_stage "Going start the multipass Ubuntu VM" ;
-    stop ;
+    start_time=$(date +%s); stop; elapsed_time=$(( $(date +%s) - start_time )) ;
+    print_stage "Stopped multipass Ubuntu VM in ${elapsed_time} seconds" ;
     ;;
   --shell)
     print_stage "Going spawn a shell into the multipass Ubuntu VM" ;
@@ -113,12 +115,13 @@ case "${ACTION}" in
     ;;
   --delete)
     print_stage "Going to delete the multipass Ubuntu VM" ;
-    delete ;
+    start_time=$(date +%s); delete; elapsed_time=$(( $(date +%s) - start_time )) ;
+    print_stage "Deleted multipass Ubuntu VM in ${elapsed_time} seconds" ;
     ;;
   --recreate)
     print_stage "Going to recreate the multipass Ubuntu VM" ;
-    delete ;
-    start ;
+    start_time=$(date +%s); delete; start; elapsed_time=$(( $(date +%s) - start_time )) ;
+    print_stage "Recreated multipass Ubuntu VM in ${elapsed_time} seconds" ;
     ;;
   *)
     print_error "Invalid option. Use 'help' to see available commands." ;

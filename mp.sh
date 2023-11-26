@@ -273,7 +273,7 @@ function uninstall_helm {
 
 # This function removes all tsb configuration objects.
 #
-function reset() {
+function remove_tsb_config() {
 
   local mp_cluster_name; mp_cluster_name=$(get_mp_name) ;
 
@@ -301,10 +301,12 @@ case "${ACTION}" in
   --install)
     if [[ "$(get_tsb_install_method)" == "helm" ]]; then
       print_stage "Going to install tsb management plane using helm" ;
-      install_helm ;
+      start_time=$(date +%s); install_helm; elapsed_time=$(( $(date +%s) - start_time )) ;
+      print_stage "Installed tsb management plane using helm in ${elapsed_time} seconds" ;
     elif [[ "$(get_tsb_install_method)" == "tctl" ]]; then
       print_stage "Going to install tsb management plane using tctl" ;
-      install_tctl ;
+      start_time=$(date +%s); install_tctl; elapsed_time=$(( $(date +%s) - start_time )) ;
+      print_stage "Installed tsb management plane using tctl in ${elapsed_time} seconds" ;
     else
       print_error "Invalid tsb install method. Choose 'helm' or 'tctl'" ;
       help ;
@@ -313,18 +315,21 @@ case "${ACTION}" in
   --uninstall)
     if [[ "$(get_tsb_install_method)" == "helm" ]]; then
       print_stage "Going to uninstall tsb management plane using helm" ;
-      uninstall_helm ;
+      start_time=$(date +%s); uninstall_helm; elapsed_time=$(( $(date +%s) - start_time )) ;
+      print_stage "Uninstalled tsb management plane using helm in ${elapsed_time} seconds" ;
     elif [[ "$(get_tsb_install_method)" == "tctl" ]]; then
       print_stage "Going to uninstall tsb management plane using tctl" ;
-      uninstall_tctl ;
+      start_time=$(date +%s); uninstall_tctl; elapsed_time=$(( $(date +%s) - start_time )) ;
+      print_stage "Uninstalled tsb management plane using tctl in ${elapsed_time} seconds" ;
     else
       print_error "Invalid tsb install method. Choose 'helm' or 'tctl'" ;
       help ;
     fi
     ;;
   --reset)
-    print_stage "Going to reset all tsb configuration objects" ;
-    reset ;
+    print_stage "Going to remove all tsb configuration objects" ;
+    start_time=$(date +%s); remove_tsb_config; elapsed_time=$(( $(date +%s) - start_time )) ;
+    print_stage "Removed all tsb configuration objects in ${elapsed_time} seconds" ;
     ;;
   *)
     print_error "Invalid option. Use 'help' to see available commands." ;

@@ -295,10 +295,12 @@ case "${ACTION}" in
   --install)
     if [[ "$(get_tsb_install_method)" == "helm" ]]; then
       print_stage "Going to install tsb control and data plane using helm" ;
-      install_helm ;
+      start_time=$(date +%s); install_helm; elapsed_time=$(( $(date +%s) - start_time )) ;
+      print_stage "Installed tsb control and data plane using helm in ${elapsed_time} seconds" ;
     elif [[ "$(get_tsb_install_method)" == "tctl" ]]; then
-      print_stage "Going to install tsb ontrol and data plane using tctl" ;
-      install_tctl ;
+      print_stage "Going to install tsb control and data plane using tctl" ;
+      start_time=$(date +%s); install_tctl; elapsed_time=$(( $(date +%s) - start_time )) ;
+      print_stage "Installed tsb control and data plane using tctl in ${elapsed_time} seconds" ;
     else
       print_error "Invalid tsb install method. Choose 'helm' or 'tctl'" ;
       help ;
@@ -306,11 +308,13 @@ case "${ACTION}" in
     ;;
   --uninstall)
     if [[ "$(get_tsb_install_method)" == "helm" ]]; then
-      print_stage "Going to uninstall tsb ontrol and data plane using helm" ;
-      uninstall_helm ;
+      print_stage "Going to uninstall tsb control and data plane using helm" ;
+      start_time=$(date +%s); uninstall_helm; elapsed_time=$(( $(date +%s) - start_time )) ;
+      print_stage "Uninstalled tsb control and data plane using helm in ${elapsed_time} seconds" ;
     elif [[ "$(get_tsb_install_method)" == "tctl" ]]; then
-      print_stage "Going to uninstall tsb ontrol and data plane using tctl" ;
-      uninstall_tctl ;
+      print_stage "Going to uninstall tsb control and data plane using tctl" ;
+      start_time=$(date +%s); uninstall_tctl; elapsed_time=$(( $(date +%s) - start_time )) ;
+      print_stage "Uninstalled tsb control and data plane using tctl in ${elapsed_time} seconds" ;
     else
       print_error "Invalid tsb install method. Choose 'helm' or 'tctl'" ;
       help ;
