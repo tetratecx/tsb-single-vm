@@ -25,10 +25,10 @@ DONE
 # Wait for cluster to be onboarded
 #   args:
 #     (1) onboarding cluster name
-#     (2) timeout in seconds (optional, default 300 aka 5 minutes)
+#     (2) timeout in seconds (optional, default 60 aka 1 minute)
 function wait_cluster_onboarded() {
   [[ -z "${1}" ]] && print_error "Please provide the onboarding cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
-  [[ -z "${2}" ]] && local timeout=300 || local timeout="${2}" ;
+  [[ -z "${2}" ]] && local timeout=60 || local timeout="${2}" ;
   local start_time=$(date +%s) ;
 
   echo -n "Wait for cluster '${cluster_name}' to be onboarded (timeout: ${timeout}s): " ;
