@@ -12,6 +12,7 @@
 
 END="\033[0m"
 
+# shellcheck disable=SC2034
 {
   BLACK_B="\033[1;30m"
   BLACK_M="\033[40m"

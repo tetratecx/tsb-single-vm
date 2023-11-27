@@ -3,6 +3,7 @@
 # Helper functions for certificate generation.
 #
 HELPERS_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")") ;
+# shellcheck source=/dev/null
 source "${HELPERS_DIR}/print.sh" ;
 
 # Install a root certificate
@@ -27,21 +28,21 @@ function install_root_cert {
 function generate_root_cert {
   [[ -z "${1}" ]] && print_error "Please provide output directory as 1st argument" && return 2 || local output_dir="${1}" ;
 
-  mkdir -p ${output_dir} ;
+  mkdir -p "${output_dir}" ;
   if [[ -f "${output_dir}/root-cert.pem" ]]; then
     echo "File ${output_dir}/root-cert.pem already exists... skipping root certificate generation" ;
     return ;
   fi
 
   openssl req -newkey rsa:4096 -sha512 -nodes \
-    -keyout ${output_dir}/root-key.pem \
+    -keyout "${output_dir}/root-key.pem" \
     -subj "/CN=Root CA/O=Istio" \
-    -out ${output_dir}/root-cert.csr ;
+    -out "${output_dir}/root-cert.csr" ;
   openssl x509 -req -sha512 -days 3650 \
-    -signkey ${output_dir}/root-key.pem \
-    -in ${output_dir}/root-cert.csr \
+    -signkey "${output_dir}/root-key.pem" \
+    -in "${output_dir}/root-cert.csr" \
     -extfile <(printf "subjectKeyIdentifier=hash\nbasicConstraints=critical,CA:true\nkeyUsage=critical,digitalSignature,nonRepudiation,keyEncipherment,keyCertSign") \
-    -out ${output_dir}/root-cert.pem ;
+    -out "${output_dir}/root-cert.pem" ;
   print_info "New root certificate generated at ${output_dir}/root-cert.pem" ;
 }
 
@@ -59,19 +60,19 @@ function generate_istio_cert {
     return ;
   fi
 
-  mkdir -p ${output_dir}/${cluster_name} ;
+  mkdir -p "${output_dir}/${cluster_name}" ;
   openssl req -newkey rsa:4096 -sha512 -nodes \
-    -keyout ${output_dir}/${cluster_name}/ca-key.pem \
+    -keyout "${output_dir}/${cluster_name}/ca-key.pem" \
     -subj "/CN=Intermediate CA/O=Istio/L=${cluster_name}" \
-    -out ${output_dir}/${cluster_name}/ca-cert.csr ;
+    -out "${output_dir}/${cluster_name}/ca-cert.csr" ;
   openssl x509 -req -sha512 -days 730 -CAcreateserial \
-    -CA ${output_dir}/root-cert.pem \
-    -CAkey ${output_dir}/root-key.pem \
-    -in ${output_dir}/${cluster_name}/ca-cert.csr \
+    -CA "${output_dir}/root-cert.pem" \
+    -CAkey "${output_dir}/root-key.pem" \
+    -in "${output_dir}/${cluster_name}/ca-cert.csr" \
     -extfile <(printf "subjectKeyIdentifier=hash\nbasicConstraints=critical,CA:true,pathlen:0\nkeyUsage=critical,digitalSignature,nonRepudiation,keyEncipherment,keyCertSign\nsubjectAltName=DNS.1:istiod.istio-system.svc") \
-    -out ${output_dir}/${cluster_name}/ca-cert.pem ;
-  cat ${output_dir}/${cluster_name}/ca-cert.pem ${output_dir}/root-cert.pem >> ${output_dir}/${cluster_name}/cert-chain.pem ;
-  cp ${output_dir}/root-cert.pem ${output_dir}/${cluster_name}/root-cert.pem ;
+    -out "${output_dir}/${cluster_name}/ca-cert.pem" ;
+  cat "${output_dir}/${cluster_name}/ca-cert.pem" "${output_dir}/root-cert.pem" >> "${output_dir}/${cluster_name}/cert-chain.pem" ;
+  cp "${output_dir}/root-cert.pem" "${output_dir}/${cluster_name}/root-cert.pem" ;
   print_info "New intermediate istio certificate generated at ${output_dir}/${cluster_name}/ca-cert.pem" ;
 }
 
@@ -91,18 +92,18 @@ function generate_client_cert {
     return ;
   fi
 
-  mkdir -p ${output_dir}/${workload_name} ;
+  mkdir -p "${output_dir}/${workload_name}" ;
   openssl req -newkey rsa:4096 -sha512 -nodes \
-    -keyout ${output_dir}/${workload_name}/client.${workload_name}.${domain_name}-key.pem \
+    -keyout "${output_dir}/${workload_name}/client.${workload_name}.${domain_name}-key.pem" \
     -subj "/CN=${workload_name}.${domain_name}/O=Customer/C=US/ST=CA" \
-    -out ${output_dir}/${workload_name}/client.${workload_name}.${domain_name}-cert.csr ;
+    -out "${output_dir}/${workload_name}/client.${workload_name}.${domain_name}-cert.csr" ;
   openssl x509 -req -sha512 -days 3650 -set_serial 1 \
-    -CA ${output_dir}/root-cert.pem \
-    -CAkey ${output_dir}/root-key.pem \
-    -in ${output_dir}/${workload_name}/client.${workload_name}.${domain_name}-cert.csr \
-    -out ${output_dir}/${workload_name}/client.${workload_name}.${domain_name}-cert.pem ;
-  cat ${output_dir}/${workload_name}/client.${workload_name}.${domain_name}-cert.pem ${output_dir}/root-cert.pem >> ${output_dir}/${workload_name}/client.${workload_name}.${domain_name}-cert-chain.pem ;
-  cp ${output_dir}/root-cert.pem ${output_dir}/${workload_name}/root-cert.pem ;
+    -CA "${output_dir}/root-cert.pem" \
+    -CAkey "${output_dir}/root-key.pem" \
+    -in "${output_dir}/${workload_name}/client.${workload_name}.${domain_name}-cert.csr" \
+    -out "${output_dir}/${workload_name}/client.${workload_name}.${domain_name}-cert.pem" ;
+  cat "${output_dir}/${workload_name}/client.${workload_name}.${domain_name}-cert.pem" "${output_dir}/root-cert.pem" >> "${output_dir}/${workload_name}/client.${workload_name}.${domain_name}-cert-chain.pem" ;
+  cp "${output_dir}/root-cert.pem" "${output_dir}/${workload_name}/root-cert.pem" ;
   print_info "New client certificate generated at ${output_dir}/${workload_name}/client.${workload_name}.${domain_name}-cert.pem" ;
 }
 
@@ -122,19 +123,19 @@ function generate_server_cert {
     return ;
   fi
 
-  mkdir -p ${output_dir}/${workload_name} ;
+  mkdir -p "${output_dir}/${workload_name}" ;
   openssl req -newkey rsa:4096 -sha512 -nodes \
-    -keyout ${output_dir}/${workload_name}/server.${workload_name}.${domain_name}-key.pem \
+    -keyout "${output_dir}/${workload_name}/server.${workload_name}.${domain_name}-key.pem" \
     -subj "/CN=${workload_name}.${domain_name}/O=Tetrate/C=US/ST=CA" \
-    -out ${output_dir}/${workload_name}/server.${workload_name}.${domain_name}-cert.csr ;
+    -out "${output_dir}/${workload_name}/server.${workload_name}.${domain_name}-cert.csr" ;
   openssl x509 -req -sha512 -days 3650 -set_serial 0 \
-    -CA ${output_dir}/root-cert.pem \
-    -CAkey ${output_dir}/root-key.pem \
-    -in ${output_dir}/${workload_name}/server.${workload_name}.${domain_name}-cert.csr \
-    -extfile <(printf "subjectAltName=DNS:${workload_name}.${domain_name},DNS:${domain_name},DNS:*.${domain_name},DNS:localhost") \
-    -out ${output_dir}/${workload_name}/server.${workload_name}.${domain_name}-cert.pem ;
-  cat ${output_dir}/${workload_name}/server.${workload_name}.${domain_name}-cert.pem ${output_dir}/root-cert.pem >> ${output_dir}/${workload_name}/server.${workload_name}.${domain_name}-cert-chain.pem ;
-  cp ${output_dir}/root-cert.pem ${output_dir}/${workload_name}/root-cert.pem ;
+    -CA "${output_dir}/root-cert.pem" \
+    -CAkey "${output_dir}/root-key.pem" \
+    -in "${output_dir}/${workload_name}/server.${workload_name}.${domain_name}-cert.csr" \
+    -extfile <(printf "subjectAltName=DNS:%s,DNS:%s.%s,DNS:*.%s,DNS:localhost" "${workload_name}" "${workload_name}" "${domain_name}" "${domain_name}") \
+    -out "${output_dir}/${workload_name}/server.${workload_name}.${domain_name}-cert.pem" ;
+  cat "${output_dir}/${workload_name}/server.${workload_name}.${domain_name}-cert.pem" "${output_dir}/root-cert.pem" >> "${output_dir}/${workload_name}/server.${workload_name}.${domain_name}-cert-chain.pem" ;
+  cp "${output_dir}/root-cert.pem" "${output_dir}/${workload_name}/root-cert.pem" ;
   print_info "New server certificate generated at ${output_dir}/${workload_name}/server.${workload_name}.${domain_name}-cert.pem" ;
 }
 

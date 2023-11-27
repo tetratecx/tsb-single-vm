@@ -3,6 +3,7 @@
 # Helper functions for TSB
 #
 HELPERS_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")") ;
+# shellcheck source=/dev/null
 source "${HELPERS_DIR}/print.sh" ;
 
 # Login as admin into tsb
@@ -29,19 +30,19 @@ DONE
 function wait_cluster_onboarded() {
   [[ -z "${1}" ]] && print_error "Please provide the onboarding cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
   [[ -z "${2}" ]] && local timeout=60 || local timeout="${2}" ;
-  local start_time=$(date +%s) ;
+  local start_time; start_time=$(date +%s) ;
 
   echo -n "Wait for cluster '${cluster_name}' to be onboarded (timeout: ${timeout}s): " ;
   while :; do
-    local status_json=$(tctl experimental status cluster "${cluster_name}" -o json) ;
-    local current_status=$(echo "${status_json}" | jq -r '.spec.status') ;
-    local current_message=$(echo "${status_json}" | jq -r '.spec.message') ;
+    local status_json; status_json=$(tctl experimental status cluster "${cluster_name}" -o json) ;
+    local current_status; current_status=$(echo "${status_json}" | jq -r '.spec.status') ;
+    local current_message; current_message=$(echo "${status_json}" | jq -r '.spec.message') ;
     if [[ "${current_status}" == "READY" && "${current_message}" == "Cluster onboarded" ]]; then
       echo "DONE" ;
       echo "Cluster '${cluster_name}' is ready" ;
       return 0 ;
     fi
-    local current_time=$(date +%s) ;
+    local current_time; current_time=$(date +%s) ;
     if (( current_time - start_time >= timeout )); then
       echo "DONE" ;
       print_warning "Timeout reached. Current status of '${cluster_name}': ${current_status}, ${current_message}" ;
@@ -69,7 +70,7 @@ function wait_clusters_onboarded {
 function get_tsb_api_ip {
   [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
 
-  local tsb_api_ip=$(kubectl --context "${cluster_ctx}" get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
+  local tsb_api_ip; tsb_api_ip=$(kubectl --context "${cluster_ctx}" get svc -n tsb envoy --output jsonpath='{.status.loadBalancer.ingress[0].ip}') ;
   echo "${tsb_api_ip}" ;
 }
 
@@ -79,7 +80,7 @@ function get_tsb_api_ip {
 function get_tsb_api_port {
   [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
 
-  local tsb_api_port=$(kubectl --context "${cluster_ctx}" get svc -n tsb envoy --output jsonpath='{.spec.ports[?(@.name=="https-ingress")].port}') ;
+  local tsb_api_port; tsb_api_port=$(kubectl --context "${cluster_ctx}" get svc -n tsb envoy --output jsonpath='{.spec.ports[?(@.name=="https-ingress")].port}') ;
   echo "${tsb_api_port}" ;
 }
 
@@ -180,8 +181,8 @@ function patch_jwt_token_expiration_mp {
 function expose_tsb_gui {
   [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
 
-  local tsb_api_ip=$(get_tsb_api_ip "${cluster_ctx}") ;
-  local tsb_api_port=$(get_tsb_api_port "${cluster_ctx}") ;
+  local tsb_api_ip; tsb_api_ip=$(get_tsb_api_ip "${cluster_ctx}") ;
+  local tsb_api_port; tsb_api_port=$(get_tsb_api_port "${cluster_ctx}") ;
   local tsb_api_host_port=8443 ; # Currently hardcoded in the tsb gui deployment
 
   sudo tee /etc/systemd/system/tsb-gui.service << EOF
@@ -213,9 +214,9 @@ dump_tsb_error_logs() {
 
   local namespaces=("istio-system" "tsb") ;
   for ns in "${namespaces[@]}"; do
-    local pods=$(kubectl --context "${cluster_ctx}" get pods -n "${ns}" -o jsonpath='{.items[*].metadata.name}') ;
+    local pods; pods=$(kubectl --context "${cluster_ctx}" get pods -n "${ns}" -o jsonpath='{.items[*].metadata.name}') ;
     for pod in ${pods}; do
-      local error_logs=$(kubectl --context "${cluster_ctx}" logs "${pod}" -n "$ns" | grep -E '( |\t)error( |\t)') ;
+      local error_logs; error_logs=$(kubectl --context "${cluster_ctx}" logs "${pod}" -n "$ns" | grep -E '( |\t)error( |\t)') ;
       if [[ ! -z "${error_logs}" ]]; then
         echo "========== Dumping error logs from pod '${pod}' in namespace '${ns}' in cluster '${cluster_ctx}' ==========" ;
         echo "${error_logs}" ;

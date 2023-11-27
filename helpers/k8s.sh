@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+#
 # Helper functions to start, stop and delete local kubernetes cluster.
 # Supported providers include:
 #   - k3s from rancher
@@ -5,6 +7,7 @@
 #   - minikube
 #
 HELPERS_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")") ;
+# shellcheck source=/dev/null
 source "${HELPERS_DIR}/print.sh" ;
 
 # Docker and metallb ip addressing defaults
@@ -25,8 +28,8 @@ function precheck {
   [[ -z "${1}" ]] && print_error "Please provide local kubernetes provider as 1st argument" && return 2 || local k8s_provider="${1}" ;
 
   # Check if docker is installed
-  if $(command -v docker &> /dev/null) ; then
-    if ! $(docker ps &> /dev/null) ; then
+  if command -v docker &> /dev/null ; then
+    if ! docker ps &> /dev/null ; then
       print_error "Cannot execute 'docker ps' without errors. Do you have the proper user permissions?" ;
       exit 1 ;
     fi
@@ -38,19 +41,19 @@ function precheck {
   # Check if a valid provider is configured and binary installed if needed
   case ${k8s_provider} in
     "k3s")
-      if $(command -v k3d &> /dev/null) ; then true ; else
+      if command -v k3d &> /dev/null ; then true ; else
         print_error "? Executable 'k3d' for provider '${k8s_provider}' could not be found, please install this on your local system first" ;
         exit 2 ;
       fi
       ;;
     "kind")
-      if $(command -v kind &> /dev/null) ; then true ; else
+      if command -v kind &> /dev/null ; then true ; else
         print_error "? Executable 'kind' for provider '${k8s_provider}' could not be found, please install this on your local system first" ;
         exit 2 ;
       fi
       ;;
     "minikube")
-      if $(command -v minikube &> /dev/null) ; then true ; else
+      if command -v minikube &> /dev/null ; then true ; else
         print_error "? Executable 'minikube' for provider '${k8s_provider}' could not be found, please install this on your local system first" ;
         exit 2 ;
       fi
@@ -72,7 +75,7 @@ function precheck {
 function get_provider_type_by_kubectl_context {
   [[ -z "${1}" ]] && print_error "Please provide kubectl context name as 1st argument" && return 2 || local context_name="${1}" ;
   
-  if output=$(kubectl config get-contexts ${context_name} --no-headers 2>/dev/null) ; then
+  if output=$(kubectl config get-contexts "${context_name}" --no-headers 2>/dev/null) ; then
     case ${output} in
       *"k3d"*)
         echo "k3s" ;
@@ -107,11 +110,11 @@ function get_provider_type_by_kubectl_context {
 function get_provider_type_by_container_name {
   [[ -z "${1}" ]] && print_error "Please provide docker container name as 1st argument" && return 2 || local container_name="${1}" ;
 
-  if [[ -z $(docker ps --filter name=${container_name} --quiet) ]] ; then
+  if [[ -z $(docker ps --filter name="${container_name}" --quiet) ]] ; then
     echo "notfound" ;
     return 1 ;
   else
-    if output=$(docker container inspect ${container_name} -f '{{.Config.Image}}' 2>/dev/null) ; then
+    if output=$(docker container inspect "${container_name}" -f '{{.Config.Image}}' 2>/dev/null) ; then
       case ${output} in
         *"k3s"*)
           echo "k3s" ;
@@ -144,15 +147,15 @@ function is_docker_subnet_used {
   [[ -z "${1}" ]] && print_error "Please provide network subnet as 1st argument" && return 2 || local subnet="${1}" ;
   docker network ls | tail -n +2 | awk '{ print $2 }' | \
     xargs -I {} -- docker network inspect {} --format '{{ if .IPAM.Config }}{{(index .IPAM.Config 0).Subnet}}{{ end }}' | \
-    awk NF | grep ${subnet} &>/dev/null ;
+    awk NF | grep "${subnet}" &>/dev/null ;
 }
 
 # Get a docker subnet that is still free
 function get_docker_subnet_free {
-  local start=$(echo ${K8S_LOCAL_DOCKER_SUBNET_START} |  awk -F '.' '{ print $3;}') ;
-  for i in $(seq ${start} 254) ; do
-    local check_subnet=$(echo ${K8S_LOCAL_DOCKER_SUBNET_START} |  awk -F '.' "{ print \$1\".\"\$2\".\"${i}\".\"\$4;}") ;
-    if ! $(is_docker_subnet_used "${check_subnet}") ; then
+  local start; start=$(echo "${K8S_LOCAL_DOCKER_SUBNET_START}" |  awk -F '.' '{ print $3;}') ;
+  for i in $(seq "${start}" 254) ; do
+    local check_subnet; check_subnet=$(echo "${K8S_LOCAL_DOCKER_SUBNET_START}" |  awk -F '.' "{ print \$1\".\"\$2\".\"${i}\".\"\$4;}") ;
+    if ! is_docker_subnet_used "${check_subnet}" ; then
       echo "${check_subnet}" ;
       return
     fi
@@ -176,7 +179,7 @@ function get_docker_container_ip {
 function get_apiserver_url {
   [[ -z "${1}" ]] && print_error "Please provide cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
   [[ -z "${2}" ]] && print_error "Please provide docker network name as 2nd argument" && return 2 || local network_name="${2}" ;
-  local kubeapi_ip=$(get_docker_container_ip "${cluster_name}" "${network_name}") ;
+  local kubeapi_ip; kubeapi_ip=$(get_docker_container_ip "${cluster_name}" "${network_name}") ;
   echo "https://${kubeapi_ip}:6443" ;
 }
 
@@ -189,12 +192,12 @@ function deploy_metallb {
   [[ -z "${2}" ]] && print_error "Please provide docker network name as 2nd argument" && return 2 || local network_name="${2}" ;
 
 
-  local network_subnet=$(docker network inspect --format '{{ if .IPAM.Config }}{{(index .IPAM.Config 0).Subnet}}{{ end }}' ${network_name}) ;
-  local metallb_startip=$(echo ${network_subnet} |  awk -F '.' "{ print \$1\".\"\$2\".\"\$3\".\"${K8S_LOCAL_METALLB_STARTIP};}") ;
-  local metallb_stopip=$(echo ${network_subnet} |  awk -F '.' "{ print \$1\".\"\$2\".\"\$3\".\"${K8S_LOCAL_METALLB_STOPIP};}") ;
-  local metallb_namespace="metallb-system" ;
-  local metallb_ipaddresspool=$(printf '{"apiVersion":"metallb.io/v1beta1","kind":"IPAddressPool","metadata":{"namespace":"%s","name":"default"},"spec":{"addresses":["%s-%s"]}}' "${metallb_namespace}" "${metallb_startip}" "${metallb_stopip}") ;
-  local metallb_l2advertisement=$(printf '{"apiVersion":"metallb.io/v1beta1","kind":"L2Advertisement","metadata":{"namespace":"%s","name":"default"},"spec":{"ipAddressPools":["default"]}}' "${metallb_namespace}") ;
+  local network_subnet; network_subnet=$(docker network inspect --format '{{ if .IPAM.Config }}{{(index .IPAM.Config 0).Subnet}}{{ end }}' "${network_name}") ;
+  local metallb_startip; metallb_startip=$(echo "${network_subnet}" |  awk -F '.' "{ print \$1\".\"\$2\".\"\$3\".\"${K8S_LOCAL_METALLB_STARTIP};}") ;
+  local metallb_stopip; metallb_stopip=$(echo "${network_subnet}" |  awk -F '.' "{ print \$1\".\"\$2\".\"\$3\".\"${K8S_LOCAL_METALLB_STOPIP};}") ;
+  local metallb_namespace; metallb_namespace="metallb-system" ;
+  local metallb_ipaddresspool; metallb_ipaddresspool=$(printf '{"apiVersion":"metallb.io/v1beta1","kind":"IPAddressPool","metadata":{"namespace":"%s","name":"default"},"spec":{"addresses":["%s-%s"]}}' "${metallb_namespace}" "${metallb_startip}" "${metallb_stopip}") ;
+  local metallb_l2advertisement; metallb_l2advertisement=$(printf '{"apiVersion":"metallb.io/v1beta1","kind":"L2Advertisement","metadata":{"namespace":"%s","name":"default"},"spec":{"ipAddressPools":["default"]}}' "${metallb_namespace}") ;
 
   echo "Deploying metallb in cluster '${cluster_name}'" ;
   if ! helm repo list | grep -q 'metallb'; then
@@ -210,8 +213,8 @@ function deploy_metallb {
           --wait ;
 
   echo "Configuring metallb in cluster '${cluster_name}' with startip '${metallb_startip}' and endip '${metallb_stopip}'" ;
-  echo ${metallb_ipaddresspool} | kubectl --context "${cluster_name}" apply -f - ;
-  echo ${metallb_l2advertisement} | kubectl --context "${cluster_name}" apply -f - ;
+  echo "${metallb_ipaddresspool}" | kubectl --context "${cluster_name}" apply -f - ;
+  echo "${metallb_l2advertisement}" | kubectl --context "${cluster_name}" apply -f - ;
 }
 
 # Deploy metallb
@@ -241,7 +244,7 @@ function deploy_metrics_server {
 function start_docker_network {
   [[ -z "${1}" ]] && print_error "Please provide network name as 1st argument" && return 2 || local network_name="${1}" ;
   [[ -z "${2}" ]] && print_error "Please provide network subnet as 2nd argument" && return 2 || local network_subnet="${2}" ;
-  local network_gateway=$(echo ${network_subnet} |  awk -F '.' "{ print \$1\".\"\$2\".\"\$3\".\"1;}") ;
+  local network_gateway; network_gateway=$(echo "${network_subnet}" |  awk -F '.' "{ print \$1\".\"\$2\".\"\$3\".\"1;}") ;
   echo "Starting docker bridge network '${network_name}' with subnet '${network_subnet}' and gateway '${network_gateway}'" ;
   docker network create \
     --driver="bridge" \
@@ -276,11 +279,11 @@ function start_k3s_cluster {
   [[ -z "${4}" ]] && print_error "Please provide docker network subnet as 4th argument" && return 2 || local network_subnet="${4}" ;
   [[ -z "${5}" ]] && echo "No insecure registry provided" && local insecure_registry="" || local insecure_registry="${5}" ;
 
-  if $(docker container inspect -f '{{.State.Status}}' ${cluster_name} 2>/dev/null | grep "running" &>/dev/null) ; then
+  if docker container inspect -f '{{.State.Status}}' "${cluster_name}" 2>/dev/null | grep "running" &>/dev/null ; then
     echo "K3s cluster '${cluster_name}' already running" ;
-  elif $(docker container inspect -f '{{.State.Status}}' ${cluster_name} 2>/dev/null | grep "exited" &>/dev/null) ; then
+  elif docker container inspect -f '{{.State.Status}}' "${cluster_name}" 2>/dev/null | grep "exited" &>/dev/null ; then
     echo "Restarting k3s cluster '${cluster_name}'" ;
-    docker start ${cluster_name} ;
+    docker start "${cluster_name}" ;
   else
     local image="rancher/k3s:v${k8s_version}-k3s1" ;
     print_info "Starting k3s cluster '${cluster_name}':" ;
@@ -295,13 +298,13 @@ function start_k3s_cluster {
     if [[ -z "${insecure_registry}" ]]; then
       k3d cluster create \
         --agents 0 \
-        --image ${image} \
+        --image "${image}" \
         --k3s-arg "--disable=traefik,servicelb@server:0" \
         --network "${network_name}" \
         --no-lb "${cluster_name}" \
         --servers 1 ;
     else
-      tee /tmp/k3d-${cluster_name}-registries.yaml <<EOF
+      tee "/tmp/k3d-${cluster_name}-registries.yaml" <<EOF
 mirrors:
   "${insecure_registry}":
     endpoint:
@@ -310,7 +313,7 @@ EOF
 
       k3d cluster create \
         --agents 0 \
-        --image ${image} \
+        --image "${image}" \
         --k3s-arg "--disable=traefik,metrics-server,servicelb@server:0" \
         --network "${network_name}" \
         --no-lb "${cluster_name}" \
@@ -321,7 +324,7 @@ EOF
     # Add consistency to docker container and kubectl context names
     docker rename "k3d-${cluster_name}-server-0" "${cluster_name}" ;
     kubectl config rename-context "k3d-${cluster_name}" "${cluster_name}" ;
-    local apiserver_address=$(get_apiserver_url "${cluster_name}" "${network_name}") ;
+    local apiserver_address; apiserver_address=$(get_apiserver_url "${cluster_name}" "${network_name}") ;
     kubectl config set-cluster "k3d-${cluster_name}" --server="${apiserver_address}" ;
 
     echo "Deploying metrics-server in k3s cluster '${cluster_name}'" ;
@@ -339,17 +342,17 @@ function wait_k3s_cluster_ready {
   [[ -z "${1}" ]] && print_error "Please provide cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
   print_info "Waiting for all expected pods in cluster '${cluster_name}' to become ready"
 
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector k8s-app=kube-dns 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector app=local-path-provisioner 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector app.kubernetes.io/name=metrics-server 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n metallb-system --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=controller 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n metallb-system --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector k8s-app=kube-dns 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector app=local-path-provisioner 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector app.kubernetes.io/name=metrics-server 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n metallb-system --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=controller 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n metallb-system --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
 
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector k8s-app=kube-dns --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector app=local-path-provisioner --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector app.kubernetes.io/name=metrics-server --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n metallb-system --for condition=ready --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=controller --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n metallb-system --for condition=ready --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector k8s-app=kube-dns --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector app=local-path-provisioner --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector app.kubernetes.io/name=metrics-server --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n metallb-system --for condition=ready --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=controller --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n metallb-system --for condition=ready --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker --timeout=300s ;
 }
 
 # Stop a local k3s cluster
@@ -357,9 +360,9 @@ function wait_k3s_cluster_ready {
 #     (1) cluster name
 function stop_k3s_cluster {
   [[ -z "${1}" ]] && print_error "Please provide cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
-  if $(docker container inspect -f '{{.State.Status}}' ${cluster_name} | grep "running" &>/dev/null) ; then
+  if docker container inspect -f '{{.State.Status}}' "${cluster_name}" | grep "running" &>/dev/null ; then
     echo "Going to stop k3s cluster '${cluster_name}'" ;
-    k3d cluster stop ${cluster_name} ;
+    k3d cluster stop "${cluster_name}" ;
   fi
 }
 
@@ -370,14 +373,14 @@ function stop_k3s_cluster {
 function remove_k3s_cluster {
   [[ -z "${1}" ]] && print_error "Please provide cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
   [[ -z "${2}" ]] && print_error "Please provide docker network name as 2nd argument" && return 2 || local network_name="${2}" ;
-  if $(k3d cluster list | grep "${cluster_name}" &>/dev/null) ; then
+  if k3d cluster list | grep "${cluster_name}" &>/dev/null ; then
     echo "Going to remove k3s cluster '${cluster_name}'" ;
     docker rename "${cluster_name}" "k3d-${cluster_name}-server-0" ;
     kubectl config rename-context "${cluster_name}" "k3d-${cluster_name}" ;
     k3d cluster delete "${cluster_name}" ;
-    if $(docker network ls | grep ${network_name} &>/dev/null) ; then
+    if docker network ls | grep "${network_name}" &>/dev/null ; then
       echo "Going to remove docker network '${network_name}'" ;
-      docker network rm ${network_name} ;
+      docker network rm "${network_name}" ;
     fi
   fi
 }
@@ -396,11 +399,11 @@ function start_kind_cluster {
   [[ -z "${4}" ]] && print_error "Please provide docker network subnet as 4th argument" && return 2 || local network_subnet="${4}" ;
   [[ -z "${5}" ]] && echo "No insecure registry provided" && local insecure_registry="" || local insecure_registry="${5}" ;
 
-  if $(docker container inspect -f '{{.State.Status}}' ${cluster_name} 2>/dev/null | grep "running" &>/dev/null) ; then
+  if docker container inspect -f '{{.State.Status}}' "${cluster_name}" 2>/dev/null | grep "running" &>/dev/null ; then
     echo "Kind cluster '${cluster_name}' already running" ;
-  elif $(docker container inspect -f '{{.State.Status}}' ${cluster_name} 2>/dev/null | grep "exited" &>/dev/null) ; then
+  elif docker container inspect -f '{{.State.Status}}' "${cluster_name}" 2>/dev/null | grep "exited" &>/dev/null ; then
     echo "Restarting kind cluster '${cluster_name}'" ;
-    docker start ${cluster_name} ;
+    docker start "${cluster_name}" ;
   else
     local image="kindest/node:v${k8s_version}" ;
     print_info "Starting kind cluster '${cluster_name}':" ;
@@ -417,7 +420,7 @@ function start_kind_cluster {
         --name "${cluster_name}" \
         --image "${image}" ;
     else
-      tee /tmp/kind-${cluster_name}-registries.yaml <<EOF
+      tee "/tmp/kind-${cluster_name}-registries.yaml" <<EOF
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 containerdConfigPatches:
@@ -427,7 +430,7 @@ containerdConfigPatches:
 EOF
 
       KIND_EXPERIMENTAL_DOCKER_NETWORK=${network_name} kind create cluster \
-        --config /tmp/kind-${cluster_name}-registries.yaml \
+        --config "/tmp/kind-${cluster_name}-registries.yaml" \
         --image "${image}" \
         --name "${cluster_name}";
     fi
@@ -435,7 +438,7 @@ EOF
     # Add consistency to docker container and kubectl context names
     docker rename "${cluster_name}-control-plane" "${cluster_name}" ;
     kubectl config rename-context "kind-${cluster_name}" "${cluster_name}" ;
-    local apiserver_address=$(get_apiserver_url "${cluster_name}" "${network_name}") ;
+    local apiserver_address; apiserver_address=$(get_apiserver_url "${cluster_name}" "${network_name}") ;
     kubectl config set-cluster "kind-${cluster_name}" --server="${apiserver_address}" ;
 
     echo "Deploying metrics-server in kind cluster '${cluster_name}'" ;
@@ -453,29 +456,29 @@ function wait_kind_cluster_ready {
   [[ -z "${1}" ]] && print_error "Please provide cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
   print_info "Waiting for all expected pods in cluster '${cluster_name}' to become ready"
 
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector k8s-app=kube-dns 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector component=etcd 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector k8s-app=kindnet 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector component=kube-apiserver 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector component=kube-controller-manager 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector k8s-app=kube-proxy 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector component=kube-scheduler 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector app.kubernetes.io/name=metrics-server 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n local-path-storage --selector app=local-path-provisioner 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n metallb-system --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=controller 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n metallb-system --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector k8s-app=kube-dns 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector component=etcd 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector k8s-app=kindnet 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector component=kube-apiserver 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector component=kube-controller-manager 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector k8s-app=kube-proxy 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector component=kube-scheduler 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector app.kubernetes.io/name=metrics-server 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n local-path-storage --selector app=local-path-provisioner 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n metallb-system --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=controller 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n metallb-system --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
 
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector k8s-app=kube-dns --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector component=etcd --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector k8s-app=kindnet --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector component=kube-apiserver --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector component=kube-controller-manager --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector k8s-app=kube-proxy --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector component=kube-scheduler --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector app.kubernetes.io/name=metrics-server --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n local-path-storage --for condition=ready --selector app=local-path-provisioner --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n metallb-system --for condition=ready --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=controller --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n metallb-system --for condition=ready --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector k8s-app=kube-dns --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector component=etcd --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector k8s-app=kindnet --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector component=kube-apiserver --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector component=kube-controller-manager --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector k8s-app=kube-proxy --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector component=kube-scheduler --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector app.kubernetes.io/name=metrics-server --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n local-path-storage --for condition=ready --selector app=local-path-provisioner --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n metallb-system --for condition=ready --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=controller --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n metallb-system --for condition=ready --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker --timeout=300s ;
 }
 
 # Stop a local kind cluster
@@ -483,9 +486,9 @@ function wait_kind_cluster_ready {
 #     (1) cluster name
 function stop_kind_cluster {
   [[ -z "${1}" ]] && print_error "Please provide cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
-  if $(docker container inspect -f '{{.State.Status}}' ${cluster_name} | grep "running" &>/dev/null) ; then
+  if docker container inspect -f '{{.State.Status}}' "${cluster_name}" | grep "running" &>/dev/null ; then
     echo "Going to stop kind cluster '${cluster_name}'" ;
-    docker stop ${cluster_name} ;
+    docker stop "${cluster_name}" ;
   fi
 }
 
@@ -496,14 +499,14 @@ function stop_kind_cluster {
 function remove_kind_cluster {
   [[ -z "${1}" ]] && print_error "Please provide cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
   [[ -z "${2}" ]] && print_error "Please provide docker network name as 2nd argument" && return 2 || local network_name="${2}" ;
-  if $(kind get clusters | grep "${cluster_name}" &>/dev/null) ; then
+  if kind get clusters | grep "${cluster_name}" &>/dev/null ; then
     echo "Going to remove kind cluster '${cluster_name}'" ;
     docker rename "${cluster_name}" "${cluster_name}-control-plane" ;
     kubectl config rename-context "${cluster_name}" "kind-${cluster_name}" ;
     kind delete cluster --name "${cluster_name}" ;
-    if $(docker network ls | grep ${network_name} &>/dev/null) ; then
+    if docker network ls | grep "${network_name}" &>/dev/null ; then
       echo "Going to remove docker network '${network_name}'" ;
-      docker network rm ${network_name} ;
+      docker network rm "${network_name}" ;
     fi
   fi
 }
@@ -522,11 +525,11 @@ function start_minikube_cluster {
   [[ -z "${4}" ]] && print_error "Please provide docker network subnet as 4th argument" && return 2 || local network_subnet="${4}" ;
   [[ -z "${5}" ]] && echo "No insecure registry provided" && local insecure_registry="" || local insecure_registry="${5}" ;
 
-  if $(minikube --profile ${cluster_name} status 2>/dev/null | grep "host:" | grep "Running" &>/dev/null) ; then
+  if minikube --profile "${cluster_name}" status 2>/dev/null | grep "host:" | grep "Running" &>/dev/null ; then
     echo "Minikube cluster profile '${cluster_name}' already running" ;
-  elif $(minikube --profile ${cluster_name} status 2>/dev/null | grep "host:" | grep "Stopped" &>/dev/null) ; then
+  elif minikube --profile "${cluster_name}" status 2>/dev/null | grep "host:" | grep "Stopped" &>/dev/null ; then
     echo "Restarting minikube cluster profile '${cluster_name}'" ;
-    minikube start --driver=docker --profile ${cluster_name} ;
+    minikube start --driver=docker --profile "${cluster_name}" ;
   else
     print_info "Starting minikube cluster in minikube profile '${cluster_name}':" ;
     print_info "  cluster_name: '${cluster_name}'" ;
@@ -540,20 +543,20 @@ function start_minikube_cluster {
       minikube start \
         --apiserver-port 6443 \
         --driver docker \
-        --kubernetes-version v${k8s_version} \
-        --network ${network_name} \
-        --profile ${cluster_name} \
-        --subnet ${network_subnet} ;
+        --kubernetes-version "v${k8s_version}" \
+        --network "${network_name}" \
+        --profile "${cluster_name}" \
+        --subnet "${network_subnet}" ;
     else
-      local insecure_registry_subnet=$(echo ${insecure_registry} |  awk -F '.' "{ print \$1\".\"\$2\".\"\$3\".0/24\";}") ;
+      local insecure_registry_subnet; insecure_registry_subnet=$(echo "${insecure_registry}" |  awk -F '.' "{ print \$1\".\"\$2\".\"\$3\".0/24\";}") ;
       minikube start \
         --apiserver-port 6443 \
         --driver docker \
-        --insecure-registry ${insecure_registry_subnet} \
-        --kubernetes-version v${k8s_version} \
-        --network ${network_name} \
-        --profile ${cluster_name} \
-        --subnet ${network_subnet} ;
+        --insecure-registry "${insecure_registry_subnet}" \
+        --kubernetes-version "v${k8s_version}" \
+        --network "${network_name}" \
+        --profile "${cluster_name}" \
+        --subnet "${network_subnet}" ;
     fi
 
     echo "Deploying metrics-server in minikube cluster '${cluster_name}'" ;
@@ -571,27 +574,27 @@ function wait_minikube_cluster_ready {
   [[ -z "${1}" ]] && print_error "Please provide cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
   print_info "Waiting for all expected pods in cluster '${cluster_name}' to become ready"
 
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector k8s-app=kube-dns 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector component=etcd 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector component=kube-apiserver 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector component=kube-controller-manager 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector k8s-app=kube-proxy 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector component=kube-scheduler 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector app.kubernetes.io/name=metrics-server 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n kube-system --selector integration-test=storage-provisioner 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n metallb-system --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=controller 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
-  while ! $(kubectl --context ${cluster_name} get pod -n metallb-system --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker 2>&1 | grep -v "found" &>/dev/null) ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector k8s-app=kube-dns 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector component=etcd 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector component=kube-apiserver 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector component=kube-controller-manager 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector k8s-app=kube-proxy 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector component=kube-scheduler 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector app.kubernetes.io/name=metrics-server 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n kube-system --selector integration-test=storage-provisioner 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n metallb-system --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=controller 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
+  while ! kubectl --context "${cluster_name}" get pod -n metallb-system --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker 2>&1 | grep -v "found" &>/dev/null ; do sleep 0.1 ; done ;
 
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector k8s-app=kube-dns --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector component=etcd --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector component=kube-apiserver --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector component=kube-controller-manager --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector k8s-app=kube-proxy --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector component=kube-scheduler --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector app.kubernetes.io/name=metrics-server --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n kube-system --for condition=ready --selector integration-test=storage-provisioner --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n metallb-system --for condition=ready --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=controller --timeout=300s ;
-  kubectl --context ${cluster_name} wait pod -n metallb-system --for condition=ready --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector k8s-app=kube-dns --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector component=etcd --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector component=kube-apiserver --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector component=kube-controller-manager --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector k8s-app=kube-proxy --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector component=kube-scheduler --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector app.kubernetes.io/name=metrics-server --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n kube-system --for condition=ready --selector integration-test=storage-provisioner --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n metallb-system --for condition=ready --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=controller --timeout=300s ;
+  kubectl --context "${cluster_name}" wait pod -n metallb-system --for condition=ready --selector app.kubernetes.io/name=metallb,app.kubernetes.io/component=speaker --timeout=300s ;
 }
 
 # Stop a local minikube cluster
@@ -599,9 +602,9 @@ function wait_minikube_cluster_ready {
 #     (1) cluster name
 function stop_minikube_cluster {
   [[ -z "${1}" ]] && print_error "Please provide cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
-  if $(minikube --profile ${cluster_name} status 2>/dev/null | grep "host:" | grep "Running" &>/dev/null) ; then
+  if minikube --profile "${cluster_name}" status 2>/dev/null | grep "host:" | grep "Running" &>/dev/null ; then
     echo "Going to stop minikube cluster in minikube profile '${cluster_name}'" ;
-    minikube stop --profile ${cluster_name} 2>/dev/null ;
+    minikube stop --profile "${cluster_name}" 2>/dev/null ;
   fi
 }
 
@@ -612,12 +615,12 @@ function stop_minikube_cluster {
 function remove_minikube_cluster {
   [[ -z "${1}" ]] && print_error "Please provide cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
   [[ -z "${2}" ]] && print_error "Please provide docker network name as 2nd argument" && return 2 || local network_name="${2}" ;
-  if $(minikube profile list --light=true 2>/dev/null | grep ${cluster_name} &>/dev/null) ; then
+  if minikube profile list --light=true 2>/dev/null | grep "${cluster_name}" &>/dev/null ; then
     echo "Going to remove minikube cluster in minikube profile '${cluster_name}'" ;
-    minikube delete --profile ${cluster_name} 2>/dev/null ;
-    if $(docker network ls | grep ${network_name} &>/dev/null) ; then
+    minikube delete --profile "${cluster_name}" 2>/dev/null ;
+    if docker network ls | grep "${network_name}" &>/dev/null ; then
       echo "Going to remove docker network '${network_name}'" ;
-      docker network rm ${network_name} ;
+      docker network rm "${network_name}" ;
     fi
   fi
 }
@@ -635,15 +638,15 @@ function start_cluster {
   [[ -z "${2}" ]] && print_error "Please provide cluster name as 2nd argument" && return 2 || local cluster_name="${2}" ;
   [[ -z "${3}" ]] && print_error "Please provide k8s version as 3rd argument" && return 2 || local k8s_version="${3}" ;
   [[ -z "${4}" ]] && print_error "Please provide docker network name as 4th argument" && return 2 || local network_name="${4}" ;
-  [[ -z "${5}" ]] && local network_subnet=$(get_docker_subnet_free) && echo "No subnet provided, using a free one '${network_subnet}'" || local network_subnet="${5}" ;
+  [[ -z "${5}" ]] && local network_subnet; network_subnet=$(get_docker_subnet_free) && echo "No subnet provided, using a free one '${network_subnet}'" || local network_subnet="${5}" ;
   [[ -z "${6}" ]] && echo "No insecure registry provided" && local insecure_registry="" || local insecure_registry="${6}" ;
-  precheck ${k8s_provider};
+  precheck "${k8s_provider}";
 
-  local existing_context_provider=$(get_provider_type_by_kubectl_context "${cluster_name}") ;
-  local existing_container_provider=$(get_provider_type_by_container_name "${cluster_name}") ;
+  local existing_context_provider; existing_context_provider=$(get_provider_type_by_kubectl_context "${cluster_name}") ;
+  local existing_container_provider; existing_container_provider=$(get_provider_type_by_container_name "${cluster_name}") ;
 
-  if ( [[ ${existing_context_provider} == ${k8s_provider} ]] && [[ ${existing_container_provider} == ${k8s_provider} ]] ) || \
-     ( [[ ${existing_context_provider} == "notfound" ]] && [[ ${existing_container_provider} == "notfound" ]] ) ; then
+  if { [[ ${existing_context_provider} == "${k8s_provider}" ]] && [[ ${existing_container_provider} == "${k8s_provider}" ]]; } || \
+     { [[ ${existing_context_provider} == "notfound" ]] && [[ ${existing_container_provider} == "notfound" ]]; } ; then
 
     echo "Going to start ${k8s_provider} based kubernetes cluster '${cluster_name}'" ;
     case ${k8s_provider} in
@@ -675,15 +678,15 @@ function start_cluster {
 function wait_cluster_ready {
   [[ -z "${1}" ]] && print_error "Please provide local kubernetes provider as 1st argument" && return 2 || local k8s_provider="${1}" ;
   [[ -z "${2}" ]] && print_error "Please provide cluster name as 2nd argument" && return 2 || local cluster_name="${2}" ;
-  precheck ${k8s_provider};
+  precheck "${k8s_provider}";
 
   echo "Going to wait for ${k8s_provider} based kubernetes cluster '${cluster_name}' to be ready" ;
   echo -n "Waiting for kubectl context of cluster '${cluster_name}' to become available: "
-  while ! $(kubectl config get-contexts | grep "${cluster_name}" &>/dev/null) ; do sleep 0.1 ; echo -n "." ; done ; echo "DONE" ;
+  while ! kubectl config get-contexts | grep "${cluster_name}" &>/dev/null ; do sleep 0.1 ; echo -n "." ; done ; echo "DONE" ;
   echo -n "Waiting for kubectl to be able to reach cluster apiserver of '${cluster_name}': "
-  while ! $(kubectl --context ${cluster_name} get nodes &>/dev/null) ; do sleep 0.1 ; echo -n "." ; done ; echo "DONE" ;
+  while ! kubectl --context "${cluster_name}" get nodes &>/dev/null ; do sleep 0.1 ; echo -n "." ; done ; echo "DONE" ;
   echo -n "Waiting for kubectl to be able to reach metrics.k8s.io/v1beta1 endpoint of '${cluster_name}': "
-  while ! $(kubectl --context ${cluster_name} get --raw /apis/metrics.k8s.io/v1beta1 &>/dev/null) ; do sleep 0.1 ; echo -n "." ; done ; echo "DONE" ;
+  while ! kubectl --context "${cluster_name}" get --raw /apis/metrics.k8s.io/v1beta1 &>/dev/null ; do sleep 0.1 ; echo -n "." ; done ; echo "DONE" ;
 
   case ${k8s_provider} in
     "k3s")
@@ -696,7 +699,7 @@ function wait_cluster_ready {
       wait_minikube_cluster_ready "${cluster_name}" ;
       ;;
   esac
-  kubectl --context ${cluster_name} get pods -A ;
+  kubectl --context "${cluster_name}" get pods -A ;
 }
 
 # Stop a local kubernetes cluster
@@ -758,10 +761,10 @@ function is_k8s_version_available {
   echo "Going to check if kubernetes version ${k8s_version} is available for provider '${k8s_provider}'" ;
   case ${k8s_provider} in
     "k3s")
-      if $(docker images | grep "rancher/k3s" | grep "v${k8s_version}-k3s1" &>/dev/null) ; then
+      if docker images | grep "rancher/k3s" | grep "v${k8s_version}-k3s1" &>/dev/null ; then
         return 0 ;
       else
-        if $(curl --silent "https://hub.docker.com/v2/repositories/rancher/k3s/tags/?page_size=100" | jq -r '.results|.[]|.name' | grep "v${k8s_version}-k3s1" &>/dev/null) ; then
+        if curl --silent "https://hub.docker.com/v2/repositories/rancher/k3s/tags/?page_size=100" | jq -r '.results|.[]|.name' | grep "v${k8s_version}-k3s1" &>/dev/null ; then
           return 0 ;
         else
           return 1 ;
@@ -769,10 +772,10 @@ function is_k8s_version_available {
       fi
       ;;
     "kind")
-      if $(docker images | grep "kindest/node" | grep "v${k8s_version}" &>/dev/null) ; then
+      if docker images | grep "kindest/node" | grep "v${k8s_version}" &>/dev/null ; then
         return 0 ;
       else
-        if $(curl --silent "https://hub.docker.com/v2/repositories/kindest/node/tags/?page_size=100" | jq -r '.results|.[]|.name' | grep "v${k8s_version}" &>/dev/null) ; then
+        if curl --silent "https://hub.docker.com/v2/repositories/kindest/node/tags/?page_size=100" | jq -r '.results|.[]|.name' | grep "v${k8s_version}" &>/dev/null ; then
           return 0 ;
         else
           return 1 ;
@@ -780,7 +783,7 @@ function is_k8s_version_available {
       fi
       ;;
     "minikube")
-      if $(curl --silent "https://raw.githubusercontent.com/kubernetes/minikube/master/pkg/minikube/constants/constants_kubernetes_versions.go" | grep "v${k8s_version}" &>/dev/null) ; then
+      if curl --silent "https://raw.githubusercontent.com/kubernetes/minikube/master/pkg/minikube/constants/constants_kubernetes_versions.go" | grep "v${k8s_version}" &>/dev/null ; then
         return 0 ;
       else
         return 1 ;
