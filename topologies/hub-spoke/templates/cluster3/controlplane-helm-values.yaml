@@ -83,6 +83,10 @@ spec:
                 value:
                   name: CLUSTER_STATE_RESYNC_INTERVAL
                   value: 20s
+              - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+                value:
+                  name: XCP_CENTRAL_CONFIG_STATUS_RESYNC_INTERVAL
+                  value: 2m
   hub: $TSB_INSTALL_REPO_URL
   managementPlane:
     clusterName: cluster3
