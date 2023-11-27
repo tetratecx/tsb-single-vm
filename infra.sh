@@ -4,9 +4,11 @@ BASE_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )" ;
 # shellcheck source=/dev/null
 source "${BASE_DIR}/env.sh" ;
 # shellcheck source=/dev/null
-source "${BASE_DIR}/helpers/print.sh" ;
+source "${BASE_DIR}/helpers/certs.sh" ;
 # shellcheck source=/dev/null
 source "${BASE_DIR}/helpers/k8s.sh" ;
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/print.sh" ;
 # shellcheck source=/dev/null
 source "${BASE_DIR}/helpers/registry.sh" ;
 
@@ -27,8 +29,15 @@ function help() {
 #
 function up() {
 
+  # Generate and install root certificate
+  print_info "Going to generate and install root certificate" ;
+  local certs_base_dir; certs_base_dir="$(get_certs_output_dir)" ;
+  generate_root_cert "${certs_base_dir}" ;
+  local root_cert_source_file; root_cert_source_file="${certs_base_dir}/root-cert.pem" ;
+  install_root_cert "${root_cert_source_file}" ;
+
   # Start local docker registry and sync images
-  print_info "Going to start local docker registry and sync images if needed" ;
+  print_info "Going to start local docker registry and sync images" ;
   start_local_registry ;
   add_insecure_registry ;
   sync_tsb_images "$(get_local_registry_endpoint)" "$(get_tetrate_repo_user)" "$(get_tetrate_repo_password)" ;

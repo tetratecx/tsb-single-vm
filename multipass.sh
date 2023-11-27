@@ -55,7 +55,7 @@ function start() {
                     "${VM_OS}" ;
 
     echo "Install packages in VM ${VM_NAME}" ;
-    multipass exec "${VM_NAME}" -- bash -c "sudo apt-get -y update && sudo apt-get install -y curl docker.io expect jq make net-tools" ;
+    multipass exec "${VM_NAME}" -- bash -c "sudo NEEDRESTART_MODE=a apt-get -y update && sudo NEEDRESTART_MODE=a apt-get -y upgrade && sudo NEEDRESTART_MODE=a apt-get install -y curl docker.io expect httpie jq net-tools make  nmap traceroute tree" ;
     multipass exec "${VM_NAME}" -- bash -c "sudo usermod -aG docker ubuntu" ;
   fi
 

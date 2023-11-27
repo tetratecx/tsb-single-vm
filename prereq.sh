@@ -66,8 +66,8 @@ function install_prereq() {
   local tsb_version; tsb_version=$(get_tsb_version) ;
 
   print_info "Installing apt packages" ;
-  sudo apt-get -y update ; sudo apt-get -y upgrade ;
-  sudo apt-get -y install curl docker.io expect httpie jq net-tools nmap traceroute tree ;
+  sud apt-get -y update ; sudo NEEDRESTART_MODE=a apt-get -y upgrade ;
+  sudo apt-get -y install curl docker.io expect httpie jq make net-tools nmap traceroute tree ;
   sudo systemctl enable docker ;
   sudo systemctl start docker ;
   sudo usermod -aG docker "${USER}" ;

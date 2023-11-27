@@ -12,8 +12,13 @@ source "${HELPERS_DIR}/print.sh" ;
 #     (2) root certificate destination file (optional, default 'tsb-single-vm-ca.pem')
 function install_root_cert {
   [[ -z "${1}" ]] && print_error "Please provide root certificate source file as 1st argument" && return 2 || local cert_source_file="${1}" ;
-  [[ -z "${2}" ]] && local cert_destination_file="tsb-single-vm-ca.pem" || local cert_destination_file="${2}" ;
+  [[ -z "${2}" ]] && local cert_destination_file="tsb-single-vm-ca.crt" || local cert_destination_file="${2}" ;
 
+  if [[ "${cert_destination_file}" != *.crt ]]; then
+      print_warning "Warning: cert_destination_file does not end with .crt" ;
+      print_error "Certificates must have a .crt extension in order to be included by update-ca-certificates" ;
+      return 1 ;
+  fi
   if [[ ! -f "${cert_source_file}" ]]; then
     print_error "File ${cert_source_file} does not exist" ;
     return ;

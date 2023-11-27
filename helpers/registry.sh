@@ -136,7 +136,7 @@ function sync_single_image {
     docker pull "${image}" ;
   fi
   if ! docker image inspect "${local_registry}/${image_without_registry}" &>/dev/null ; then
-    docker tag "${image} ${local_registry}/${image_without_registry}" ;
+    docker tag "${image}" "${local_registry}/${image_without_registry}" ;
   fi
   if ! curl -s -X GET "${local_registry}/v2/${image_name}/tags/list" | grep "${image_tag}" &>/dev/null ; then
     docker push "${local_registry}/${image_without_registry}" ;
