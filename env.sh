@@ -155,6 +155,28 @@ function get_tsb_version {
   jq -r ".tsb.version" "${ENV_CONF}" ;
 }
 
+### VM Configuration ###
+function get_vm_kind {
+  jq -r ".vm.kind" "${ENV_CONF}" ;
+}
+
+function get_multipass_vm_cpu {
+  jq -r ".vm.multipass.cpus" "${ENV_CONF}" ;
+}
+
+function get_multipass_vm_disk {
+  jq -r ".vm.multipass.disk" "${ENV_CONF}" ;
+}
+
+function get_multipass_vm_mem {
+  jq -r ".vm.multipass.mem" "${ENV_CONF}" ;
+}
+
+function get_multipass_vm_name {
+  jq -r ".vm.multipass.name" "${ENV_CONF}" ;
+}
+
+
 
 ### TSB installation templates files ###
 function get_mp_cp_cr_template_file {
