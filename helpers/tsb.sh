@@ -6,6 +6,8 @@ HELPERS_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")") ;
 # shellcheck source=/dev/null
 source "${HELPERS_DIR}/print.sh" ;
 
+CLUSTER_WAIT_TIMEOUT=300;
+
 # Login as admin into tsb
 #   args:
 #     (1) organization
@@ -26,10 +28,10 @@ DONE
 # Wait for cluster to be onboarded
 #   args:
 #     (1) onboarding cluster name
-#     (2) timeout in seconds (optional, default 60 aka 1 minute)
+#     (2) timeout in seconds (optional, default 300 aka 5 minutes)
 function wait_cluster_onboarded() {
   [[ -z "${1}" ]] && print_error "Please provide the onboarding cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
-  [[ -z "${2}" ]] && local timeout=60 || local timeout="${2}" ;
+  [[ -z "${2}" ]] && local timeout=${CLUSTER_WAIT_TIMEOUT} || local timeout="${2}" ;
   local start_time; start_time=$(date +%s) ;
 
   echo -n "Wait for cluster '${cluster_name}' to be onboarded (timeout: ${timeout}s): " ;
