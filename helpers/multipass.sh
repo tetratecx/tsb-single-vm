@@ -1,30 +1,29 @@
 #!/usr/bin/env bash
 #
-# Helper script to manage a local Multipass Ubuntu VM for MacOS or Windows
-# because the docker network stack on those OS's is not useable.
+# Helper script to manage a local multipass Ubuntu VM.
 #
 HELPERS_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")") ;
 # shellcheck source=/dev/null
 source "${HELPERS_DIR}/print.sh" ;
 
-DEFAULT_VM_CPU="2"
-DEFAULT_VM_DISK="20G"
-DEFAULT_VM_MEM="16G"
-DEFAULT_VM_NAME="tsb-single-vm"
-DEFAULT_VM_OS="22.04"
+DEFAULT_VM_CPU="2" ;
+DEFAULT_VM_DISK="20G" ;
+DEFAULT_VM_MEM="16G" ;
+DEFAULT_VM_NAME="tsb-single-vm" ;
+DEFAULT_VM_OS="22.04" ;
 
 # This function starts a multipass Ubuntu VM
 #   args:
-#     (1) vm name (default: tsb-single-vm)
-#     (2) vm cpu (default: 2)
+#     (1) vm cpu (default: 2)
+#     (2) vm disk (default: 20G)
 #     (3) vm memory (default: 16G)
-#     (4) vm disk (default: 20G)
+#     (4) vm name (default: tsb-single-vm)
 #     (5) vm ubuntu os version (default: 22.04)
 function start_multipass_vm() {
-  [[ -z "${1}" ]] && local vm_name="${DEFAULT_VM_NAME}" || local vm_name="${1}" ;
-  [[ -z "${2}" ]] && local vm_cpu="${DEFAULT_VM_CPU}" || local vm_cpu="${2}" ;
+  [[ -z "${1}" ]] && local vm_cpu="${DEFAULT_VM_CPU}" || local vm_cpu="${1}" ;
+  [[ -z "${2}" ]] && local vm_disk="${DEFAULT_VM_DISK}" || local vm_disk="${2}" ;
   [[ -z "${3}" ]] && local vm_mem="${DEFAULT_VM_MEM}" || local vm_mem="${3}" ;
-  [[ -z "${4}" ]] && local vm_disk="${DEFAULT_VM_DISK}" || local vm_disk="${4}" ;
+  [[ -z "${4}" ]] && local vm_name="${DEFAULT_VM_NAME}" || local vm_name="${4}" ;
   [[ -z "${5}" ]] && local vm_os_version="${DEFAULT_VM_OS}" || local vm_os_version="${5}" ;
 
   if multipass list --format json | jq -r --arg vm_name "${vm_name}" '.list[] | select(.name == $vm_name) | .name' 2>/dev/null | grep -q "${vm_name}" ; then
@@ -39,10 +38,10 @@ function start_multipass_vm() {
       while true; do
         mount_output=$(multipass mount "${PWD}" "${vm_name}:/home/ubuntu/tsb-single-vm" 2>&1) ;
         mount_status=$? ;
-        if [[ $mount_status -eq 0 ]]; then
+        if [[ ${mount_status} -eq 0 ]]; then
           echo "mount succeeded" ;
           break ;
-        elif [[ $mount_output == *"'tsb-single-vm' is already mounted in 'tsb-single-vm'"* ]]; then
+        elif [[ ${mount_output} == *"'tsb-single-vm' is already mounted in 'tsb-single-vm'"* ]]; then
           echo "mount point is already mounted" ;
           break ;
         else
@@ -93,7 +92,7 @@ function delete_multipass_vm() {
     multipass delete --purge "${vm_name}" ;
   else
     echo "VM '${vm_name}' does not exist" ;
-  fi  
+  fi
 }
 
 

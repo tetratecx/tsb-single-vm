@@ -160,22 +160,60 @@ function get_vm_kind {
   jq -r ".vm.kind" "${ENV_CONF}" ;
 }
 
+#### VM Multipass Configuration ####
 function get_multipass_vm_cpu {
-  jq -r ".vm.multipass.cpus" "${ENV_CONF}" ;
+  jq -r ".vm.multipass.vm_cpus" "${ENV_CONF}" ;
 }
 
 function get_multipass_vm_disk {
-  jq -r ".vm.multipass.disk" "${ENV_CONF}" ;
+  jq -r ".vm.multipass.vm_disk" "${ENV_CONF}" ;
 }
 
 function get_multipass_vm_mem {
-  jq -r ".vm.multipass.mem" "${ENV_CONF}" ;
+  jq -r ".vm.multipass.vm_mem" "${ENV_CONF}" ;
 }
 
 function get_multipass_vm_name {
-  jq -r ".vm.multipass.name" "${ENV_CONF}" ;
+  jq -r ".vm.multipass.vm_name" "${ENV_CONF}" ;
 }
 
+
+#### VM GCP Configuration ####
+function get_gcp_project_billing_account {
+  jq -r ".vm.gcp.project_billing_account" "${ENV_CONF}" ;
+}
+
+function get_gcp_project_description {
+  jq -r ".vm.gcp.project_description" "${ENV_CONF}" ;
+}
+
+function get_gcp_project_id {
+  jq -r ".vm.gcp.project_id" "${ENV_CONF}" ;
+}
+
+function get_gcp_project_name {
+  jq -r ".vm.gcp.project_name" "${ENV_CONF}" ;
+}
+
+function get_gcp_vm_disk {
+  jq -r ".vm.gcp.vm_disk" "${ENV_CONF}" ;
+}
+
+function get_gcp_vm_machine_type {
+  jq -r ".vm.gcp.vm_machine_type" "${ENV_CONF}" ;
+}
+
+function get_gcp_vm_name {
+  jq -r ".vm.gcp.vm_name" "${ENV_CONF}" ;
+}
+
+function get_gcp_vm_ssh_key {
+  jq -r ".vm.gcp.vm_ssh_key" "${ENV_CONF}" ;
+}
+
+function get_gcp_vm_zone {
+  jq -r ".vm.gcp.vm_zone" "${ENV_CONF}" ;
+}
 
 
 ### TSB installation templates files ###
