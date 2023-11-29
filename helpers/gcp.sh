@@ -254,8 +254,7 @@ function shell_gcp_vm() {
     exit 1 ;
   else
     echo "Spawn a shell in VM instance '${vm_name}' in project '${project_id}'"
-    gcloud compute ssh "${vm_name}" \
-      --project="${project_id}" \
-      --zone="${vm_zone}" -- 'sudo su ubuntu';
+    print_command "gcloud compute ssh ${vm_name} --project=${project_id} --zone=${vm_zone} -- 'sudo su ubuntu'" ;
+    gcloud compute ssh "${vm_name}" --project="${project_id}" --zone="${vm_zone}" -- 'sudo su ubuntu';
   fi
 }
