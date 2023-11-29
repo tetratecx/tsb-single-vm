@@ -1,0 +1,19 @@
+{
+  "gcp": {
+    "project_billing_account": "0183E5-447B34-776DEB",
+    "project_description": "TSB in a box",
+    "project_id": "tsb-in-a-box",
+    "project_labels": "tetrate_lifespan=always,tetrate_owner=everyone,tetrate_purpose=tsb-in-a-box,tetrate_team=tetrate",
+    "vm_disk": "50GB",
+    "vm_machine_type": "n1-standard-8",
+    "vm_name": "tsb-single-vm",
+    "vm_zone": "europe-west1-b"
+  },
+  "multipass": {
+    "vm_cpus": 4,
+    "vm_disk": "25G",
+    "vm_mem": "24G",
+    "vm_name": "tsb-single-vm"
+  },
+  "vm_target_type": "multipass"
+}

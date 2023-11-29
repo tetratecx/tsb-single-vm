@@ -155,7 +155,6 @@ function get_tsb_version {
   jq -r ".tsb.version" "${ENV_CONF}" ;
 }
 
-
 ### TSB installation templates files ###
 function get_mp_cp_cr_template_file {
   echo "$(get_topology_dir)/$(jq -r ".mp_cluster.templates.cp_tctl" "${TOPOLOGY_CONF}")" ;
