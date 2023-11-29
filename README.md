@@ -21,7 +21,11 @@ To reduce traffic from cloudsmith, a local docker repository is implemented, whi
 
 In order to provide an abstraction and maximum flexibility, a distinction is made between a `topology` and a `scenario`. Anyone is encouraged to add extra topologies and scenarios as he/she sees fit. A scenario is depending on a topology, so keep that in mind once you start changing topologies already used by certain scenarios.
 
-In terms of memory constraints of the VM: a 64GB Ubuntu machine can support up to 5 TSB clusters to showcase a transit zone scenario. It takes around 15 minutes to spin those 5 TSB clusters up completely from scratch (infra / tsb config / application deployment). Spinning down is just a destroy/stopping of the VM or a `make clean`, which takes 30 seconds.
+In terms of memory constraints of the VM: 
+ - a 32GB Ubuntu machine can support up to 3 TSB clusters to showcase a active/standby scenario.
+ - a 64GB Ubuntu machine can support up to 5 TSB clusters to showcase a transit-zone scenario.
+ - it takes around 15 minutes to spin those 5 TSB clusters up completely from scratch (infra / tsb config / application deployment).
+ - spinning down is just a destroy/stopping of the VM or a `make clean`, which takes 30 seconds.
 
 ## Configuration
 
@@ -98,23 +102,6 @@ A short enumeration of the paramaters to be configured:
 
 > **Alert:** Never commit your TSB cloudsmith credentials to github!
 
-Note that you have the option to choose what docker repository you want to leverage:
-1. use the cloudsmith repo directly within k8s to pull images from (to be avoid to save costs)
-2. use your own private repository (u/p or insecure)
-3. use a locally-hosted docker repo (default: 192.168.48.2:5000)
-
-For use cases (2) and (3) above, you can use a helper script to speed up the process of deploying a local docker repo and/or syncing official TSB docker images to those repos.
-
-```console
-# ./repo.sh 
-Please specify correct action:
-  - info : get local docker repo url (default: 192.168.48.2:5000)
-  - start : start local docker repo
-  - stop : stop local docker repo
-  - remove : remove local docker repo
-  - sync <target-repo> : sync tsb images from official repo to provided target repo (default: 192.168.48.2:5000)
-```
-
 ### Networking and local kubernetes details
 
 Every cluster (managementplane or controlplane) is deployed in a separate [docker network](https://docs.docker.com/engine/reference/commandline/network) with a separate subnet. VMs that are configured at the managementplane or controlplane are docker containers that run within that same network. The name of the docker network, matches the name of the cluster, which matches the name of the kubectl context.
@@ -171,19 +158,19 @@ A short enumeration of the parameters to be configured:
 |parameter|type|description|
 |---------|----|-----------|
 |cp_clusters|list|a list TSB controlplane clusters|
+|cp_clusters.[].k8s_provider|string|the kubernetes provider of this controlplane cluster (`k3s`, `kind` or `minikube`)|
+|cp_clusters.[].k8s_version|string|the version of kubernetes of this controlplane cluster|
 |cp_clusters.[].name|string|the name of this controlplane cluster (used as local kubectl context, docker network name and TSB cluster name)|
 |cp_clusters.[].region|string|the region to configure for this controlplane cluster|
-|cp_clusters.[].trust_domain|string|the trust domain to configure for this controlplane cluster|
 |cp_clusters.[].zone|string|the zone to configure for this controlplane cluster|
 |cp_clusters.[].vms|list|a list of VMs to spin-up in the same network as this controlplane cluster|
 |cp_clusters.[].vms.[].image|string|the base image to use as VM|
 |cp_clusters.[].vms.[].name|string|the name of this VM (used as hostname, docker container name and VM name)|
-|k8s_provider|string|provider to be used by local kubernetes (`k3s`, `kind` or `minikube`)|
-|k8s_version|string|version of kubernetes to be used by local kubernetes|
 |mp_cluster|object|tsb managementplane cluster configuration|
+|mp_cluster.k8s_provider|string|the kubernetes provider of this managementplane cluster (`k3s`, `kind` or `minikube`)|
+|mp_cluster.k8s_version|string|the version of kubernetes of this managementplane cluster|
 |mp_cluster.name|string|the name of this managementplane cluster (used as local kubectl context, docker network name and TSB cluster name)|
 |mp_cluster.region|string|the region to configure for the managementplane cluster|
-|mp_cluster.trust_domain|string|the trust domain to configure for the managementplane cluster|
 |mp_cluster.zone|string|the zone to configure for the managementplane cluster|
 |mp_cluster.vms|list||a list of VMs to spin-up in the same network as the managementplane cluster|
 |mp_cluster.vms.[].image|string|the base image to use as VM|
