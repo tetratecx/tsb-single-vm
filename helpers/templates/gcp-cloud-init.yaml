@@ -27,4 +27,5 @@ runcmd:
   - usermod -aG docker ubuntu
   - su ubuntu
   - cd /home/ubuntu
+  - git clone https://github.com/tetratecx/tsb-single-vm.git /home/ubuntu/tsb-single-vm
   - printf "\n# Added by cloud-init\ncd /home/ubuntu/tsb-single-vm\n" >> /home/ubuntu/.bashrc
