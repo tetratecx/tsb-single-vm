@@ -10,8 +10,8 @@
     "vm_zone": "europe-west1-b"
   },
   "multipass": {
-    "vm_cpus": 2,
-    "vm_disk": "20G",
+    "vm_cpus": 4,
+    "vm_disk": "25G",
     "vm_mem": "24G",
     "vm_name": "tsb-single-vm"
   },

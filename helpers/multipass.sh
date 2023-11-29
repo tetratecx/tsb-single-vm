@@ -6,8 +6,8 @@ HELPERS_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")") ;
 # shellcheck source=/dev/null
 source "${HELPERS_DIR}/print.sh" ;
 
-DEFAULT_VM_CPU="2" ;
-DEFAULT_VM_DISK="20G" ;
+DEFAULT_VM_CPU="4" ;
+DEFAULT_VM_DISK="25G" ;
 DEFAULT_VM_MEM="16G" ;
 DEFAULT_VM_NAME="tsb-single-vm" ;
 DEFAULT_VM_OS="22.04" ;
