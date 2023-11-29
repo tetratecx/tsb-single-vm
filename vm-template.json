@@ -12,7 +12,7 @@
   "multipass": {
     "vm_cpus": 2,
     "vm_disk": "20G",
-    "vm_mem": "12G",
+    "vm_mem": "24G",
     "vm_name": "tsb-single-vm"
   },
   "vm_target_type": "multipass"
