@@ -9,7 +9,9 @@ source "${HELPERS_DIR}/print.sh" ;
 DEFAULT_PROJECT_BILLING_ACCOUNT="0183E5-447B34-776DEB" ;
 DEFAULT_PROJECT_DESCRIPTION="TSB in a Box" ;
 DEFAULT_PROJECT_ID="tsb-in-a-box" ;
+DEFAULT_PROJECT_LABELS="tetrate_lifespan=always,tetrate_owner=everyone,tetrate_purpose=tsb-in-a-box,tetrate_team=tetrate" ;
 DEFAULT_VM_DISK="50GB" ;
+DEFAULT_VM_LABELS="tetrate_lifespan=oneoff,tetrate_purpose=demo,tetrate_team=tetrate" ;
 DEFAULT_VM_MACHINE_TYPE="n2-standard-8" ;
 DEFAULT_VM_NAME="tsb-single-vm" ;
 DEFAULT_VM_ZONE="europe-west1-b" ;
@@ -154,6 +156,7 @@ function start_gcp_vm() {
   local project_id; project_id=$(echo "${json_config}" | jq -r ".project_id // \"${DEFAULT_PROJECT_ID}\"") ;
   local project_labels; project_labels=$(echo "${json_config}" | jq -r ".project_labels // \"${DEFAULT_PROJECT_LABELS}\"") ;
   local vm_disk; vm_disk=$(echo "${json_config}" | jq -r ".vm_disk // \"${DEFAULT_VM_DISK}\"") ;
+  local vm_labels; vm_labels=$(echo "${json_config}" | jq -r ".vm_labels // \"${DEFAULT_VM_LABELS}\"") ;
   local vm_machine_type; vm_machine_type=$(echo "${json_config}" | jq -r ".vm_machine_type // \"${DEFAULT_VM_MACHINE_TYPE}\"") ;
   local vm_name; vm_name=$(echo "${json_config}" | jq -r ".vm_name // \"${DEFAULT_VM_NAME}\"") ;
   local vm_zone; vm_zone=$(echo "${json_config}" | jq -r ".vm_zone // \"${DEFAULT_VM_ZONE}\"") ;
@@ -170,6 +173,7 @@ function start_gcp_vm() {
       --boot-disk-type="${DEFAULT_BOOT_DISK_TYPE}" \
       --image-family="${DEFAULT_IMAGE_FAMILTY}" \
       --image-project="${DEFAULT_IMAGE_PROJECT}" \
+      --labels="${vm_labels}" \
       --machine-type="${vm_machine_type}" \
       --metadata="user-data=$(<"${HELPERS_DIR}/templates/gcp-cloud-init.yaml")" \
       --network="default" \
