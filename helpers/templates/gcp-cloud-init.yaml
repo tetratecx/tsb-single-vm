@@ -23,6 +23,7 @@ write_files:
     append: true
 
 runcmd:
+  - sysctl --system
   - usermod -aG docker ubuntu
   - su ubuntu
   - cd /home/ubuntu
