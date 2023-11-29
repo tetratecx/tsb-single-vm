@@ -1,4 +1,4 @@
-# Tetrate Service Bridge on Local Kubernetes (K3s/Kind/Minikube) within a Single VM
+# Tetrate Service Bridge on Kubernetes (K3s/Kind/Minikube) within a Single Ubuntu VM
 
 ## Introduction
 
@@ -15,6 +15,8 @@ The environment is based on locally hosted kubernetes clusters, with docker as t
  - [kind](https://kind.sigs.k8s.io/docs/user/quick-start)
  - [minikube](https://minikube.sigs.k8s.io/docs/start) using the [docker driver](https://minikube.sigs.k8s.io/docs/drivers/docker)
 
+Both `tctl` and `helm` based installation methods are suppported. Helper scripts to bootstrap a local `multipass` or cloud based `gcp` Ubuntu VM are available.
+
 The repo provides support to spin up any arbitrary number of local kubernetes clusters and VM's. VM's are implemented as docker containers with systemd support, so that VM onboarding with our onboarding agent and JWK based attestation can be demo'ed. TSB is automatically installed on those local kubernetes clusters, as per declarative configuration (more on that later).
 
 To reduce traffic from cloudsmith, a local docker repository is implemented, which decreases traffic costs and speeds up TSB deployments.
@@ -26,6 +28,26 @@ In terms of memory constraints of the VM:
  - a 64GB Ubuntu machine can support up to 5 TSB clusters to showcase a transit-zone scenario.
  - it takes around 15 minutes to spin those 5 TSB clusters up completely from scratch (infra / tsb config / application deployment).
  - spinning down is just a destroy/stopping of the VM or a `make clean`, which takes 30 seconds.
+
+## Preparation
+
+In order to use this repo, you will need to have an Ubuntu based VM. You can chose to spin up one yourself, locally or in the cloud of your preference; or you you use the helper script [vm.sh](./vm.sh) to spin up a VM locally (using `multipass`) or on GCP (using `gcloud`). Example `vm-template-<gcp|mulitpass>-Xg.json` files are available for your reference.
+
+```console
+./vm.sh vm.json --help
+Usage: ./vm.sh <vm-config.json> [options]
+Commands:
+  --start     Start an Ubuntu VM.
+  --stop      Stop the Ubuntu VM.
+  --delete    Delete the Ubuntu VM.
+  --recreate  Recreate (delete & start) the Ubuntu VM.
+  --shell     Spawn a shell into the Ubuntu VM.
+  --help      Display this help message.
+```
+
+Once the VM has started, ssh into it and start the rest of the configuration and installation process. 
+
+In order to share your environment with someone else, one only needs to share the vm.json file (or the corresponding `gcloud compute ssh` command). The defaults provided are leveraging a shared GCP project that is accessible by anyone within Tetrate, but feel free to use another one.
 
 ## Configuration
 
@@ -272,15 +294,12 @@ fs.inotify.max_user_instances = 512
 
 A non-exhaustive list of to be implemented items include:
  - add topology/scenario documentation and screenshots
- - none-demo TSB MP installation (ldap and oidc)
  - rpm based vm onboarding support
- - add support for helm/tf/pulumi to do the initial TSB mp/cp installation (currently `tctl` only)
-    - in a scenario you are already free to use whatever you want
  - tsb training labs (https://github.com/tetrateio/tsb-labs) as a set of scenarios on a dedicated training topology
  - porting eshop-demo repo (https://github.com/tetrateio/eshop-demo/tree/main/docs) to here as well
  - more scenarios with real applications
- - add TF and/or cloudshell (glcoud/aws-cli/az-cli) to quickly bootstrap a fully prepped and ready VM on AWS/GCP/Azure
- - add support for local MacOS (intel and arm chipset)
+ - add `vm.sh` support for aws and azure
+ - add support for local MacOS (intel and arm chipset): WIP (obs-tester!)
  - integrations, integrations, integrations:
     - gitops: fluxcd and argocd
     - cicd: jenkins
