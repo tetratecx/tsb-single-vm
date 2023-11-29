@@ -36,7 +36,7 @@ function check_prereq() {
   done
 
   # check if the expected versions are installed
-  extracted_tctl_version=$(timeout 1s tctl version --local-only | grep -oP 'TCTL version: v\K[0-9]+\.[0-9]+\.[0-9]+') ;
+  extracted_tctl_version=$(timeout 1s tctl version --local-only | grep -oP 'TCTL version: v\K\S+') ;
   if [[ "${extracted_tctl_version}" != "${tsb_version}" ]]; then
     print_error "Wrong version '${extracted_tctl_version}' of tctl, please install version ${tsb_version} first" ;
   fi
