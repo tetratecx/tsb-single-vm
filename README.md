@@ -280,7 +280,7 @@ This section is a brief description of the repo structure itself. What folder an
 
 ### Known issues
 
-In case one of the clusters fails to bootstrap all pods correctly with the error "too many open files", modify the following settings (on Ubuntu) in the file `/etc/sysctl.conf` and add these lines:
+In case you have manually started your VM and one of the clusters fails to bootstrap all pods correctly with the error "too many open files", modify the following settings (on Ubuntu) in the file `/etc/sysctl.conf` and add these lines:
 
 ```
 fs.inotify.max_user_watches = 524288
@@ -289,6 +289,7 @@ fs.inotify.max_user_instances = 512
 
 > **Reference:**  https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files
 
+This issue is mitigated by the cloud-init scripts provided and used by the `vm.sh` script.
 
 ## TODOs
 
