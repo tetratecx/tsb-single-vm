@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-BASE_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
+BASE_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )" ;
 
 # shellcheck source=/dev/null
 source "${BASE_DIR}/env.sh" ;
 # shellcheck source=/dev/null
 source "${BASE_DIR}/helpers/print.sh" ;
 
-ACTION=${1}
+ACTION=${1} ;
 
 # This function provides help information for the script.
 #
@@ -60,7 +60,7 @@ function check_prereq() {
 # This function installs all prerequisites.
 #
 function install_prereq() {
-  local architecture; architecture=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/arm64\|aarch64/arm64/')
+  local architecture; architecture=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/arm64\|aarch64/arm64/') ;
   local istioctl_version; istioctl_version=$(get_tsb_istio_version) ;
   local k8s_version; k8s_version=$(get_mp_k8s_version) ;
   local tsb_version; tsb_version=$(get_tsb_version) ;
@@ -99,7 +99,7 @@ function install_prereq() {
   rm -f /tmp/kind ;
 
   print_info "Installing k3d" ;
-  local latest_k3d_release; latest_k3d_release=$(curl --silent https://api.github.com/repos/k3d-io/k3d/releases/latest | grep -i "tag_name" | awk -F '"' '{print $4}')
+  local latest_k3d_release; latest_k3d_release=$(curl --silent https://api.github.com/repos/k3d-io/k3d/releases/latest | grep -i "tag_name" | awk -F '"' '{print $4}') ;
   curl -Lo /tmp/k3d "https://github.com/k3d-io/k3d/releases/download/${latest_k3d_release}/k3d-linux-${architecture}" ;
   chmod +x /tmp/k3d ;
   sudo install /tmp/k3d /usr/local/bin/k3d ;
@@ -113,13 +113,13 @@ function install_prereq() {
   rm -f /tmp/istioctl* ;
 
   print_info "Installing tctl" ;
-  curl -Lo /tmp/tctl "https://binaries.dl.tetrate.io/public/raw/versions/linux-${architecture}-${tsb_version}/tctl"
+  curl -Lo /tmp/tctl "https://binaries.dl.tetrate.io/public/raw/versions/linux-${architecture}-${tsb_version}/tctl" ;
   chmod +x /tmp/tctl ;
   sudo install /tmp/tctl /usr/local/bin/tctl ;
   rm -f /tmp/tctl ;
 
   print_info "Installing helm" ;
-  local latest_helm_release; latest_helm_release=$(curl --silent https://api.github.com/repos/helm/helm/releases/latest | grep -i "tag_name" | awk -F '"' '{print $4}')
+  local latest_helm_release; latest_helm_release=$(curl --silent https://api.github.com/repos/helm/helm/releases/latest | grep -i "tag_name" | awk -F '"' '{print $4}') ;
   curl -Lo /tmp/helm.tar.gz "https://get.helm.sh/helm-${latest_helm_release}-linux-${architecture}.tar.gz" ;
   tar xvfz /tmp/helm.tar.gz -C /tmp ;
   chmod +x /tmp/linux-${architecture}/helm ;
@@ -127,26 +127,37 @@ function install_prereq() {
   rm -rf /tmp/linux-${architecture} ;
 
   print_info "Installing argocd" ;
-  curl -Lo /tmp/argocd  https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-${architecture}
+  curl -Lo /tmp/argocd "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-${architecture}" ;
   chmod +x /tmp/argocd ;
   sudo install /tmp/argocd /usr/local/bin/argocd ;
   rm -f /tmp/argocd ;
 
-  # shellcheck disable=SC2002
-  if ! cat ~/.bashrc | grep "# Autocompletion for tsb-demo-minikube" &>/dev/null ; then
-    print_info "Enabling bash completion and add some alias" ;
-    tee -a  ~/.bashrc << END
+  print_info "Configuring command completion for all CLIs" ;
+  sudo bash -c "argocd completion bash > /etc/bash_completion.d/argocd" ;
+  sudo bash -c "helm completion bash > /etc/bash_completion.d/helm" ;
+  sudo bash -c "istioctl completion bash > /etc/bash_completion.d/istioctl" ;
+  sudo bash -c "k3d completion bash > /etc/bash_completion.d/k3d" ;
+  sudo bash -c "k9s completion bash > /etc/bash_completion.d/k9s" ;
+  sudo bash -c "kind completion bash > /etc/bash_completion.d/kind" ;
+  sudo bash -c "kubectl completion bash > /etc/bash_completion.d/kubectl" ;
+  sudo bash -c "minikube completion bash > /etc/bash_completion.d/minikube" ;
+  sudo bash -c "tctl completion bash > /etc/bash_completion.d/tctl" ;
 
-# Autocompletion for tsb-demo-minikube
-source <(kubectl completion bash)
-source <(istioctl completion bash)
-source <(minikube completion bash)
-source <(kind completion bash)
-source <(k3d completion bash)
-complete -F __start_kubectl k
+  # shellcheck disable=SC2002
+  if ! cat "${HOME}/.bashrc" | grep "# Added by prereq.sh" &>/dev/null ; then
+    print_info "Enabling bash completion and add some alias" ;
+    tee -a  "${HOME}/.bashrc" << END
+
+# Added by prereq.sh
+source /etc/bash_completion
+export EDITOR=vim
 alias k=kubectl
+complete -F __start_kubectl k
 END
   fi
+
+  # shellcheck source=/dev/null
+  source "${HOME}/.bashrc" ;
 
   print_info "All prerequisites have been installed" ;
 }

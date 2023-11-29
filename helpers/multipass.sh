@@ -14,23 +14,20 @@ DEFAULT_VM_OS="22.04" ;
 
 # This function starts a multipass Ubuntu VM
 #   args:
-#     (1) vm cpu (default: 2)
-#     (2) vm disk (default: 20G)
-#     (3) vm memory (default: 16G)
-#     (4) vm name (default: tsb-single-vm)
-#     (5) vm ubuntu os version (default: 22.04)
+#     (1) multipass json config
 function start_multipass_vm() {
-  [[ -z "${1}" ]] && local vm_cpu="${DEFAULT_VM_CPU}" || local vm_cpu="${1}" ;
-  [[ -z "${2}" ]] && local vm_disk="${DEFAULT_VM_DISK}" || local vm_disk="${2}" ;
-  [[ -z "${3}" ]] && local vm_mem="${DEFAULT_VM_MEM}" || local vm_mem="${3}" ;
-  [[ -z "${4}" ]] && local vm_name="${DEFAULT_VM_NAME}" || local vm_name="${4}" ;
-  [[ -z "${5}" ]] && local vm_os_version="${DEFAULT_VM_OS}" || local vm_os_version="${5}" ;
+  [[ -z "${1}" ]] && print_error "Please provide gcp config json as 1st argument" && return 2 || local json_config="${1}" ;
+  local vm_cpu; vm_cpu=$(echo "${json_config}" | jq -r ".vm_cpu // \"${DEFAULT_VM_CPU}\"") ;
+  local vm_disk; vm_disk=$(echo "${json_config}" | jq -r ".vm_disk // \"${DEFAULT_VM_DISK}\"") ;
+  local vm_mem; vm_mem=$(echo "${json_config}" | jq -r ".vm_mem // \"${DEFAULT_VM_MEM}\"") ;
+  local vm_name; vm_name=$(echo "${json_config}" | jq -r ".vm_name // \"${DEFAULT_VM_NAME}\"") ;
+  local vm_os_version; vm_os_version=$(echo "${json_config}" | jq -r ".vm_os_version // \"${DEFAULT_VM_OS}\"") ;
 
   if multipass list --format json | jq -r --arg vm_name "${vm_name}" '.list[] | select(.name == $vm_name) | .name' 2>/dev/null | grep -q "${vm_name}" ; then
     echo "VM '${vm_name}' already exists" ;
     vm_state=$(multipass list --format json | jq -r --arg vm_name "${vm_name}" '.list[] | select(.name == $vm_name) | .state')
     if [ "$vm_state" = "Running" ]; then
-      echo "VM' ${vm_name}' is already running" ;
+      echo "VM '${vm_name}' is already running" ;
     elif [ "$vm_state" = "Stopped" ]; then
       echo "Restart multipass VM '${vm_name}'" ;
       multipass start "${vm_name}" ;
@@ -54,24 +51,23 @@ function start_multipass_vm() {
     fi
   else
     echo "Create multipass VM '${vm_name}'" ;
-    multipass launch --cpus "${vm_cpu}" \
-                    --disk "${vm_disk}" \
-                    --memory "${vm_mem}" \
-                    --mount "${PWD}:/home/ubuntu/tsb-single-vm" \
-                    --name "${vm_name}" \
-                    "${vm_os_version}" ;
-
-    echo "Install packages in multipass VM '${vm_name}'" ;
-    multipass exec "${vm_name}" -- bash -c "sudo NEEDRESTART_MODE=a apt-get -y update && sudo NEEDRESTART_MODE=a apt-get -y upgrade && sudo NEEDRESTART_MODE=a apt-get install -y curl docker.io expect httpie jq net-tools make  nmap traceroute tree" ;
-    multipass exec "${vm_name}" -- bash -c "sudo usermod -aG docker ubuntu" ;
+    multipass launch --cloud-init "${HELPERS_DIR}/templates/multipass-cloud-init.yaml" \
+                     --cpus "${vm_cpu}" \
+                     --disk "${vm_disk}" \
+                     --memory "${vm_mem}" \
+                     --mount "${PWD}:/home/ubuntu/tsb-single-vm" \
+                     --name "${vm_name}" \
+                     "${vm_os_version}" ;
+    echo "Multipass VM '${vm_name}' created" ;                 
   fi
 }
 
 # This function stops the multipass Ubuntu VM
 #   args:
-#     (1) vm name (default: tsb-single-vm)
+#     (1) multipass json config
 function stop_multipass_vm() {
-  [[ -z "${1}" ]] && local vm_name="${DEFAULT_VM_NAME}" || local vm_name="${1}" ;
+  [[ -z "${1}" ]] && print_error "Please provide gcp config json as 1st argument" && return 2 || local json_config="${1}" ;
+  local vm_name; vm_name=$(echo "${json_config}" | jq -r ".vm_name // \"${DEFAULT_VM_NAME}\"") ;  
 
   echo "Stop multipass VM '${vm_name}'" ;
   if multipass list --format json | jq -r --arg vm_name "$vm_name" '.list[] | select(.name == $vm_name) | .name' 2>/dev/null | grep -q "${vm_name}" ; then
@@ -83,9 +79,10 @@ function stop_multipass_vm() {
 
 # This function deletes the multipass Ubuntu VM
 #   args:
-#     (1) vm name (default: tsb-single-vm)
+#     (1) multipass json config
 function delete_multipass_vm() {
-  [[ -z "${1}" ]] && local vm_name="${DEFAULT_VM_NAME}" || local vm_name="${1}" ;
+  [[ -z "${1}" ]] && print_error "Please provide gcp config json as 1st argument" && return 2 || local json_config="${1}" ;
+  local vm_name; vm_name=$(echo "${json_config}" | jq -r ".vm_name // \"${DEFAULT_VM_NAME}\"") ;  
 
   echo "Delete multipass VM '${vm_name}'" ;
   if multipass list --format json | jq -r --arg vm_name "$vm_name" '.list[] | select(.name == $vm_name) | .name' 2>/dev/null | grep -q "${vm_name}" ; then
@@ -98,9 +95,10 @@ function delete_multipass_vm() {
 
 # This function launches a shell in the multipass Ubuntu VM
 #   args:
-#     (1) vm name (default: tsb-single-vm)
+#     (1) multipass json config
 function shell_multipass_vm() {
-  [[ -z "${1}" ]] && local vm_name="${DEFAULT_VM_NAME}" || local vm_name="${1}" ;
+  [[ -z "${1}" ]] && print_error "Please provide gcp config json as 1st argument" && return 2 || local json_config="${1}" ;
+  local vm_name; vm_name=$(echo "${json_config}" | jq -r ".vm_name // \"${DEFAULT_VM_NAME}\"") ;  
 
   echo "Spawn a shell in multipass VM '${vm_name}'" ;
   if multipass list --format json | jq -r --arg vm_name "$vm_name" '.list[] | select(.name == $vm_name) | .state' 2>/dev/null | grep -q "Running" ; then
