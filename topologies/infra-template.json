@@ -11,11 +11,11 @@
       },
       "vms": [
         {
-          "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+          "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
           "name": "active-vm1"
         },
         {
-          "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+          "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
           "name": "active-vm2"
         }
       ],
@@ -32,11 +32,11 @@
       },
       "vms": [
         {
-          "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+          "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
           "name": "standby-vm1"
         },
         {
-          "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+          "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
           "name": "standby-vm2"
         }
       ],
@@ -56,11 +56,11 @@
     },
     "vms": [
       {
-        "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+        "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
         "name": "mgmt-vm1"
       },
       {
-        "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+        "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
         "name": "mgmt-vm2"
       }
     ],

@@ -11,7 +11,7 @@
       },
       "vms": [
         {
-          "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+          "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
           "name": "ratings-vm"
         }
       ],

@@ -13,19 +13,19 @@
     },
     "vms": [
       {
-        "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+        "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
         "name": "vm1"
       },
       {
-        "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+        "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
         "name": "vm2"
       },
       {
-        "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+        "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
         "name": "vm3"
       },
       {
-        "image": "boeboe/tsb-ubuntu-vm:1.0.0",
+        "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
         "name": "vm4"
       }
     ],
