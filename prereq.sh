@@ -122,9 +122,9 @@ function install_prereq() {
   local latest_helm_release; latest_helm_release=$(curl --silent https://api.github.com/repos/helm/helm/releases/latest | grep -i "tag_name" | awk -F '"' '{print $4}') ;
   curl -Lo /tmp/helm.tar.gz "https://get.helm.sh/helm-${latest_helm_release}-linux-${architecture}.tar.gz" ;
   tar xvfz /tmp/helm.tar.gz -C /tmp ;
-  chmod +x /tmp/linux-${architecture}/helm ;
-  sudo install /tmp/linux-${architecture}/helm /usr/local/bin/helm ;
-  rm -rf /tmp/linux-${architecture} ;
+  chmod +x "/tmp/linux-${architecture}/helm" ;
+  sudo install "/tmp/linux-${architecture}/helm" /usr/local/bin/helm ;
+  rm -rf "/tmp/linux-${architecture}" ;
 
   print_info "Installing argocd" ;
   curl -Lo /tmp/argocd "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-${architecture}" ;
