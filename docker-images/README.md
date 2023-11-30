@@ -27,7 +27,7 @@ docker buildx build --builder tetrate-builder --push \
 --build-arg "TAG=1.0" \
 --build-arg "PACKAGE_VENDOR=Tetrate.io Inc" \
 -t ghcr.io/tetratecx/tsb-single-vm/obs-tester-server:1.0 \
--t ghcr.io/tetratecx/tsb-single-vm/obs-tester-server:latest .
+-t ghcr.io/tetratecx/tsb-single-vm/obs-tester-server:latest . ;
 ```
 
 
@@ -36,13 +36,13 @@ docker buildx build --builder tetrate-builder --push \
 Docker pull, tag and publish the latest netshoot container.
 
 ```bash
-docker pull nicolaka/netshoot:v0.11
-docker tag nicolaka/netshoot:v0.11 ghcr.io/tetratecx/tsb-single-vm/netshoot:v0.11
-docker push ghcr.io/tetratecx/tsb-single-vm/netshoot:v0.11
+docker pull nicolaka/netshoot:v0.11 ;
+docker tag nicolaka/netshoot:v0.11 ghcr.io/tetratecx/tsb-single-vm/netshoot:v0.11 ;
+docker push ghcr.io/tetratecx/tsb-single-vm/netshoot:v0.11 ;
 
-docker pull nicolaka/netshoot:latest
-docker tag nicolaka/netshoot:latest ghcr.io/tetratecx/tsb-single-vm/netshoot:latest
-docker push ghcr.io/tetratecx/tsb-single-vm/netshoot:latest
+docker pull nicolaka/netshoot:latest ;
+docker tag nicolaka/netshoot:latest ghcr.io/tetratecx/tsb-single-vm/netshoot:latest ;
+docker push ghcr.io/tetratecx/tsb-single-vm/netshoot:latest ;
 ```
 
 ## Build and publish obs-tester-java image
@@ -58,7 +58,7 @@ docker buildx build --builder tetrate-builder --push \
 --build-arg "TAG=1.0" \
 --build-arg "PACKAGE_VENDOR=Tetrate.io Inc" \
 -t ghcr.io/tetratecx/tsb-single-vm/obs-tester-java:1.0 \
--t ghcr.io/tetratecx/tsb-single-vm/obs-tester-java:latest .
+-t ghcr.io/tetratecx/tsb-single-vm/obs-tester-java:latest . ;
 ```
 
 ## Build and publish obs-tester-server-ubuntu-vm image
@@ -73,6 +73,7 @@ This containers provides the tools that would be available on a VM as well.
 Go to tetrateio's monorepo (`test/services/obs-tester`) and build/push the container using the following [Dockerfile.obs-tester-server.ubuntu-vm](Dockerfile.obs-tester-server.ubuntu-vm) dockerfile.
 
 ```bash
+export PLATFORMS=linux/amd64,linux/arm64 make release ;
 docker buildx build --builder tetrate-builder --push \
 --platform linux/amd64,linux/arm64 \
 --build-arg OCI_SOURCE=tetrateio/tetrate \
@@ -81,11 +82,11 @@ docker buildx build --builder tetrate-builder --push \
 --build-arg "TAG=1.0" \
 --build-arg "PACKAGE_VENDOR=Tetrate.io Inc" \
 -t ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:1.0 \
--t ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest .
+-t ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest . ;
 ```
 
 To run this vm simulating docker container.
 
 ```bash
-docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -it --name=obs-tester-server-ubuntu-vm ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest
+docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -it --name=obs-tester-server-ubuntu-vm ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest ;
 ```
