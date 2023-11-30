@@ -1,7 +1,7 @@
 # Docker images used by the repo
 
 Next to the official TSB container images, we also use a bunch of images for demo purposes.
-This readme file explains hwo to build them and push them to the docker registry included in
+This readme file explains how to build and push them to the docker registry included in
 this github project.
 
 ## Prerequisites
