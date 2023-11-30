@@ -2,7 +2,7 @@
 
 Next to the official TSB container images, we also use a bunch of images for demo purposes.
 This readme file explains how to build and push them to the docker registry included in
-this github project.
+this github project (ghcr.io/tetratecx/tsb-single-vm).
 
 ## Prerequisites
 
