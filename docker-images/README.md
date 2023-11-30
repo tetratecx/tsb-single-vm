@@ -89,4 +89,5 @@ To run this vm simulating docker container.
 
 ```bash
 docker run --privileged --tmpfs /tmp --tmpfs /run -v /sys/fs/cgroup:/sys/fs/cgroup --cgroupns=host -it --name=obs-tester-server-ubuntu-vm ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest ;
+docker exec -it obs-tester-server-ubuntu-vm bash ;
 ```
