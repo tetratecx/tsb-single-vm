@@ -172,8 +172,8 @@ function sync_tsb_images {
   done
 
   # Sync images for application deployment and debugging to local repo
-  sync_single_image "${local_registry}" "containers.dl.tetrate.io/obs-tester-server:1.0" ;
-  sync_single_image "${local_registry}" "containers.dl.tetrate.io/netshoot:latest" ;
+  sync_single_image "${local_registry}" "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server:latest" ;
+  sync_single_image "${local_registry}" "ghcr.io/tetratecx/tsb-single-vm/netshoot:latest" ;
 
   print_info "All tsb images synced and available in the local registry '${local_registry}'" ;
 }

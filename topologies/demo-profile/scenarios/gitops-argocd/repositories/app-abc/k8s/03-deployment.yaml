@@ -22,7 +22,7 @@ spec:
       serviceAccountName: sa-app-a
       containers:
         - name: obs-tester
-          image: 192.168.48.2:5000/obs-tester-server:1.0
+          image: 192.168.48.2:5000/obs-tester-server:latest
           imagePullPolicy: IfNotPresent
           args:
             - '--log-output-level=all:debug'
@@ -70,7 +70,7 @@ spec:
       serviceAccountName: sa-app-b
       containers:
         - name: obs-tester
-          image: 192.168.48.2:5000/obs-tester-server:1.0
+          image: 192.168.48.2:5000/obs-tester-server:latest
           imagePullPolicy: IfNotPresent
           args:
             - '--log-output-level=all:debug'
@@ -118,7 +118,7 @@ spec:
       serviceAccountName: sa-app-c
       containers:
         - name: obs-tester
-          image: 192.168.48.2:5000/obs-tester-server:1.0
+          image: 192.168.48.2:5000/obs-tester-server:latest
           imagePullPolicy: IfNotPresent
           args:
             - '--log-output-level=all:debug'
