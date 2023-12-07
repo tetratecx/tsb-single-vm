@@ -2,7 +2,7 @@
 #
 # Helper script for vm onboarding and application bootstrapping
 #
-trap "" INT QUIT TSTP EXIT SIGHUP SIGKILL SIGTERM SIGINT
+trap "" INT QUIT TSTP EXIT SIGHUP SIGTERM SIGINT
 
 # Stop and remove systemd services
 sudo systemctl stop onboarding-agent
@@ -16,7 +16,7 @@ sudo systemctl reset-failed
 
 # Remove hosts file entries for istio enabled services
 sudo tee /etc/hosts > /dev/null << EOF
-$(cat /etc/hosts | grep -v '# The following lines are insterted for istio\|127.0.0.2\|^$')
+$(grep -v '# The following lines are insterted for istio\|127.0.0.2\|^$' /etc/hosts)
 EOF
 
 # Remove onboarding agent, istio sidecar and sample jwt credentials plugin

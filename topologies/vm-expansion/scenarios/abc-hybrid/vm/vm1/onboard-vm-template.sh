@@ -2,7 +2,7 @@
 #
 # Helper script for vm onboarding and application bootstrapping
 #
-trap "" INT QUIT TSTP EXIT SIGHUP SIGKILL SIGTERM SIGINT
+trap "" INT QUIT TSTP EXIT SIGHUP SIGTERM SIGINT
 
 # Configure application
 sudo tee /usr/lib/systemd/system/obstester.service <<EOF
@@ -30,7 +30,7 @@ EOF
 sudo chmod 664 /usr/lib/systemd/system/obstester.service ;
 
 # Update hosts file for dns resolving of istio enabled services
-if ! cat /etc/hosts | grep "The following lines are insterted for istio" &>/dev/null ; then
+if ! grep "The following lines are insterted for istio" /etc/hosts &>/dev/null; then
 sudo tee -a /etc/hosts << EOF
 
 # The following lines are insterted for istio
