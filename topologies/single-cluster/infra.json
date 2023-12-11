@@ -1,0 +1,17 @@
+{
+  "cp_clusters": [],
+  "mp_cluster": {
+    "k8s_provider": "k3s",
+    "k8s_version": "1.27.7",
+    "name": "main",
+    "region": "region1",
+    "templates": {
+      "cp_helm": "templates/main/controlplane-helm-values.yaml",
+      "cp_tctl": "templates/main/controlplane.yaml",
+      "mp_helm": "templates/main/managementplane-helm-values.yaml",
+      "mp_tctl": "templates/main/managementplane.yaml"
+    },
+    "vms": [],
+    "zone": "zone1a"
+  }
+}
