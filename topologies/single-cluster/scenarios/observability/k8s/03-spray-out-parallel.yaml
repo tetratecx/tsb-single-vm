@@ -1,0 +1,349 @@
+---
+apiVersion: v1
+data:
+  service-graph: |
+    services:
+    - isEntrypoint: true
+      name: svc-a
+      namespace: ns-a
+      numReplicas: 1
+      responseSize: 1KiB
+      script:
+      - - call:
+            extra-header: null
+            hostname: svc-a1:8080
+            service: svc-a1
+            size: 1KiB
+        - call:
+            extra-header: null
+            hostname: svc-a2:8080
+            service: svc-a2
+            size: 1KiB
+        - call:
+            extra-header: null
+            hostname: svc-a3:8080
+            service: svc-a3
+            size: 1KiB
+      type: http
+    - name: svc-a1
+      namespace: ns-a
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+    - name: svc-a2
+      namespace: ns-a
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+    - name: svc-a3
+      namespace: ns-a
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+kind: ConfigMap
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    isotope: service-graph
+  name: service-graph-config
+  namespace: ns-a
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: svc-a
+  name: svc-a
+  namespace: ns-a
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: svc-a
+    role: service
+  name: svc-a
+  namespace: ns-a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: svc-a
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+      creationTimestamp: '2023-12-11T14:07:30Z'
+      labels:
+        name: svc-a
+        role: service
+    spec:
+      containers:
+        - args:
+            - '--max-idle-connections-per-host=0'
+          env:
+            - name: SERVICE_NAME
+              value: svc-a
+          image: ghcr.io/tetratecx/tsb-single-vm/graph-server:latest
+          name: mock-service
+          ports:
+            - containerPort: 8080
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/config
+              name: config-volume
+      serviceAccountName: svc-a
+      volumes:
+        - configMap:
+            items:
+              - key: service-graph
+                path: service-graph.yaml
+            name: service-graph-config
+          name: config-volume
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: svc-a
+    role: service
+  name: svc-a
+  namespace: ns-a
+spec:
+  ports:
+    - name: http-web
+      port: 8080
+      targetPort: 0
+  selector:
+    name: svc-a
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: svc-a1
+  name: svc-a1
+  namespace: ns-a
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: svc-a1
+    role: service
+  name: svc-a1
+  namespace: ns-a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: svc-a1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+      creationTimestamp: '2023-12-11T14:07:30Z'
+      labels:
+        name: svc-a1
+        role: service
+    spec:
+      containers:
+        - args:
+            - '--max-idle-connections-per-host=0'
+          env:
+            - name: SERVICE_NAME
+              value: svc-a1
+          image: ghcr.io/tetratecx/tsb-single-vm/graph-server:latest
+          name: mock-service
+          ports:
+            - containerPort: 8080
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/config
+              name: config-volume
+      serviceAccountName: svc-a1
+      volumes:
+        - configMap:
+            items:
+              - key: service-graph
+                path: service-graph.yaml
+            name: service-graph-config
+          name: config-volume
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: svc-a1
+    role: service
+  name: svc-a1
+  namespace: ns-a
+spec:
+  ports:
+    - name: http-web
+      port: 8080
+      targetPort: 0
+  selector:
+    name: svc-a1
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: svc-a2
+  name: svc-a2
+  namespace: ns-a
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: svc-a2
+    role: service
+  name: svc-a2
+  namespace: ns-a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: svc-a2
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+      creationTimestamp: '2023-12-11T14:07:30Z'
+      labels:
+        name: svc-a2
+        role: service
+    spec:
+      containers:
+        - args:
+            - '--max-idle-connections-per-host=0'
+          env:
+            - name: SERVICE_NAME
+              value: svc-a2
+          image: ghcr.io/tetratecx/tsb-single-vm/graph-server:latest
+          name: mock-service
+          ports:
+            - containerPort: 8080
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/config
+              name: config-volume
+      serviceAccountName: svc-a2
+      volumes:
+        - configMap:
+            items:
+              - key: service-graph
+                path: service-graph.yaml
+            name: service-graph-config
+          name: config-volume
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: svc-a2
+    role: service
+  name: svc-a2
+  namespace: ns-a
+spec:
+  ports:
+    - name: http-web
+      port: 8080
+      targetPort: 0
+  selector:
+    name: svc-a2
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: svc-a3
+  name: svc-a3
+  namespace: ns-a
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: svc-a3
+    role: service
+  name: svc-a3
+  namespace: ns-a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: svc-a3
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+      creationTimestamp: '2023-12-11T14:07:30Z'
+      labels:
+        name: svc-a3
+        role: service
+    spec:
+      containers:
+        - args:
+            - '--max-idle-connections-per-host=0'
+          env:
+            - name: SERVICE_NAME
+              value: svc-a3
+          image: ghcr.io/tetratecx/tsb-single-vm/graph-server:latest
+          name: mock-service
+          ports:
+            - containerPort: 8080
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/config
+              name: config-volume
+      serviceAccountName: svc-a3
+      volumes:
+        - configMap:
+            items:
+              - key: service-graph
+                path: service-graph.yaml
+            name: service-graph-config
+          name: config-volume
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: svc-a3
+    role: service
+  name: svc-a3
+  namespace: ns-a
+spec:
+  ports:
+    - name: http-web
+      port: 8080
+      targetPort: 0
+  selector:
+    name: svc-a3
+status:
+  loadBalancer: {}

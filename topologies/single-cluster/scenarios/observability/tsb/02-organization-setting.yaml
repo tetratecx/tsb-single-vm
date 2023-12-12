@@ -1,0 +1,15 @@
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: OrganizationSetting
+metadata:
+  name: tetrate-settings
+  organization: tetrate
+spec:
+  defaultSecuritySetting:
+    authenticationSettings:
+      trafficMode: REQUIRED
+    authorization:
+      mode: NAMESPACE
+  defaultTrafficSetting:
+    reachability:
+      mode: NAMESPACE

@@ -1,0 +1,112 @@
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-a-ws
+  name: app-a-traffic-group
+spec:
+  displayName: AppA_TrafficGroup
+  namespaceSelector:
+    names:
+      - "*/ns-a"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-a-ws
+  name: app-a-security-group
+spec:
+  displayName: AppA_SecurityGroup
+  namespaceSelector:
+    names:
+      - "*/ns-a"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-b-ws
+  name: app-b-traffic-group
+spec:
+  displayName: AppB_TrafficGroup
+  namespaceSelector:
+    names:
+      - "*/ns-b"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-b-ws
+  name: app-b-security-group
+spec:
+  displayName: AppB_SecurityGroup
+  namespaceSelector:
+    names:
+      - "*/ns-b"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-c-ws
+  name: app-c-traffic-group
+spec:
+  displayName: AppC_TrafficGroup
+  namespaceSelector:
+    names:
+      - "*/ns-c"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-c-ws
+  name: app-c-security-group
+spec:
+  displayName: AppC_SecurityGroup
+  namespaceSelector:
+    names:
+      - "*/ns-c"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-d-ws
+  name: app-d-traffic-group
+spec:
+  displayName: AppD_TrafficGroup
+  namespaceSelector:
+    names:
+      - "*/ns-d"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: app-d-ws
+  name: app-d-security-group
+spec:
+  displayName: AppD_SecurityGroup
+  namespaceSelector:
+    names:
+      - "*/ns-d"
+  configMode: BRIDGED

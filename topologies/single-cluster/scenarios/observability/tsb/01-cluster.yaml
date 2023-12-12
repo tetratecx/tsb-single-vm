@@ -1,0 +1,11 @@
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: Cluster
+metadata:
+  organization: tetrate
+  name: main
+spec:
+  locality:
+    region: region1
+  tokenTtl: 31536000s
+  network: main
