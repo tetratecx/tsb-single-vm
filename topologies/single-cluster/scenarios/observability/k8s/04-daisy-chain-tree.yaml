@@ -1,0 +1,606 @@
+---
+apiVersion: v1
+data:
+  service-graph: |
+    services:
+    - isEntrypoint: true
+      name: svc-d
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      script:
+      - - call:
+            extra-header: null
+            hostname: svc-d1:8080
+            service: svc-d1
+            size: 1KiB
+        - call:
+            extra-header: null
+            hostname: svc-d2:8080
+            service: svc-d2
+            size: 1KiB
+      type: http
+    - name: svc-d1
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      script:
+      - - call:
+            extra-header: null
+            hostname: svc-d11:8080
+            service: svc-d11
+            size: 1KiB
+        - call:
+            extra-header: null
+            hostname: svc-d12:8080
+            service: svc-d12
+            size: 1KiB
+      type: http
+    - name: svc-d2
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      script:
+      - - call:
+            extra-header: null
+            hostname: svc-d21:8080
+            service: svc-d21
+            size: 1KiB
+        - call:
+            extra-header: null
+            hostname: svc-d22:8080
+            service: svc-d22
+            size: 1KiB
+      type: http
+    - name: svc-d11
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+    - name: svc-d12
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+    - name: svc-d21
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+    - name: svc-d22
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    isotope: service-graph
+  name: service-graph-config
+  namespace: ns-d
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: svc-d
+  namespace: ns-d
+  labels:
+    app: svc-d
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d
+    role: service
+  name: svc-d
+  namespace: ns-d
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: svc-d
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+      creationTimestamp: "2023-12-11T14:07:30Z"
+      labels:
+        name: svc-d
+        role: service
+    spec:
+      serviceAccountName: svc-d
+      containers:
+      - args:
+        - --max-idle-connections-per-host=0
+        env:
+        - name: SERVICE_NAME
+          value: svc-d
+        image: ghcr.io/tetratecx/tsb-single-vm/graph-server:latest
+        name: mock-service
+        ports:
+        - containerPort: 8080
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/config
+          name: config-volume
+      volumes:
+      - configMap:
+          items:
+          - key: service-graph
+            path: service-graph.yaml
+          name: service-graph-config
+        name: config-volume
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d
+    role: service
+  name: svc-d
+  namespace: ns-d
+spec:
+  ports:
+  - name: http-web
+    port: 8080
+    targetPort: 0
+  selector:
+    name: svc-d
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: svc-d1
+  namespace: ns-d
+  labels:
+    app: svc-d1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d1
+    role: service
+  name: svc-d1
+  namespace: ns-d
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: svc-d1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+      creationTimestamp: "2023-12-11T14:07:30Z"
+      labels:
+        name: svc-d1
+        role: service
+    spec:
+      serviceAccountName: svc-d1
+      containers:
+      - args:
+        - --max-idle-connections-per-host=0
+        env:
+        - name: SERVICE_NAME
+          value: svc-d1
+        image: ghcr.io/tetratecx/tsb-single-vm/graph-server:latest
+        name: mock-service
+        ports:
+        - containerPort: 8080
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/config
+          name: config-volume
+      volumes:
+      - configMap:
+          items:
+          - key: service-graph
+            path: service-graph.yaml
+          name: service-graph-config
+        name: config-volume
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d1
+    role: service
+  name: svc-d1
+  namespace: ns-d
+spec:
+  ports:
+  - name: http-web
+    port: 8080
+    targetPort: 0
+  selector:
+    name: svc-d1
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: svc-d2
+  namespace: ns-d
+  labels:
+    app: svc-d2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d2
+    role: service
+  name: svc-d2
+  namespace: ns-d
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: svc-d2
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+      creationTimestamp: "2023-12-11T14:07:30Z"
+      labels:
+        name: svc-d2
+        role: service
+    spec:
+      serviceAccountName: svc-d2
+      containers:
+      - args:
+        - --max-idle-connections-per-host=0
+        env:
+        - name: SERVICE_NAME
+          value: svc-d2
+        image: ghcr.io/tetratecx/tsb-single-vm/graph-server:latest
+        name: mock-service
+        ports:
+        - containerPort: 8080
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/config
+          name: config-volume
+      volumes:
+      - configMap:
+          items:
+          - key: service-graph
+            path: service-graph.yaml
+          name: service-graph-config
+        name: config-volume
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d2
+    role: service
+  name: svc-d2
+  namespace: ns-d
+spec:
+  ports:
+  - name: http-web
+    port: 8080
+    targetPort: 0
+  selector:
+    name: svc-d2
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: svc-d11
+  namespace: ns-d
+  labels:
+    app: svc-d11
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d11
+    role: service
+  name: svc-d11
+  namespace: ns-d
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: svc-d11
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+      creationTimestamp: "2023-12-11T14:07:30Z"
+      labels:
+        name: svc-d11
+        role: service
+    spec:
+      serviceAccountName: svc-d11
+      containers:
+      - args:
+        - --max-idle-connections-per-host=0
+        env:
+        - name: SERVICE_NAME
+          value: svc-d11
+        image: ghcr.io/tetratecx/tsb-single-vm/graph-server:latest
+        name: mock-service
+        ports:
+        - containerPort: 8080
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/config
+          name: config-volume
+      volumes:
+      - configMap:
+          items:
+          - key: service-graph
+            path: service-graph.yaml
+          name: service-graph-config
+        name: config-volume
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d11
+    role: service
+  name: svc-d11
+  namespace: ns-d
+spec:
+  ports:
+  - name: http-web
+    port: 8080
+    targetPort: 0
+  selector:
+    name: svc-d11
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: svc-d12
+  namespace: ns-d
+  labels:
+    app: svc-d12
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d12
+    role: service
+  name: svc-d12
+  namespace: ns-d
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: svc-d12
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+      creationTimestamp: "2023-12-11T14:07:30Z"
+      labels:
+        name: svc-d12
+        role: service
+    spec:
+      serviceAccountName: svc-d12
+      containers:
+      - args:
+        - --max-idle-connections-per-host=0
+        env:
+        - name: SERVICE_NAME
+          value: svc-d12
+        image: ghcr.io/tetratecx/tsb-single-vm/graph-server:latest
+        name: mock-service
+        ports:
+        - containerPort: 8080
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/config
+          name: config-volume
+      volumes:
+      - configMap:
+          items:
+          - key: service-graph
+            path: service-graph.yaml
+          name: service-graph-config
+        name: config-volume
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d12
+    role: service
+  name: svc-d12
+  namespace: ns-d
+spec:
+  ports:
+  - name: http-web
+    port: 8080
+    targetPort: 0
+  selector:
+    name: svc-d12
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: svc-d21
+  namespace: ns-d
+  labels:
+    app: svc-d21
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d21
+    role: service
+  name: svc-d21
+  namespace: ns-d
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: svc-d21
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+      creationTimestamp: "2023-12-11T14:07:30Z"
+      labels:
+        name: svc-d21
+        role: service
+    spec:
+      serviceAccountName: svc-d21
+      containers:
+      - args:
+        - --max-idle-connections-per-host=0
+        env:
+        - name: SERVICE_NAME
+          value: svc-d21
+        image: ghcr.io/tetratecx/tsb-single-vm/graph-server:latest
+        name: mock-service
+        ports:
+        - containerPort: 8080
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/config
+          name: config-volume
+      volumes:
+      - configMap:
+          items:
+          - key: service-graph
+            path: service-graph.yaml
+          name: service-graph-config
+        name: config-volume
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d21
+    role: service
+  name: svc-d21
+  namespace: ns-d
+spec:
+  ports:
+  - name: http-web
+    port: 8080
+    targetPort: 0
+  selector:
+    name: svc-d21
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: svc-d22
+  namespace: ns-d
+  labels:
+    app: svc-d22
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d22
+    role: service
+  name: svc-d22
+  namespace: ns-d
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: svc-d22
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+      creationTimestamp: "2023-12-11T14:07:30Z"
+      labels:
+        name: svc-d22
+        role: service
+    spec:
+      serviceAccountName: svc-d22
+      containers:
+      - args:
+        - --max-idle-connections-per-host=0
+        env:
+        - name: SERVICE_NAME
+          value: svc-d22
+        image: ghcr.io/tetratecx/tsb-single-vm/graph-server:latest
+        name: mock-service
+        ports:
+        - containerPort: 8080
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/config
+          name: config-volume
+      volumes:
+      - configMap:
+          items:
+          - key: service-graph
+            path: service-graph.yaml
+          name: service-graph-config
+        name: config-volume
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2023-12-11T14:07:30Z"
+  labels:
+    app: svc-d22
+    role: service
+  name: svc-d22
+  namespace: ns-d
+spec:
+  ports:
+  - name: http-web
+    port: 8080
+    targetPort: 0
+  selector:
+    name: svc-d22
+status:
+  loadBalancer: {}
