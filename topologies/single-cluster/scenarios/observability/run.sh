@@ -101,7 +101,7 @@ function info() {
   echo "All dt once in a loop" ;
   print_command "while true; do
   for i in a b c d; do
-    kubectl exec -n \"ns-\${i}\" -it \"\$(kubectl get pods -l app=client -o jsonpath='{.items[0].metadata.name}' -n ns-\${i})\" -- fortio load  -t 5s -H \"X-B3-Sampled:1\" \"svc-\${i}:8080\" &
+    kubectl exec -n \"ns-\${i}\" -it \"\$(kubectl get pods -l app=client -o jsonpath='{.items[0].metadata.name}' -n ns-\${i})\" -- fortio load  -t 5s -H \"X-B3-Sampled:1\" \"svc-\${i}:8080\" ;
   done
   sleep 1 ;
 done" ;
