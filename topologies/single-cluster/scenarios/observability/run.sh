@@ -90,17 +90,17 @@ function info() {
   print_info "******************************" ;
   echo ;
   echo "Traffic for AppA: spray-out-parallel" ;
-  print_command "kubectl exec -n ns-a -it \"$(kubectl get pods -l app=client -o jsonpath="{.items[0].metadata.name}" -n ns-a)\" -- fortio load  -t 0 -H \"X-B3-Sampled:1\" svc-a:8080" ;
+  print_command "kubectl exec -n ns-a -it \"$$(kubectl get pods -l app=client -o jsonpath=\"{.items[0].metadata.name}\" -n ns-a)\" -- fortio load  -t 0 -H \"X-B3-Sampled:1\" svc-a:8080" ;
   echo "Traffic for AppB: spray-out-serial" ;
-  print_command "kubectl exec -n ns-a -it \"$(kubectl get pods -l app=client -o jsonpath="{.items[0].metadata.name}" -n ns-a)\" -- fortio load  -t 0 -H \"X-B3-Sampled:1\" svc-a:8080" ;
+  print_command "kubectl exec -n ns-a -it \"$$(kubectl get pods -l app=client -o jsonpath=\"{.items[0].metadata.name}\" -n ns-a)\" -- fortio load  -t 0 -H \"X-B3-Sampled:1\" svc-a:8080" ;
   echo "Traffic for AppC: daisy-chain-single" ;
-  print_command "kubectl exec -n ns-a -it \"$(kubectl get pods -l app=client -o jsonpath="{.items[0].metadata.name}" -n ns-a)\" -- fortio load  -t 0 -H \"X-B3-Sampled:1\" svc-a:8080" ;
+  print_command "kubectl exec -n ns-a -it \"$$(kubectl get pods -l app=client -o jsonpath=\"{.items[0].metadata.name}\" -n ns-a)\" -- fortio load  -t 0 -H \"X-B3-Sampled:1\" svc-a:8080" ;
   echo "Traffic for AppD: daisy-chain-tree" ;
-  print_command "kubectl exec -n ns-a -it \"$(kubectl get pods -l app=client -o jsonpath="{.items[0].metadata.name}" -n ns-a)\" -- fortio load  -t 0 -H \"X-B3-Sampled:1\" svc-a:8080" ;
+  print_command "kubectl exec -n ns-a -it \"$$(kubectl get pods -l app=client -o jsonpath=\"{.items[0].metadata.name}\" -n ns-a)\" -- fortio load  -t 0 -H \"X-B3-Sampled:1\" svc-a:8080" ;
   echo ;
   echo "All at once in a loop" ;
   print_command "for i in a b c d; do
-  kubectl exec -n ns-${i} -it \"$(kubectl get pods -l app=client -o jsonpath=\"{.items[0].metadata.name}\" -n ns-${i})\" -- fortio load  -t 0 -H \"X-B3-Sampled:1\" svc-${i}:8080 &
+  kubectl exec -n ns-${i} -it \"$$(kubectl get pods -l app=client -o jsonpath=\"{.items[0].metadata.name}\" -n ns-${i})\" -- fortio load  -t 0 -H \"X-B3-Sampled:1\" svc-${i}:8080 &
 done" ;
   echo ;
 }
