@@ -4,7 +4,7 @@ kind: Group
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: app-a-ws
+  workspace: spray-out-parallel
   name: app-a-traffic-group
 spec:
   displayName: AppA_TrafficGroup
@@ -18,7 +18,7 @@ kind: Group
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: app-a-ws
+  workspace: spray-out-parallel
   name: app-a-security-group
 spec:
   displayName: AppA_SecurityGroup
@@ -32,7 +32,7 @@ kind: Group
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: app-b-ws
+  workspace: spray-out-serial
   name: app-b-traffic-group
 spec:
   displayName: AppB_TrafficGroup
@@ -46,7 +46,7 @@ kind: Group
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: app-b-ws
+  workspace: spray-out-serial
   name: app-b-security-group
 spec:
   displayName: AppB_SecurityGroup
@@ -60,7 +60,7 @@ kind: Group
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: app-c-ws
+  workspace: daisy-chain-single
   name: app-c-traffic-group
 spec:
   displayName: AppC_TrafficGroup
@@ -74,7 +74,7 @@ kind: Group
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: app-c-ws
+  workspace: daisy-chain-single
   name: app-c-security-group
 spec:
   displayName: AppC_SecurityGroup
@@ -88,7 +88,7 @@ kind: Group
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: app-d-ws
+  workspace: daisy-chain-tree
   name: app-d-traffic-group
 spec:
   displayName: AppD_TrafficGroup
@@ -102,7 +102,7 @@ kind: Group
 metadata:
   organization: tetrate
   tenant: prod
-  workspace: app-d-ws
+  workspace: daisy-chain-tree
   name: app-d-security-group
 spec:
   displayName: AppD_SecurityGroup

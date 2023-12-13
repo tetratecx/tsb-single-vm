@@ -4,7 +4,7 @@ kind: Workspace
 metadata:
   organization: tetrate
   tenant: prod
-  name: app-a-ws
+  name: spray-out-parallel
 spec:
   displayName: AppA_WS
   namespaceSelector:
@@ -16,7 +16,7 @@ kind: Workspace
 metadata:
   organization: tetrate
   tenant: prod
-  name: app-b-ws
+  name: spray-out-serial
 spec:
   displayName: AppB_WS
   namespaceSelector:
@@ -28,7 +28,7 @@ kind: Workspace
 metadata:
   organization: tetrate
   tenant: prod
-  name: app-c-ws
+  name: daisy-chain-single
 spec:
   displayName: AppC_WS
   namespaceSelector:
@@ -40,7 +40,7 @@ kind: Workspace
 metadata:
   organization: tetrate
   tenant: prod
-  name: app-d-ws
+  name: daisy-chain-tree
 spec:
   displayName: AppD_WS
   namespaceSelector:
