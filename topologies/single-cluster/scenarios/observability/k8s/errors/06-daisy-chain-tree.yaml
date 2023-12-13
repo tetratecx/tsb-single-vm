@@ -1,0 +1,83 @@
+---
+apiVersion: v1
+data:
+  service-graph: |
+    services:
+    - isEntrypoint: true
+      name: svc-d
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      script:
+      - - call:
+            extra-header: null
+            hostname: svc-d1:8080
+            service: svc-d1
+            size: 1KiB
+        - call:
+            extra-header: null
+            hostname: svc-d2:8080
+            service: svc-d2
+            size: 1KiB
+      type: http
+    - name: svc-d1
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      script:
+      - - call:
+            extra-header: null
+            hostname: svc-d11:8080
+            service: svc-d11
+            size: 1KiB
+        - call:
+            extra-header: null
+            hostname: svc-d12:8080
+            service: svc-d12
+            size: 1KiB
+      type: http
+    - name: svc-d2
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      script:
+      - - call:
+            extra-header: null
+            hostname: svc-d21:8080
+            service: svc-d21
+            size: 1KiB
+        - call:
+            extra-header: null
+            hostname: svc-d22:8080
+            service: svc-d22
+            size: 1KiB
+      type: http
+    - name: svc-d11
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+    - errorRate: 50%
+      name: svc-d12
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+    - name: svc-d21
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+    - errorRate: 100%
+      name: svc-d22
+      namespace: ns-d
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+kind: ConfigMap
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    isotope: service-graph
+  name: service-graph-config
+  namespace: ns-d

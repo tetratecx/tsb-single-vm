@@ -106,6 +106,24 @@ function info() {
   sleep 1 ;
 done" ;
   echo ;
+  echo "Add delays" ;
+  print_command "kubectl apply -f \"${SCENARIO_DIR}/k8s/delays/03-spray-out-parallel.yaml\" && kubectl get deployments -n ns-a -l \"role=service\" -o name | xargs -I {} kubectl rollout restart {} -n ns-a" ;
+  print_command "kubectl apply -f \"${SCENARIO_DIR}/k8s/delays/04-spray-out-serial.yaml\" && kubectl get deployments -n ns-b -l \"role=service\" -o name | xargs -I {} kubectl rollout restart {} -n ns-b" ;
+  print_command "kubectl apply -f \"${SCENARIO_DIR}/k8s/delays/05-daisy-chain-single.yaml\" && kubectl get deployments -n ns-c -l \"role=service\" -o name | xargs -I {} kubectl rollout restart {} -n ns-c" ;
+  print_command "kubectl apply -f \"${SCENARIO_DIR}/k8s/delays/06-daisy-chain-tree.yaml\" && kubectl get deployments -n ns-d -l \"role=service\" -o name | xargs -I {} kubectl rollout restart {} -n ns-d" ;
+  echo ;
+  echo "Add errors" ;
+  print_command "kubectl apply -f \"${SCENARIO_DIR}/k8s/errors/03-spray-out-parallel.yaml\" && kubectl get deployments -n ns-a -l \"role=service\" -o name | xargs -I {} kubectl rollout restart {} -n ns-a" ;
+  print_command "kubectl apply -f \"${SCENARIO_DIR}/k8s/errors/04-spray-out-serial.yaml\" && kubectl get deployments -n ns-b -l \"role=service\" -o name | xargs -I {} kubectl rollout restart {} -n ns-b" ;
+  print_command "kubectl apply -f \"${SCENARIO_DIR}/k8s/errors/05-daisy-chain-single.yaml\" && kubectl get deployments -n ns-c -l \"role=service\" -o name | xargs -I {} kubectl rollout restart {} -n ns-c" ;
+  print_command "kubectl apply -f \"${SCENARIO_DIR}/k8s/errors/06-daisy-chain-tree.yaml\" && kubectl get deployments -n ns-d -l \"role=service\" -o name | xargs -I {} kubectl rollout restart {} -n ns-d" ;
+  echo ;
+  echo "Back to normal" ;
+  print_command "kubectl apply -f \"${SCENARIO_DIR}/k8s/normal/03-spray-out-parallel.yaml\" && kubectl get deployments -n ns-a -l \"role=service\" -o name | xargs -I {} kubectl rollout restart {} -n ns-a" ;
+  print_command "kubectl apply -f \"${SCENARIO_DIR}/k8s/normal/04-spray-out-serial.yaml\" && kubectl get deployments -n ns-b -l \"role=service\" -o name | xargs -I {} kubectl rollout restart {} -n ns-b" ;
+  print_command "kubectl apply -f \"${SCENARIO_DIR}/k8s/normal/05-daisy-chain-single.yaml\" && kubectl get deployments -n ns-c -l \"role=service\" -o name | xargs -I {} kubectl rollout restart {} -n ns-c" ;
+  print_command "kubectl apply -f \"${SCENARIO_DIR}/k8s/normal/06-daisy-chain-tree.yaml\" && kubectl get deployments -n ns-d -l \"role=service\" -o name | xargs -I {} kubectl rollout restart {} -n ns-d" ;
+  echo ;
 }
 
 
