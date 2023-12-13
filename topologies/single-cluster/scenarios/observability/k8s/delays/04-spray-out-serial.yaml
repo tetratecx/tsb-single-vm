@@ -35,7 +35,7 @@ data:
       numReplicas: 1
       responseSize: 1KiB
       script:
-      - sleep: "100s"
+      - sleep: "100ms"
       type: http
     - name: svc-b3
       namespace: ns-b
