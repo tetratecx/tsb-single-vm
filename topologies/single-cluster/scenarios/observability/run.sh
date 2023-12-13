@@ -99,8 +99,11 @@ function info() {
   print_command "kubectl exec -n ns-d -it \"\$(kubectl get pods -l app=client -o jsonpath='{.items[0].metadata.name}' -n ns-d)\" -- fortio load  -t 0 -H \"X-B3-Sampled:1\" svc-d:8080" ;
   echo ;
   echo "All dt once in a loop" ;
-  print_command "for i in a b c d; do
-  kubectl exec -n ns-\${i} -it \"\$(kubectl get pods -l app=client -o jsonpath='{.items[0].metadata.name}' -n ns-\${i})\" -- fortio load  -t 0 -H \"X-B3-Sampled:1\" svc-\${i}:8080 &
+  print_command "while true; do
+  for i in a b c d; do
+    kubectl exec -n \"ns-\${i}\" -it \"\$(kubectl get pods -l app=client -o jsonpath='{.items[0].metadata.name}' -n ns-\${i})\" -- fortio load  -t 5s -H \"X-B3-Sampled:1\" \"svc-\${i}:8080\" &
+  done
+  sleep 1 ;
 done" ;
   echo ;
 }
