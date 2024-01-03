@@ -13,6 +13,7 @@ packages:
   - nmap
   - traceroute
   - tree
+  - bash-completion
 
 write_files:
   - path: /etc/sysctl.conf
