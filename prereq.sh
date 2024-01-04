@@ -156,6 +156,13 @@ complete -F __start_kubectl k
 END
   fi
 
+  cat > ~/.inputrc <<'EOF'
+# This allows using bash history directly while typing using up and down arrows
+# https://superuser.com/a/1332850/1269442
+"\e[A": history-search-backward
+"\e[B": history-search-forward
+EOF
+
   # shellcheck source=/dev/null
   source "${HOME}/.bashrc" ;
 
