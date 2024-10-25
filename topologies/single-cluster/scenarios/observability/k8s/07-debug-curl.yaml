@@ -1,0 +1,49 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl
+  namespace: ns-a
+spec:
+  containers:
+  - name: curl
+    image: curlimages/curl
+    command: ["sleep"]
+    args: ["infinity"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl
+  namespace: ns-b
+spec:
+  containers:
+  - name: curl
+    image: curlimages/curl
+    command: ["sleep"]
+    args: ["infinity"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl
+  namespace: ns-c
+spec:
+  containers:
+  - name: curl
+    image: curlimages/curl
+    command: ["sleep"]
+    args: ["infinity"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl
+  namespace: ns-d
+spec:
+  containers:
+  - name: curl
+    image: curlimages/curl
+    command: ["sleep"]
+    args: ["infinity"]
+---

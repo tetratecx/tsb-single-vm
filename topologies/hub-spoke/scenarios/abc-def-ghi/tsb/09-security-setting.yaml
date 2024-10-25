@@ -1,0 +1,72 @@
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: SecuritySetting
+metadata:
+  organization: tetrate
+  tenant: prod-abc
+  workspace: app-abc-ws
+  group: security-abc-group
+  name: ingress-to-abc
+spec:
+  authenticationSettings:
+    trafficMode: REQUIRED
+  authorization:
+    mode: RULES
+    rules:
+      allow:
+       - from:
+           fqn: organizations/tetrate/tenants/prod-abc/workspaces/gw-ingress-abc-ws
+         to:
+           fqn: organizations/tetrate/tenants/prod-abc/workspaces/app-abc-ws/securitygroups/security-abc-group
+       - from:
+           fqn: organizations/tetrate/tenants/prod-abc/workspaces/app-abc-ws/securitygroups/security-abc-group
+         to:
+           fqn: organizations/tetrate/tenants/prod-abc/workspaces/app-abc-ws/securitygroups/security-abc-group
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: SecuritySetting
+metadata:
+  organization: tetrate
+  tenant: prod-def
+  workspace: app-def-ws
+  group: security-def-group
+  name: ingress-to-def
+spec:
+  authenticationSettings:
+    trafficMode: REQUIRED
+  authorization:
+    mode: RULES
+    rules:
+      allow:
+       - from:
+           fqn: organizations/tetrate/tenants/prod-def/workspaces/gw-ingress-def-ws
+         to:
+           fqn: organizations/tetrate/tenants/prod-def/workspaces/app-def-ws/securitygroups/security-def-group
+       - from:
+           fqn: organizations/tetrate/tenants/prod-def/workspaces/app-def-ws/securitygroups/security-def-group
+         to:
+           fqn: organizations/tetrate/tenants/prod-def/workspaces/app-def-ws/securitygroups/security-def-group
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: SecuritySetting
+metadata:
+  organization: tetrate
+  tenant: prod-ghi
+  workspace: app-ghi-ws
+  group: security-ghi-group
+  name: ingress-to-ghi
+spec:
+  authenticationSettings:
+    trafficMode: REQUIRED
+  authorization:
+    mode: RULES
+    rules:
+      allow:
+       - from:
+           fqn: organizations/tetrate/tenants/prod-ghi/workspaces/gw-ingress-ghi-ws
+         to:
+           fqn: organizations/tetrate/tenants/prod-ghi/workspaces/app-ghi-ws/securitygroups/security-ghi-group
+       - from:
+           fqn: organizations/tetrate/tenants/prod-ghi/workspaces/app-ghi-ws/securitygroups/security-ghi-group
+         to:
+           fqn: organizations/tetrate/tenants/prod-ghi/workspaces/app-ghi-ws/securitygroups/security-ghi-group

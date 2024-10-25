@@ -1,0 +1,29 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: sleep
+  name: sleep
+  namespace: gateway-t1-abcd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sleep
+  template:
+    metadata:
+      labels:
+        app: sleep
+    spec:
+      containers:
+        - name: sleep
+          args:
+            - /bin/sleep
+            - infinity
+          image: alpine/curl
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: "64Mi"
+              cpu: "128m"

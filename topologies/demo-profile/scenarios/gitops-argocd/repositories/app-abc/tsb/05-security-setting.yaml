@@ -1,0 +1,63 @@
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: SecuritySetting
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-a-ws
+    tsb.tetrate.io/securityGroup: app-a-security-group
+  name: ingress-to-a
+spec:
+  authenticationSettings:
+    trafficMode: REQUIRED
+  authorization:
+    mode: RULES
+    rules:
+      allow:
+       - from:
+           fqn: organizations/tetrate/tenants/prod/workspaces/gw-abc-ws
+         to:
+           fqn: organizations/tetrate/tenants/prod/workspaces/app-a-ws/securitygroups/app-a-security-group
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: SecuritySetting
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-b-ws
+    tsb.tetrate.io/securityGroup: app-b-security-group
+  name: a-to-b
+spec:
+  authenticationSettings:
+    trafficMode: REQUIRED
+  authorization:
+    mode: RULES
+    rules:
+      allow:
+       - from:
+           fqn: organizations/tetrate/tenants/prod/workspaces/app-a-ws
+         to:
+           fqn: organizations/tetrate/tenants/prod/workspaces/app-b-ws/securitygroups/app-b-security-group
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: SecuritySetting
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-c-ws
+    tsb.tetrate.io/securityGroup: app-c-security-group
+  name: b-to-c
+spec:
+  authenticationSettings:
+    trafficMode: REQUIRED
+  authorization:
+    mode: RULES
+    rules:
+      allow:
+       - from:
+           fqn: organizations/tetrate/tenants/prod/workspaces/app-b-ws
+         to:
+           fqn: organizations/tetrate/tenants/prod/workspaces/app-c-ws/securitygroups/app-c-security-group

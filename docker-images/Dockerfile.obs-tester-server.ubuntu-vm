@@ -1,0 +1,45 @@
+# Copyright (c) Tetrate, Inc 2023 All Rights Reserved.
+FROM ubuntu:jammy
+ENV TZ=UTC
+ENV LC_ALL C
+ENV DEBIAN_FRONTEND noninteractive
+
+ARG OCI_REVISION
+ARG OCI_SOURCE
+ARG PACKAGE_VENDOR
+ARG TAG
+ARG TARGETARCH
+
+LABEL description "This is a container with obs-tester-server binary and init system to mimic a VM"
+LABEL name "obs-tester-server-ubuntu-vm"
+LABEL org.opencontainers.image.revision ${OCI_REVISION}
+LABEL org.opencontainers.image.source ${OCI_SOURCE}
+LABEL org.opencontainers.image.title "obs-tester-server-ubuntu-vm"
+LABEL release ${TAG}
+LABEL vendor ${PACKAGE_VENDOR}
+LABEL version ${TAG}
+
+ADD build/bin/linux/${TARGETARCH}/obs-tester-server-static /usr/local/bin/obs-tester-server
+RUN apt-get update -y \
+    && apt-get install --no-install-recommends -y apt-transport-https ca-certificates curl file git gnupg2 iproute2 iptables iputils-ping net-tools netcat nmap openssh-server sudo systemd systemd-sysv tree vim \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
+    /etc/systemd/system/*.wants/* \
+    /lib/systemd/system/local-fs.target.wants/* \
+    /lib/systemd/system/sockets.target.wants/*udev* \
+    /lib/systemd/system/sockets.target.wants/*initctl* \
+    /lib/systemd/system/sysinit.target.wants/systemd-tmpfiles-setup* \
+    /lib/systemd/system/systemd-update-utmp*
+RUN systemctl enable ssh 
+RUN /bin/bash -c 'echo -e "root\nroot" | passwd root'
+RUN /bin/bash -c 'echo -e "\n\nPermitRootLogin yes" | tee -a /etc/ssh/sshd_config'
+RUN /bin/bash -c 'useradd --create-home -p $(openssl passwd -1 ubuntu) ubuntu'
+RUN /bin/bash -c 'usermod -aG sudo ubuntu'
+RUN /bin/bash -c 'echo -e "\n\nubuntu ALL=(ALL:ALL) NOPASSWD:ALL" | tee -a /etc/sudoers'
+RUN /bin/bash -c 'usermod --shell /bin/bash root'
+RUN /bin/bash -c 'usermod --shell /bin/bash ubuntu'
+
+VOLUME [ "/sys/fs/cgroup" ]
+WORKDIR /
+ENTRYPOINT ["/sbin/init"]

@@ -1,0 +1,66 @@
+{
+  "cp_clusters": [
+    {
+      "k8s_provider": "minikube",
+      "k8s_version": "1.27.8",
+      "name": "app1",
+      "region": "region1",
+      "templates": {
+        "cp_helm": "templates/app1/controlplane-helm-values.yaml",
+        "cp_tctl": "templates/app1/controlplane.yaml"
+      },
+      "vms": [],
+      "zone": "zone1a"
+    },
+    {
+      "k8s_provider": "minikube",
+      "k8s_version": "1.27.8",
+      "name": "transit1",
+      "region": "region1",
+      "templates": {
+        "cp_helm": "templates/transit1/controlplane-helm-values.yaml",
+        "cp_tctl": "templates/transit1/controlplane.yaml"
+      },
+      "vms": [],
+      "zone": "zone1b"
+    },
+    {
+      "k8s_provider": "minikube",
+      "k8s_version": "1.27.8",
+      "name": "transit2",
+      "region": "region2",
+      "templates": {
+        "cp_helm": "templates/transit2/controlplane-helm-values.yaml",
+        "cp_tctl": "templates/transit2/controlplane.yaml"
+      },
+      "vms": [],
+      "zone": "zone2a"
+    },
+    {
+      "k8s_provider": "minikube",
+      "k8s_version": "1.27.8",
+      "name": "app2",
+      "region": "region2",
+      "templates": {
+        "cp_helm": "templates/app2/controlplane-helm-values.yaml",
+        "cp_tctl": "templates/app2/controlplane.yaml"
+      },
+      "vms": [],
+      "zone": "zone2b"
+    }
+  ],
+  "mp_cluster": {
+    "k8s_provider": "minikube",
+    "k8s_version": "1.27.8",
+    "name": "mgmt",
+    "region": "region0",
+    "templates": {
+      "cp_helm": "templates/mgmt/controlplane-helm-values.yaml",
+      "cp_tctl": "templates/mgmt/controlplane.yaml",
+      "mp_helm": "templates/mgmt/managementplane-helm-values.yaml",
+      "mp_tctl": "templates/mgmt/managementplane.yaml"
+    },
+    "vms": [],
+    "zone": "zone0a"
+  }
+}

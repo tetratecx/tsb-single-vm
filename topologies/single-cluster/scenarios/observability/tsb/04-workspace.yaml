@@ -1,0 +1,48 @@
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: spray-out-parallel
+spec:
+  displayName: AppA_WS
+  namespaceSelector:
+    names:
+      - "*/ns-a"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: spray-out-serial
+spec:
+  displayName: AppB_WS
+  namespaceSelector:
+    names:
+      - "*/ns-b"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: daisy-chain-single
+spec:
+  displayName: AppC_WS
+  namespaceSelector:
+    names:
+      - "*/ns-c"
+---
+apiversion: api.tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  organization: tetrate
+  tenant: prod
+  name: daisy-chain-tree
+spec:
+  displayName: AppD_WS
+  namespaceSelector:
+    names:
+      - "*/ns-d"

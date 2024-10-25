@@ -1,0 +1,10 @@
+---
+apiVersion: install.tetrate.io/v1alpha1
+kind: IngressGateway
+metadata:
+  name: gw-ingress-abc
+  namespace: gateway-abc
+spec:
+  kubeSpec:
+    service:
+      type: LoadBalancer

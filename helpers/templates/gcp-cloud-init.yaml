@@ -1,0 +1,32 @@
+#cloud-config
+hostname: tsb-single-vm
+
+packages:
+  - curl
+  - docker.io
+  - expect
+  - git
+  - httpie
+  - jq
+  - net-tools
+  - make
+  - nmap
+  - traceroute
+  - tree
+
+write_files:
+  - path: /etc/sysctl.conf
+    content: |
+      # Added by cloud-init
+      fs.inotify.max_user_watches = 524288
+      fs.inotify.max_user_instances = 512
+    append: true
+
+runcmd:
+  - sysctl --system
+  - usermod -aG docker ubuntu
+  - su ubuntu
+  - cd /home/ubuntu
+  - git clone https://github.com/tetratecx/tsb-single-vm.git /home/ubuntu/tsb-single-vm
+  - chown -R ubuntu:ubuntu /home/ubuntu/tsb-single-vm
+  - printf "\n# Added by cloud-init\ncd /home/ubuntu/tsb-single-vm\n" >> /home/ubuntu/.bashrc

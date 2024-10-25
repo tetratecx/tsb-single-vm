@@ -1,0 +1,114 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  name: abcd-gateway-group
+spec:
+  displayName: Gateway_Group_ABCD
+  namespaceSelector:
+    names:
+      - "transit1/gateway-t1-abcd"
+      - "app1/gateway-a"
+      - "transit1/gateway-transit1-c"
+      - "transit2/gateway-transit2-c"
+      - "app2/gateway-c"
+  configMode: BRIDGED
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  name: efgh-gateway-group
+spec:
+  displayName: Gateway_Group_EFGH
+  namespaceSelector:
+    names:
+      - "transit2/gateway-t1-efgh"
+      - "app2/gateway-e"
+      - "transit2/gateway-transit2-g"
+      - "transit1/gateway-transit1-g"
+      - "app1/gateway-g"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  name: abcd-traffic-group
+spec:
+  displayName: Traffic_Group_ABCD
+  namespaceSelector:
+    names:
+      - "app1/ns-a"
+      - "app1/ns-b"
+      - "app2/ns-c"
+      - "app2/ns-d"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  name: efgh-traffic-group
+spec:
+  displayName: Traffic_Group_EFGH
+  namespaceSelector:
+    names:
+      - "app2/ns-e"
+      - "app2/ns-f"
+      - "app1/ns-g"
+      - "app1/ns-h"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  name: abcd-security-group
+spec:
+  displayName: Security_Group_ABCD
+  namespaceSelector:
+    names:
+      - "transit1/gateway-t1-abcd"
+      - "app1/gateway-a"
+      - "app1/ns-a"
+      - "app1/ns-b"
+      - "transit1/gateway-transit1-c"
+      - "transit2/gateway-transit2-c"
+      - "app2/gateway-c"
+      - "app2/ns-c"
+      - "app2/ns-d"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  name: efgh-security-group
+spec:
+  displayName: Security_Group_EFGH
+  namespaceSelector:
+    names:
+      - "transit2/gateway-t1-efgh"
+      - "app2/gateway-e"
+      - "app2/ns-e"
+      - "app2/ns-f"
+      - "transit2/gateway-transit2-g"
+      - "transit1/gateway-transit1-g"
+      - "app1/gateway-g"
+      - "app1/ns-g"
+      - "app1/ns-h"
+  configMode: BRIDGED

@@ -1,0 +1,28 @@
+---
+apiVersion: application.tsb.tetrate.io/v2
+kind: Application
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+  name: app1
+spec:
+  displayName: App One
+  workspace: organizations/tetrate/tenants/dev/workspaces/apps
+  gatewayGroup: organizations/tetrate/tenants/dev/workspaces/apps/gatewaygroups/app1-gateways
+  services:
+    - organizations/tetrate/services/app1.app1
+---
+apiVersion: application.tsb.tetrate.io/v2
+kind: Application
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+  name: app2
+spec:
+  displayName: App Two
+  workspace: organizations/tetrate/tenants/dev/workspaces/apps
+  gatewayGroup: organizations/tetrate/tenants/dev/workspaces/apps/gatewaygroups/app2-gateways
+  services:
+    - organizations/tetrate/services/app2.app2

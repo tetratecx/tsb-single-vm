@@ -1,0 +1,232 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: client
+  name: client
+  namespace: ns-a
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: client
+  name: client
+  namespace: ns-a
+spec:
+  selector:
+    matchLabels:
+      app: client
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: '2023-12-11T14:07:30Z'
+      labels:
+        app: client
+    spec:
+      containers:
+        - args:
+            - server
+          image: fortio/fortio
+          name: fortio-client
+          ports:
+            - containerPort: 8080
+            - containerPort: 42422
+          resources: {}
+      serviceAccountName: client
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/scrape: 'true'
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: client
+  name: client
+  namespace: ns-a
+spec:
+  ports:
+    - port: 8080
+      targetPort: 0
+  selector:
+    app: client
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: client
+  name: client
+  namespace: ns-b
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: client
+  name: client
+  namespace: ns-b
+spec:
+  selector:
+    matchLabels:
+      app: client
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: '2023-12-11T14:07:30Z'
+      labels:
+        app: client
+    spec:
+      containers:
+        - args:
+            - server
+          image: fortio/fortio
+          name: fortio-client
+          ports:
+            - containerPort: 8080
+            - containerPort: 42422
+          resources: {}
+      serviceAccountName: client
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/scrape: 'true'
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: client
+  name: client
+  namespace: ns-b
+spec:
+  ports:
+    - port: 8080
+      targetPort: 0
+  selector:
+    app: client
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: client
+  name: client
+  namespace: ns-c
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: client
+  name: client
+  namespace: ns-c
+spec:
+  selector:
+    matchLabels:
+      app: client
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: '2023-12-11T14:07:30Z'
+      labels:
+        app: client
+    spec:
+      containers:
+        - args:
+            - server
+          image: fortio/fortio
+          name: fortio-client
+          ports:
+            - containerPort: 8080
+            - containerPort: 42422
+          resources: {}
+      serviceAccountName: client
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/scrape: 'true'
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: client
+  name: client
+  namespace: ns-c
+spec:
+  ports:
+    - port: 8080
+      targetPort: 0
+  selector:
+    app: client
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: client
+  name: client
+  namespace: ns-d
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: client
+  name: client
+  namespace: ns-d
+spec:
+  selector:
+    matchLabels:
+      app: client
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: '2023-12-11T14:07:30Z'
+      labels:
+        app: client
+    spec:
+      containers:
+        - args:
+            - server
+          image: fortio/fortio
+          name: fortio-client
+          ports:
+            - containerPort: 8080
+            - containerPort: 42422
+          resources: {}
+      serviceAccountName: client
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/scrape: 'true'
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    app: client
+  name: client
+  namespace: ns-d
+spec:
+  ports:
+    - port: 8080
+      targetPort: 0
+  selector:
+    app: client
+status:
+  loadBalancer: {}

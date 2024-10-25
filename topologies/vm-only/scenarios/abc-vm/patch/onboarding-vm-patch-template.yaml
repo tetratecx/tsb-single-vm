@@ -1,0 +1,40 @@
+spec:
+  meshExpansion:
+    onboarding:
+      localRepository: {}
+      endpoint:
+        hosts:
+          - vm-onboarding.demo.tetrate.io
+        secretName: vm-onboarding
+      workloads:
+        authentication:
+          jwt:
+            issuers:
+            - issuer: https://issuer-vm1.demo.tetrate.io
+              shortName: vm1
+              tokenFields:
+                attributes:
+                  jsonPath: .custom_attributes
+              jwks: |
+                ${JWKS_VM1}
+            - issuer: https://issuer-vm2.demo.tetrate.io
+              shortName: vm2
+              tokenFields:
+                attributes:
+                  jsonPath: .custom_attributes
+              jwks: |
+                ${JWKS_VM2}
+            - issuer: https://issuer-vm3.demo.tetrate.io
+              shortName: vm3
+              tokenFields:
+                attributes:
+                  jsonPath: .custom_attributes
+              jwks: |
+                ${JWKS_VM3}
+            - issuer: https://issuer-vm4.demo.tetrate.io
+              shortName: vm4
+              tokenFields:
+                attributes:
+                  jsonPath: .custom_attributes
+              jwks: |
+                ${JWKS_VM4}

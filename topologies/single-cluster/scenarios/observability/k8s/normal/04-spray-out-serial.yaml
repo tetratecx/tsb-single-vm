@@ -1,0 +1,49 @@
+---
+apiVersion: v1
+data:
+  service-graph: |
+    services:
+    - isEntrypoint: true
+      name: svc-b
+      namespace: ns-b
+      numReplicas: 1
+      responseSize: 1KiB
+      script:
+      - call:
+          extra-header: null
+          hostname: svc-b1:8080
+          service: svc-b1
+          size: 1KiB
+      - call:
+          extra-header: null
+          hostname: svc-b2:8080
+          service: svc-b2
+          size: 1KiB
+      - call:
+          extra-header: null
+          hostname: svc-b3:8080
+          service: svc-b3
+          size: 1KiB
+      type: http
+    - name: svc-b1
+      namespace: ns-b
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+    - name: svc-b2
+      namespace: ns-b
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+    - name: svc-b3
+      namespace: ns-b
+      numReplicas: 1
+      responseSize: 1KiB
+      type: http
+kind: ConfigMap
+metadata:
+  creationTimestamp: '2023-12-11T14:07:30Z'
+  labels:
+    isotope: service-graph
+  name: service-graph-config
+  namespace: ns-b

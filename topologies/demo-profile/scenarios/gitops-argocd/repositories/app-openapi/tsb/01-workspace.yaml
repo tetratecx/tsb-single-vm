@@ -1,0 +1,14 @@
+---
+apiVersion: tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+  name: apps
+spec:
+  displayName: OpenAPI Apps
+  namespaceSelector:
+    names:
+    - "demo/app1"
+    - "demo/app2"

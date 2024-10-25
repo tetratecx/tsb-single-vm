@@ -1,0 +1,28 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: apps
+  name: app1-gateways
+spec:
+  displayName: App One Gateways
+  namespaceSelector:
+    names:
+    - "demo/app1"
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: dev
+    tsb.tetrate.io/workspace: apps
+  name: app2-gateways
+spec:
+  displayName: App Two Gateways
+  namespaceSelector:
+    names:
+    - "demo/app2"

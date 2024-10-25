@@ -1,0 +1,47 @@
+{
+  "cp_clusters": [
+    {
+      "k8s_provider": "k3s",
+      "k8s_version": "1.27.8",
+      "name": "c1",
+      "region": "us-central1",
+      "templates": {
+        "cp_helm": "templates/c1/controlplane-helm-values.yaml",
+        "cp_tctl": "templates/c1/controlplane.yaml"
+      },
+      "vms": [
+        {
+          "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
+          "name": "ratings-vm"
+        }
+      ],
+      "zone": "us-central1-a"
+    },
+    {
+      "k8s_provider": "k3s",
+      "k8s_version": "1.27.8",
+      "name": "c2",
+      "region": "us-east1",
+      "templates": {
+        "cp_helm": "templates/c2/controlplane-helm-values.yaml",
+        "cp_tctl": "templates/c2/controlplane.yaml"
+      },
+      "vms": [],
+      "zone": "us-east1-a"
+    }
+  ],
+  "mp_cluster": {
+    "k8s_provider": "k3s",
+    "k8s_version": "1.27.8",
+    "name": "t1",
+    "region": "us-central1",
+    "templates": {
+      "cp_helm": "templates/t1/controlplane-helm-values.yaml",
+      "cp_tctl": "templates/t1/controlplane.yaml",
+      "mp_helm": "templates/t1/managementplane-helm-values.yaml",
+      "mp_tctl": "templates/t1/managementplane.yaml"
+    },
+    "vms": [],
+    "zone": "us-central1-a"
+  }
+}

@@ -1,0 +1,13 @@
+---
+apiVersion: tsb.tetrate.io/v2
+kind: Cluster
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+  name: demo
+spec:
+  locality:
+    region: region1
+  network: tier1
+  tier1Cluster: false
+  tokenTtl: 31536000s

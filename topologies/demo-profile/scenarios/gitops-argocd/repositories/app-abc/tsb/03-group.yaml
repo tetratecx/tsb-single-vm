@@ -1,0 +1,105 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: gw-abc-ws
+  name: gw-abc-group
+spec:
+  displayName: GatewayABC_GatewayGroup
+  namespaceSelector:
+    names:
+      - "demo/gateway-abc"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-a-ws
+  name: app-a-traffic-group
+spec:
+  displayName: AppA_TrafficGroup
+  namespaceSelector:
+    names:
+      - "demo/ns-a"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-a-ws
+  name: app-a-security-group
+spec:
+  displayName: AppA_SecurityGroup
+  namespaceSelector:
+    names:
+      - "demo/ns-a"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-b-ws
+  name: app-b-traffic-group
+spec:
+  displayName: AppB_TrafficGroup
+  namespaceSelector:
+    names:
+      - "demo/ns-b"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-b-ws
+  name: app-b-security-group
+spec:
+  displayName: AppB_SecurityGroup
+  namespaceSelector:
+    names:
+      - "demo/ns-b"
+  configMode: BRIDGED
+---
+apiVersion: traffic.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-c-ws
+  name: app-c-traffic-group
+spec:
+  displayName: AppC_TrafficGroup
+  namespaceSelector:
+    names:
+      - "demo/ns-c"
+  configMode: BRIDGED
+---
+apiVersion: security.tsb.tetrate.io/v2
+kind: Group
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+    tsb.tetrate.io/workspace: app-c-ws
+  name: app-c-security-group
+spec:
+  displayName: AppC_SecurityGroup
+  namespaceSelector:
+    names:
+      - "demo/ns-c"
+  configMode: BRIDGED

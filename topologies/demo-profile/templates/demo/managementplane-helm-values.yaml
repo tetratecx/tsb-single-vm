@@ -1,0 +1,63 @@
+---
+image:
+  registry: $TSB_INSTALL_REPO_URL
+  tag: $TSB_VERSION
+secrets:
+  elasticsearch:
+    password: tsb-elastic-password
+    username: tsb
+  ldap:
+    binddn: cn=admin,dc=tetrate,dc=io
+    bindpassword: admin
+  postgres:
+    password: tsb-postgres-password
+    username: tsb
+  tsb:
+    adminPassword: admin
+spec:
+  certIssuer:
+    clusterIntermediateCAs: {}
+    selfSigned: {}
+    tsbCerts: {}
+  components:
+    frontEnvoy:
+      port: $TSB_API_SERVER_PORT
+    internalCertProvider:
+      certManager:
+        managed: INTERNAL
+    oap:
+      kubeSpec:
+        deployment:
+          env:
+            - name: SW_CORE_PERSISTENT_PERIOD
+              value: '5'
+      streamingLogEnabled: true
+    webUI:
+      kubeSpec:
+        overlays:
+          - apiVersion: apps/v1
+            kind: Deployment
+            name: web
+            patches:
+              - path: spec.template.spec.containers.[name:web].env[-1]
+                value:
+                  name: SESSION_AGE_IN_MINUTES
+                  value: '60'
+    xcp:
+      centralAuthModes:
+        jwt: true
+      kubeSpec:
+        overlays:
+          - apiVersion: install.xcp.tetrate.io/v1alpha1
+            kind: CentralXcp
+            name: central-xcp
+            patches:
+              - path: spec.components.centralServer.kubeSpec.deployment.env
+                value:
+                  - name: ENABLE_NON_INGRESS_HOST_LEVEL_AUTHORIZATION
+                    value: 'true'
+  hub: $TSB_INSTALL_REPO_URL
+  meshObservability:
+    settings:
+      apiEndpointMetricsEnabled: true
+  organization: tetrate

@@ -1,0 +1,52 @@
+---
+apiVersion: tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+  name: gw-abc-ws
+spec:
+  displayName: GatewayABC_WS
+  namespaceSelector:
+    names:
+      - "demo/gateway-abc"
+---
+apiVersion: tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+  name: app-a-ws
+spec:
+  displayName: AppA_WS
+  namespaceSelector:
+    names:
+      - "demo/ns-a"
+---
+apiVersion: tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+  name: app-b-ws
+spec:
+  displayName: AppB_WS
+  namespaceSelector:
+    names:
+      - "demo/ns-b"
+---
+apiVersion: tsb.tetrate.io/v2
+kind: Workspace
+metadata:
+  annotations:
+    tsb.tetrate.io/organization: tetrate
+    tsb.tetrate.io/tenant: prod
+  name: app-c-ws
+spec:
+  displayName: AppC_WS
+  namespaceSelector:
+    names:
+      - "demo/ns-c"

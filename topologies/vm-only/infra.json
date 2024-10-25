@@ -1,0 +1,34 @@
+{
+  "cp_clusters": [],
+  "mp_cluster": {
+    "k8s_provider": "minikube",
+    "k8s_version": "1.27.8",
+    "name": "mgmt",
+    "region": "region1",
+    "templates": {
+      "cp_helm": "templates/mgmt/controlplane-helm-values.yaml",
+      "cp_tctl": "templates/mgmt/controlplane.yaml",
+      "mp_helm": "templates/mgmt/managementplane-helm-values.yaml",
+      "mp_tctl": "templates/mgmt/managementplane.yaml"
+    },
+    "vms": [
+      {
+        "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
+        "name": "vm1"
+      },
+      {
+        "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
+        "name": "vm2"
+      },
+      {
+        "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
+        "name": "vm3"
+      },
+      {
+        "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
+        "name": "vm4"
+      }
+    ],
+    "zone": "zone1a"
+  }
+}

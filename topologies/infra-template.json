@@ -1,0 +1,69 @@
+{
+  "cp_clusters": [
+    {
+      "k8s_provider": "minikube",
+      "k8s_version": "1.27.8",
+      "name": "active",
+      "region": "region1",
+      "templates": {
+        "cp_helm": "templates/active/controlplane-helm-values.yaml",
+        "cp_tctl": "templates/active/controlplane.yaml"
+      },
+      "vms": [
+        {
+          "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
+          "name": "active-vm1"
+        },
+        {
+          "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
+          "name": "active-vm2"
+        }
+      ],
+      "zone": "zone1b"
+    },
+    {
+      "k8s_provider": "minikube",
+      "k8s_version": "1.27.8",
+      "name": "standby",
+      "region": "region2",
+      "templates": {
+        "cp_helm": "templates/standby/controlplane-helm-values.yaml",
+        "cp_tctl": "templates/standby/controlplane.yaml"
+      },
+      "vms": [
+        {
+          "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
+          "name": "standby-vm1"
+        },
+        {
+          "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
+          "name": "standby-vm2"
+        }
+      ],
+      "zone": "zone2a"
+    }
+  ],
+  "mp_cluster": {
+    "k8s_provider": "minikube",
+    "k8s_version": "1.27.8",
+    "name": "mgmt",
+    "region": "region1",
+    "templates": {
+      "cp_helm": "templates/mgmt/controlplane-helm-values.yaml",
+      "cp_tctl": "templates/mgmt/controlplane.yaml",
+      "mp_helm": "templates/mgmt/managementplane-helm-values.yaml",
+      "mp_tctl": "templates/mgmt/managementplane.yaml"
+    },
+    "vms": [
+      {
+        "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
+        "name": "mgmt-vm1"
+      },
+      {
+        "image": "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server-ubuntu-vm:latest",
+        "name": "mgmt-vm2"
+      }
+    ],
+    "zone": "zone1a"
+  }
+}

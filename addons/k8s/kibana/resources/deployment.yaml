@@ -1,0 +1,99 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      initContainers:
+        - name: init-container
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          command: ['/bin/sh']
+          args:
+            - -c
+            - >-
+              touch /tmp/healthy
+          resources: {}
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: kibana
+          image: kibana
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: server.name
+              value: '${HOSTNAME}'
+          livenessProbe:
+            exec:
+              command:
+                - cat
+                - /tmp/healthy
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            successThreshold: 1
+            httpGet:
+              path: /api/status
+              port: 5601
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 512Mi
+          securityContext:
+            privileged: true
+          ports:
+            - containerPort: 5601
+              name: http
+              protocol: TCP
+          volumeMounts:
+            - name: kibana-yml
+              subPath: kibana.yml
+              mountPath: /usr/share/kibana/config/kibana.yml
+            - name: tmp
+              mountPath: /tmp
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      securityContext: {}
+      terminationGracePeriodSeconds: 20
+      volumes:
+        - name: kibana-yml
+          configMap:
+            name: kibana.yml
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana-service
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      port: 5601
+      protocol: TCP
+      targetPort: 5601
+  selector:
+    app: kibana
+  publishNotReadyAddresses: true
+  sessionAffinity: None
+  type: ClusterIP

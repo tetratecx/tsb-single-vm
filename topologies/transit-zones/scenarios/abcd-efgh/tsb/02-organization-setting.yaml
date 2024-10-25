@@ -1,0 +1,14 @@
+---
+apiVersion: api.tsb.tetrate.io/v2
+kind: OrganizationSetting
+metadata:
+  name: tetrate-settings
+  organization: tetrate
+spec:
+  networkSettings:
+    networkReachability:
+      apps1: transit1
+      apps2: transit2
+      transit1: apps1,transit2
+      transit2: apps2,transit1
+  

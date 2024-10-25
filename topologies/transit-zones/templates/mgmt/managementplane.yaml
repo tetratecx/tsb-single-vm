@@ -1,0 +1,271 @@
+---
+apiVersion: install.tetrate.io/v1alpha1
+kind: ManagementPlane
+metadata:
+  name: managementplane
+  namespace: tsb
+spec:
+  components:
+    apiServer:
+      kubeSpec:
+        deployment:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchExpressions:
+                      - key: platform.tsb.tetrate.io/demo-dummy
+                        operator: In
+                        values:
+                          - apiserver
+                      - key: platform.tsb.tetrate.io/application
+                        operator: In
+                        values:
+                          - tsb
+                      - key: platform.tsb.tetrate.io/plane
+                        operator: In
+                        values:
+                          - management
+                  topologyKey: kubernetes.io/hostname
+          replicaCount: 1
+        job:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchExpressions:
+                      - key: platform.tsb.tetrate.io/component
+                        operator: In
+                        values:
+                          - apiserver
+                      - key: platform.tsb.tetrate.io/application
+                        operator: In
+                        values:
+                          - teamsync
+                      - key: platform.tsb.tetrate.io/plane
+                        operator: In
+                        values:
+                          - management
+                  topologyKey: kubernetes.io/hostname
+      teamSyncSchedule: 0 * * * *
+    collector:
+      kubeSpec:
+        deployment:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchExpressions:
+                      - key: platform.tsb.tetrate.io/demo-dummy
+                        operator: In
+                        values:
+                          - collector
+                      - key: platform.tsb.tetrate.io/plane
+                        operator: In
+                        values:
+                          - management
+                  topologyKey: kubernetes.io/hostname
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 800m
+              memory: 1000Mi
+            requests:
+              cpu: 400m
+              memory: 500Mi
+    frontEnvoy:
+      authenticationTimeout: 5s
+      kubeSpec:
+        deployment:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchExpressions:
+                      - key: platform.tsb.tetrate.io/demo-dummy
+                        operator: In
+                        values:
+                          - frontenvoy
+                      - key: platform.tsb.tetrate.io/plane
+                        operator: In
+                        values:
+                          - management
+                  topologyKey: kubernetes.io/hostname
+          hpaSpec:
+            maxReplicas: 10
+            metrics:
+              - resource:
+                  name: cpu
+                  targetAverageUtilization: 75
+                type: Resource
+            minReplicas: 2
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: '2'
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+        service:
+          type: LoadBalancer
+      port: $TSB_API_SERVER_PORT
+    gitops:
+      batchWindow: 1s
+      reconcileInterval: 600s
+      webhookTimeout: 30s
+    iamServer:
+      kubeSpec:
+        deployment:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchExpressions:
+                      - key: platform.tsb.tetrate.io/demo-dummy
+                        operator: In
+                        values:
+                          - iamserver
+                      - key: platform.tsb.tetrate.io/plane
+                        operator: In
+                        values:
+                          - management
+                  topologyKey: kubernetes.io/hostname
+          replicaCount: 1
+    internalCertProvider:
+      certManager:
+        managed: INTERNAL
+    mpc:
+      kubeSpec:
+        deployment:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchExpressions:
+                      - key: platform.tsb.tetrate.io/demo-dummy
+                        operator: In
+                        values:
+                          - mpc
+                      - key: platform.tsb.tetrate.io/plane
+                        operator: In
+                        values:
+                          - management
+                  topologyKey: kubernetes.io/hostname
+          replicaCount: 1
+    ngac:
+      kubeSpec:
+        deployment:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchExpressions:
+                      - key: platform.tsb.tetrate.io/demo-dummy
+                        operator: In
+                        values:
+                          - ngac
+                      - key: platform.tsb.tetrate.io/plane
+                        operator: In
+                        values:
+                          - management
+                  topologyKey: kubernetes.io/hostname
+          replicaCount: 1
+    oap:
+      kubeSpec:
+        deployment:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchExpressions:
+                      - key: platform.tsb.tetrate.io/demo-dummy
+                        operator: In
+                        values:
+                          - oap
+                      - key: platform.tsb.tetrate.io/plane
+                        operator: In
+                        values:
+                          - management
+                  topologyKey: kubernetes.io/hostname
+          env:
+            - name: SW_CORE_PERSISTENT_PERIOD
+              value: '5'
+          replicaCount: 1
+      streamingLogEnabled: true
+    webUI:
+      kubeSpec:
+        deployment:
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchExpressions:
+                      - key: platform.tsb.tetrate.io/demo-dummy
+                        operator: In
+                        values:
+                          - web-ui
+                      - key: platform.tsb.tetrate.io/plane
+                        operator: In
+                        values:
+                          - management
+                  topologyKey: kubernetes.io/hostname
+          replicaCount: 1
+    xcp:
+      centralAuthModes:
+        jwt: true
+      configProtection: {}
+      kubeSpec:
+        deployment:
+          replicaCount: 1
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+  dataStore:
+    demoPostgres:
+      address: postgres:5432
+      connectionIdleLifetime: 8500s
+      connectionIdleMaxOpen: 2
+      connectionLifetime: 86400s
+      connectionMaxOpen: 70
+      name: tsb
+      sslMode: disable
+  hub: $TSB_INSTALL_REPO_URL
+  identityProvider:
+    demoLdap:
+      disableTLS: true
+      host: ldap
+      iam:
+        matchDN: cn=%s,ou=People,dc=tetrate,dc=io
+        matchFilter: (&(objectClass=person)(uid=%s))
+      port: 389
+      search:
+        baseDN: dc=tetrate,dc=io
+        recursive: true
+      sync:
+        groupsFilter: (objectClass=groupOfUniqueNames)
+        membershipAttribute: uniqueMember
+        usersFilter: (objectClass=person)
+  meshObservability:
+    settings:
+      apiEndpointMetricsEnabled: true
+  organization: tetrate
+  telemetryStore:
+    demoElastic:
+      host: elasticsearch
+      port: 9200
+      protocol: http
+      version: 7
+  tokenIssuer:
+    jwt:
+      expiration: 36000s
+      issuers:
+        - name: https://demo.tetrate.io
+          signingKey: signingKey
+      refreshExpiration: 2592000s
+      signingKeysSecret: iam-signing-key
+      tokenPruneInterval: 36000s

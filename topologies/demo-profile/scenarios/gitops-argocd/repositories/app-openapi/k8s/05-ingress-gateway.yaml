@@ -1,0 +1,14 @@
+---
+apiVersion: install.tetrate.io/v1alpha1
+kind: IngressGateway
+metadata:
+  name: app1-ingress
+  namespace: app1
+spec: {}
+---
+apiVersion: install.tetrate.io/v1alpha1
+kind: IngressGateway
+metadata:
+  name: app2-ingress
+  namespace: app2
+spec: {}

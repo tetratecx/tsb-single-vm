@@ -1,0 +1,50 @@
+---
+apiVersion: authorization.onboarding.tetrate.io/v1alpha1
+kind: OnboardingPolicy
+metadata:
+  name: allow-app-a-vms
+  namespace: ns-a
+spec:
+  allow:
+  - workloads:
+    - jwt:
+        issuer: "https://issuer-vm1.demo.tetrate.io"
+    onboardTo:
+    - workloadGroupSelector:
+        matchLabels:
+          app: app-a
+          version: v1
+---
+apiVersion: authorization.onboarding.tetrate.io/v1alpha1
+kind: OnboardingPolicy
+metadata:
+  name: allow-app-b-vms
+  namespace: ns-b
+spec:
+  allow:
+  - workloads:
+    - jwt:
+        issuer: "https://issuer-vm2.demo.tetrate.io"
+    onboardTo:
+    - workloadGroupSelector:
+        matchLabels:
+          app: app-b
+          version: v1
+---
+apiVersion: authorization.onboarding.tetrate.io/v1alpha1
+kind: OnboardingPolicy
+metadata:
+  name: allow-app-c-vms
+  namespace: ns-c
+spec:
+  allow:
+  - workloads:
+    - jwt:
+        issuer: "https://issuer-vm3.demo.tetrate.io"
+    - jwt:
+        issuer: "https://issuer-vm4.demo.tetrate.io"
+    onboardTo:
+    - workloadGroupSelector:
+        matchLabels:
+          app: app-c
+          version: v1

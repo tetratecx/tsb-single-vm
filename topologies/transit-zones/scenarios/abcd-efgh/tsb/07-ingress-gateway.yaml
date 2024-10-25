@@ -1,0 +1,102 @@
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  group: abcd-gateway-group
+  name: gw-ingress-a
+spec:
+  displayName: GatewayIngress_A
+  workloadSelector:
+    namespace: gateway-a
+    labels:
+      app: gw-ingress-a
+  http:
+  - name: abcd-https
+    hostname: abcd.demo.tetrate.io
+    port: 443
+    tls:
+      mode: SIMPLE
+      secretName: app-abcd-cert
+    routing:
+      rules:
+      - route:
+          host: ns-a/app-a.ns-a.svc.cluster.local
+          port: 80
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: abcd-ws
+  group: abcd-gateway-group
+  name: gw-ingress-c
+spec:
+  displayName: GatewayIngress_C
+  workloadSelector:
+    namespace: gateway-c
+    labels:
+      app: gw-ingress-c
+  http:
+  - name: c-https
+    hostname: app-c.ns-c
+    port: 80
+    routing:
+      rules:
+      - route:
+          host: ns-c/app-c.ns-c.svc.cluster.local
+          port: 80
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  group: efgh-gateway-group
+  name: gw-ingress-e
+spec:
+  displayName: GatewayIngress_E
+  workloadSelector:
+    namespace: gateway-e
+    labels:
+      app: gw-ingress-e
+  http:
+  - name: efgh-https
+    hostname: efgh.demo.tetrate.io
+    port: 443
+    tls:
+      mode: SIMPLE
+      secretName: app-efgh-cert
+    routing:
+      rules:
+      - route:
+          host: ns-e/app-e.ns-e.svc.cluster.local
+          port: 80
+---
+apiVersion: gateway.tsb.tetrate.io/v2
+kind: IngressGateway
+metadata:
+  organization: tetrate
+  tenant: prod
+  workspace: efgh-ws
+  group: efgh-gateway-group
+  name: gw-ingress-g
+spec:
+  displayName: GatewayIngress_G
+  workloadSelector:
+    namespace: gateway-g
+    labels:
+      app: gw-ingress-g
+  http:
+  - name: g-https
+    hostname: app-g.ns-g
+    port: 80
+    routing:
+      rules:
+      - route:
+          host: ns-g/app-g.ns-g.svc.cluster.local
+          port: 80

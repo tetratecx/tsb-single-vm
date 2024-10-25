@@ -1,0 +1,13 @@
+{
+  "scenario": "abc-failover",
+  "topology": "active-standby",
+  "tsb": {
+    "install_method": "tctl",
+    "istio_version": "1.17.8",
+    "tetrate_repo": {
+      "password": "********",
+      "user": "********"
+    },
+    "version": "1.7.2"
+  }
+}

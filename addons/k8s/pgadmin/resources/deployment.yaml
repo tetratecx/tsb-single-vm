@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgadmin
+spec:
+  selector:
+   matchLabels:
+    app: pgadmin
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pgadmin
+    spec:
+      containers:
+        - name: pgadmin4
+          image: pwless-pgadmin4
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_USER
+              value: tsb
+            - name: POSTGRES_PASSWORD
+              value: tsb-postgres-password
+            - name: POSTGRES_HOST
+              value: postgres.tsb.svc.cluster.local
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DB
+              value: "*"
+          ports:
+            - containerPort: 80
+              name: pgadminport
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgadmin-service
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: pgadmin
+  publishNotReadyAddresses: true
+  sessionAffinity: None
+  type: ClusterIP

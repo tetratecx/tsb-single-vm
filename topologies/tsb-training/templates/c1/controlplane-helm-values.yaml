@@ -1,0 +1,98 @@
+---
+image:
+  registry: $TSB_INSTALL_REPO_URL
+  tag: $TSB_VERSION
+operator:
+  deployment:
+    env:
+      - name: ISTIO_ISOLATION_BOUNDARIES
+        value: 'true'
+secrets:
+  clusterServiceAccount:
+    JWK: <inject-jwt>
+    clusterFQN: organizations/tetrate/clusters/c1
+  elasticsearch:
+    cacert: <inject-cert>
+    password: tsb-elastic-password
+    username: tsb
+  tsb:
+    cacert: <inject-cert>
+  xcp:
+    rootca: <inject-cert>
+spec:
+  components:
+    gitops:
+      enabled: true
+      reconcileInterval: 600s
+    internalCertProvider:
+      certManager:
+        managed: AUTO
+    istio:
+      trustDomain: c1
+    oap:
+      kubeSpec:
+        deployment:
+          env:
+            - name: SW_CORE_PERSISTENT_PERIOD
+              value: '5'
+      streamingLogEnabled: true
+    xcp:
+      centralAuthMode: JWT
+      centralProvidedCaCert: true
+      configProtection: {}
+      isolationBoundaries:
+        - name: global
+          revisions:
+            - name: default
+        - name: prod
+          revisions:
+            - name: prod-stable
+      kubeSpec:
+        deployment:
+          env:
+            - name: ENABLE_GATEWAY_DELETE_HOLD
+              value: 'true'
+            - name: GATEWAY_DELETE_HOLD_SECONDS
+              value: '20'
+        overlays:
+          - apiVersion: install.xcp.tetrate.io/v1alpha1
+            kind: EdgeXcp
+            name: edge-xcp
+            patches:
+              - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+                value:
+                  name: ENABLE_ENHANCED_EAST_WEST_ROUTING
+                  value: 'true'
+              - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+                value:
+                  name: DISABLE_TIER1_TIER2_SEPARATION
+                  value: 'true'
+              - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+                value:
+                  name: ENABLE_DNS_RESOLUTION_AT_EDGE
+                  value: 'true'
+              - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+                value:
+                  name: ENABLE_NETWORK_POLICY_TRANSLATION
+                  value: 'true'
+              - path: spec.components.edgeServer.kubeSpec.deployment.env[-1]
+                value:
+                  name: ENABLE_NON_INGRESS_HOST_LEVEL_AUTHORIZATION
+                  value: 'true'
+  hub: $TSB_INSTALL_REPO_URL
+  managementPlane:
+    clusterName: c1
+    host: $TSB_API_SERVER_IP
+    port: $TSB_API_SERVER_PORT
+    selfSigned: true
+  meshExpansion: {}
+  meshObservability:
+    settings:
+      apiEndpointMetricsEnabled: true
+  telemetryStore:
+    elastic:
+      host: $TSB_API_SERVER_IP
+      port: $TSB_API_SERVER_PORT
+      protocol: https
+      selfSigned: true
+      version: 7
