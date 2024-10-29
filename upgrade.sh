@@ -79,17 +79,21 @@ function upgrade_tctl() {
 function upgrade_mp_with_tctl {
   local local_registry="$(get_local_registry_endpoint)"
   local output_dir="${BASE_DIR_UPGRADE}/mp"
+  mkdir -p "${output_dir}"
+  print_info "${output_dir} created to store new mp operator yaml"
 
   tctl install manifest management-plane-operator \
       --registry "${local_registry}" \
-      > "${output_dir}/managementplaneoperator.yaml"
+      > "${output_dir}/managementplaneoperator.yaml" 2>&1
 
-  if tctl; then
-    if [[ -s "${output_dir}/managementplaneoperator.yaml" ]]
+  if [[ $? -eq 0 ]]; then
+    if [[ -s "${output_dir}/managementplaneoperator.yaml" ]]; then
       kubectl apply --context "${MP}" -f "${output_dir}/managementplaneoperator.yaml"
       print_info "Waiting for new CRD managementoperator to be processed"
-      wait 60
+      sleep 60
       kubectl get pod -n tsb --context "${MP}"
+      print_command "tctl version command output is:"
+      tctl version
     else
       print_error "${output_dir}/managementplaneoperator.yaml is empty"
       exit 1
@@ -107,5 +111,6 @@ function upgrade_mp_with_tctl {
 
 # backup_manifests ;
 # upgrade_tctl ;
+# print_info "Using credentials present in env.json to sync images"
 # sync_tsb_images "$(get_local_registry_endpoint)" "$(get_tetrate_repo_user)" "$(get_tetrate_repo_password)" ;
 # upgrade_mp_with_tctl
