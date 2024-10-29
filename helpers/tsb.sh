@@ -226,3 +226,12 @@ dump_tsb_error_logs() {
     done
   done
 }
+
+# Use tctl to check clusters status
+#   args:
+#     (1) cluster contexts
+function check_clusters_status() {
+  [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster="${1}"
+    print_command "tctl x status cluster ${cluster}"
+    tctl x status cluster "${cluster}" 2>&1
+}
