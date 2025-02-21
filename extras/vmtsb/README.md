@@ -44,4 +44,40 @@ To resume all instances, run:
 $ vmtsb -o ric -a resume
 ```
 
-Made by Tetrate with ❤️
+# Testing
+
+## Prerequisites
+
+This script uses [Bats](https://github.com/bats-core/bats-core) for testing. To install Bats:
+
+### Installation (Linux/macOS)
+```sh
+git clone https://github.com/bats-core/bats-core.git
+cd bats-core
+sudo ./install.sh /usr/local
+```
+Or directly with brew
+```
+brew install bats-core
+```
+
+### Run the tests
+Go to `tests` directory and run:
+
+```shell
+bats tests-vmtsb.bats
+
+tests-vmtsb.bats
+ ✓ Check vmtsb.sh exists and is accessible
+ ✓ Test no arguments
+ ✓ Test invalid argument
+ ✓ Test empty owner argument
+ ✓ Test get the help message
+ ✓ Test listing all instances
+ ✓ Test owner with no action argument
+ ✓ Test owner with action argument
+
+8 tests, 0 failures
+```
+
+Made with ❤️ in Tetrate
