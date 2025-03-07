@@ -89,13 +89,19 @@ EOF
   fi
 
   if [[ -z "${OWNER}" ]]; then
-    echo "Error: Owner flag is required."
+    echo "Error: Owner flag is required. E.g. -o ric"
     usage
     return 1
   fi
 
   if [[ -z "${ACTION}" ]]; then
-    echo "No action provided. Listing all instances from Owner ${OWNER}"
+    echo "No action provided. E.g.: -a suspend. Listing all instances from Owner ${OWNER}"
+    listInstances ${OWNER}
+    return 0
+  fi
+
+  if [[ -z "${STATE}" ]]; then
+    echo "No state provided. E.g.: -s running. Listing all instances from Owner ${OWNER}"
     listInstances ${OWNER}
     return 0
   fi
@@ -104,13 +110,9 @@ EOF
   # DEF_ZONE="europe-west9-a"
   # ZONE=${ZONE:-europe-west9-a}
 
-
-  filter="(metadata.tetrate_owner=${OWNER} OR labels.tetrate_owner=${OWNER})"
+  STATE=$(echo ${STATE} | tr '[:lower:]' '[:upper:]')
+  filter="(metadata.tetrate_owner=${OWNER} OR labels.tetrate_owner=${OWNER}) AND status=${STATE}"
   echo "Checking...:\n\ttetrate_owner: ${OWNER}\n\tstate: ${STATE}\n\taction: ${ACTION}\n\tzone: ${ZONE}\n"
-
-  if [[ ! -z ${STATE} ]]; then
-    filter="${filter} AND status=${STATE}"
-  fi
 
   if [[ ! -z ${ZONE} ]]; then
     filter="${filter} AND zone=${ZONE}"
@@ -126,7 +128,7 @@ EOF
   echo "Working on instances:\n${names}"
 
   while IFS= read -r instance; do
-    gcloud compute instances ${ACTION} ${instance}
+      gcloud compute instances ${ACTION} ${instance}
   done <<< "${names}"
 
   echo "\n${bold}This are your current instances after the operation${normal}"
