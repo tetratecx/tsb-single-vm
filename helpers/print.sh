@@ -86,15 +86,15 @@ END="\033[0m"
 }
 
 function print_info {
-  echo -e "${GREEN_B}${1}${END}"
+  echo -e "${GREEN_B}Info: ${1}${END}"
 }
 
 function print_warning {
-  echo -e "${YELLOW_B}${1}${END}"
+  echo -e "${YELLOW_B}Warning: ${1}${END}"
 }
 
 function print_error {
-  echo -e "${RED_B}${1}${END}"
+  echo -e "${RED_B}Error: ${1}${END}"
 }
 
 function print_command {

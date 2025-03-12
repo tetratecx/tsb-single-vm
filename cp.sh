@@ -249,6 +249,7 @@ function install_helm {
       --set-file secrets.xcp.rootca="${mp_output_dir}/tsb-ca-cert.pem" \
       --set-file secrets.clusterServiceAccount.JWK="${cp_output_dir}/cluster-service-account.jwk" \
       --values "${cp_output_dir}/cp-helm-values.yaml" \
+      --version "${TSB_VERSION}" \
       --wait ;
     cp_index=$((cp_index+1)) ;
   done

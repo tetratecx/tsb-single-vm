@@ -185,6 +185,7 @@ function install_helm {
     --kube-context "${mp_cluster_name}" \
     --namespace "tsb" \
     --values "${mp_output_dir}/mp-helm-values.yaml" \
+    --version "${TSB_VERSION}" \
     --wait ;
 
   # Wait for the management plane deployments to become available
@@ -197,6 +198,7 @@ function install_helm {
   patch_jwt_token_expiration_mp "${mp_cluster_name}" ;
 
   # Configure tctl
+  # TODO (ric): tctl config could be a func
   tctl config clusters set "${mp_cluster_name}" --tls-insecure --bridge-address "$(get_tsb_api_ip ${mp_cluster_name}):$(get_tsb_api_port ${mp_cluster_name})" ;
   tctl config users set tsb-admin --username admin --password admin --org tetrate ;
   tctl config profiles set tsb-profile --cluster "${mp_cluster_name}" --username tsb-admin ;
