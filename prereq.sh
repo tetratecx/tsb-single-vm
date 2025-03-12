@@ -151,7 +151,7 @@ function install_prereq() {
 # Added by prereq.sh
 source /etc/bash_completion
 export EDITOR=vim
-alias k=kubectl
+echo "alias k=kubectl" >> ~/.bashrc
 complete -F __start_kubectl k
 END
   fi

@@ -109,7 +109,7 @@ function install_tctl() {
 
     # Wait for the control and data plane to become available
     kubectl --context "${cp_cluster_name}" wait deployment -n istio-system tsb-operator-control-plane --for condition=Available=True --timeout=600s ;
-    kubectl --context "${cp_cluster_name}" wait deployment -n istio-gateway tsb-operator-data-plane --for condition=Available=True --timeout=600s ;
+#    kubectl --context "${cp_cluster_name}" wait deployment -n istio-gateway tsb-operator-data-plane --for condition=Available=True --timeout=600s ;
     while ! kubectl --context "${cp_cluster_name}" get deployment -n istio-system edge &>/dev/null; do sleep 5; done ;
     kubectl --context "${cp_cluster_name}" wait deployment -n istio-system edge --for condition=Available=True --timeout=600s ;
     kubectl --context "${cp_cluster_name}" get pods -A ;
