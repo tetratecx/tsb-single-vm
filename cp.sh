@@ -63,7 +63,7 @@ function install_tctl() {
       --cluster-service-account="$(cat ${cp_output_dir}/cluster-service-account.jwk)" \
       --elastic-ca-certificate="$(cat ${mp_output_dir}/es-certs.pem)" \
       --management-plane-ca-certificate="$(cat ${mp_output_dir}/mp-certs.pem)" \
-      --xcp-central-ca-bundle="$(cat ${mp_output_dir}/xcp-central-ca-certs.pem)" \
+      --xcp-certs="$(cat ${mp_output_dir}/xcp-central-ca-certs.pem)" \
       > "${cp_output_dir}/controlplane-secrets.yaml" ;
 
     # Generate controlplane.yaml by inserting the correct mgmt plane API endpoint IP address
@@ -71,6 +71,8 @@ function install_tctl() {
     TSB_API_SERVER_PORT=$(get_tsb_api_port "${mp_cluster_name}") ; export TSB_API_SERVER_PORT ;
     export TSB_INSTALL_REPO_URL=${install_repo_url} ;
     envsubst < "${cp_cr_template_file}" > "${cp_output_dir}/controlplane.yaml" ;
+    # TSB MP demo install xcp central cert name is demo.tsb.tetrate.io 
+    sed -i 's/central\.xcp\.tetrate\.io/demo.tsb.tetrate.io/g' "${cp_output_dir}/controlplane.yaml" ;
 
     # bootstrap cluster with self signed certificate that share a common root certificate
     #   REF: https://docs.tetrate.io/service-bridge/1.6.x/en-us/setup/self_managed/onboarding-clusters#intermediate-istio-ca-certificates
@@ -93,9 +95,12 @@ function install_tctl() {
 
     # Applying operator, secrets and control plane configuration
     kubectl --context "${cp_cluster_name}" apply -f "${cp_output_dir}/clusteroperators.yaml" ;
+    kubectl --context "${cp_cluster_name}" wait deployment -n istio-system tsb-operator-control-plane --for condition=Available=True --timeout=120s ;
     kubectl --context "${cp_cluster_name}" apply -f "${cp_output_dir}/controlplane-secrets.yaml" ;
     while ! kubectl --context "${cp_cluster_name}" get controlplanes.install.tetrate.io &>/dev/null; do sleep 1; done ;
-    kubectl --context "${cp_cluster_name}" apply -f "${cp_output_dir}/controlplane.yaml" ;
+    until kubectl --context "${cp_cluster_name}" apply -f "${cp_output_dir}/controlplane.yaml" &>/dev/null; do
+      sleep 5 ;
+    done
     print_info "Bootstrapped installation of tsb control plane in cluster ${cp_cluster_name}" ;
     cp_index=$((cp_index+1)) ;
   done
