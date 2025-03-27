@@ -2,7 +2,7 @@
   "cp_clusters": [
     {
       "k8s_provider": "k3s",
-      "k8s_version": "1.27.8",
+      "k8s_version": "1.30.9",
       "name": "c1",
       "region": "us-central1",
       "templates": {
@@ -19,7 +19,7 @@
     },
     {
       "k8s_provider": "k3s",
-      "k8s_version": "1.27.8",
+      "k8s_version": "1.30.9",
       "name": "c2",
       "region": "us-east1",
       "templates": {
@@ -32,7 +32,7 @@
   ],
   "mp_cluster": {
     "k8s_provider": "k3s",
-    "k8s_version": "1.27.8",
+    "k8s_version": "1.30.9",
     "name": "t1",
     "region": "us-central1",
     "templates": {
