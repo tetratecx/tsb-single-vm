@@ -65,5 +65,5 @@ jobs:
       - name: Run Ansible
         run: |
           echo "[gcp]" > inventory.ini
-          echo "${{ steps.get-ip.outputs.external_ip }} ansible_user=${{ env.SSH_USER }} ansible_ssh_private_key_file=${{ ~/.ssh/id_rsa }}" >> inventory.ini
+          echo "${{ steps.get-ip.outputs.external_ip }} ansible_user=${{ env.SSH_USER }} ansible_ssh_private_key_file=~/.ssh/id_rsa" >> inventory.ini
           ansible-playbook -i inventory.ini playbook.yaml
