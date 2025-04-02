@@ -1,6 +1,6 @@
 MACHINE_TYPE: e2-standard-16
 OWNER_LABEL: ric
 TEAM_LABEL: eng_cre
-IMAGE_NAME: 1-11-1
+IMAGE_NAME: tsb-1-11-1
 SSH_USER: ubuntu
 GCP_SA_PROJECT_ID: tsb-vm-images-repo
