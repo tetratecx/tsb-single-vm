@@ -21,10 +21,17 @@ jobs:
           eval $(yq e '. | to_entries | .[] | "echo \(.key)=\(.value);"' github-deploy.yaml) >> $GITHUB_ENV
 
       - name: Set up gcloud CLI
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/auth@v2
         with:
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          project_id: ${{ env.GCP_SA_PROJECT_ID }}
+          credential_json: ${{ secrets.GCP_SA_KEY }}
+          
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          version: '>= 363.0.0'
+
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
 
       - name: Extract branch/tag name
         id: extract
