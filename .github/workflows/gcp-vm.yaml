@@ -66,6 +66,7 @@ jobs:
 
       - name: Save SSH key for ansible
         run: |
+          mkdir -p ~/.ssh
           echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
@@ -81,4 +82,3 @@ jobs:
           gcloud compute instances delete ${{ steps.extract.outputs.vm_name }} \
             --zone=europe-west9-a \
             --quiet
-            --force
