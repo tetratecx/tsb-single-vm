@@ -81,3 +81,4 @@ jobs:
           gcloud compute instances delete ${{ steps.extract.outputs.vm_name }} \
             --zone=europe-west9-a \
             --quiet
+            --force
