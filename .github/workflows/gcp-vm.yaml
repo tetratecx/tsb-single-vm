@@ -74,7 +74,7 @@ jobs:
         run: |
           echo "[gcp]" > inventory.ini
           echo "${{ steps.get-ip.outputs.external_ip }} ansible_user=${{ env.SSH_USER }} ansible_ssh_private_key_file=~/.ssh/id_rsa" >> inventory.ini
-          ansible-playbook -i inventory.ini playbook.yaml
+          ansible-playbook -i inventory.ini ansible/playbook.yaml
 
       - name: Always runs after failure
         if: failure()
