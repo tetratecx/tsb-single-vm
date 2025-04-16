@@ -49,7 +49,7 @@ jobs:
             --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default \
             --maintenance-policy=MIGRATE \
             --labels=tetrate_owner=${{ env.OWNER_LABEL }},tetrate_team=${{ env.TEAM_LABEL }} \
-            --create-disk=auto-delete=yes,boot=yes,device-name=${{ steps.extract.outputs.vm_name }},image=projects/tsb-vm-images-repo/global/images/${{ env.IMAGE_NAME }},mode=rw,size=50,type=projects/tsb-vm-images-repo/zones/europe-west9-a/diskTypes/pd-standard \
+            --create-disk=auto-delete=yes,boot=yes,device-name=${{ steps.extract.outputs.vm_name }},image=projects/tsb-vm-images-repo/global/images/${{ env.IMAGE_NAME }},mode=rw,type=projects/tsb-vm-images-repo/zones/europe-west9-a/diskTypes/pd-standard \
             --metadata=ssh-keys="${{ env.SSH_USER }}:${{ secrets.GCP_SSH_PUBLIC_KEY }}"
 
       - name: Get external IP
