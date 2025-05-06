@@ -2,6 +2,7 @@
   hosts: localhost
   gather_facts: no
   vars:
+    gcp_sa_key: "{{ lookup('env', 'GCP_SA_KEY') }}"
     gcp_project: "{{ lookup('env', 'GCP_PROJECT_ID') }}"
     gcp_zone: "{{ lookup('env', 'GCP_ZONE') }}"
     vm_name: "{{ lookup('env', 'VM_NAME') }}"
@@ -12,16 +13,20 @@
     ssh_public_key: "{{ lookup('env', 'GCP_SSH_PUBLIC_KEY') }}"
     ansible_user: "{{ ssh_user }}"
   tasks:
-    - name: Authenticate with GCP
-      gcp_auth:
-        service_account_file: "{{ lookup('env', 'GCP_SA_KEY') }}"
-        project: "{{ gcp_project }}"
+    - name: Create GCP Auth file
+      ansible.builtin.copy:
+        content: "{{ gcp_sa_key }}"
+        dest: /tmp/gcp_key.json
+        mode: '0600'
 
     - name: Create GCP VM instance
-      gcp_compute_instance:
+      google.cloud.gcp_compute_instance:
+        state: present
         name: "{{ vm_name }}"
         machine_type: "{{ machine_type }}"
         zone: "{{ gcp_zone }}"
+        auth_kind: serviceaccount
+        service_account_file: /tmp/gcp_key.json
         disks:
           - auto_delete: true
             boot: true
@@ -66,10 +71,3 @@
     - name: Run Ansible playbook on the VM
       ansible.builtin.command:
         cmd: ansible-playbook -i inventory.ini ansible/playbook.yaml
-
-    - name: Always runs after failure
-      if: failure()
-      run: |
-        gcloud compute instances delete ${{ steps.extract.outputs.vm_name }} \
-          --zone=europe-west9-a \
-          --quiet

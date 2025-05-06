@@ -60,3 +60,12 @@ jobs:
           TSB_SYNC_USR: ${{ secrets.TSB_SYNC_USR }}
         run: |
           ansible-playbook -i localhost, ansible/playbook-gcp-vm-create.yaml
+
+      - name: Always runs after failure
+        if: failure()
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          GCP_ZONE: ${{ env.GCP_ZONE }}
+          VM_NAME: ${{ steps.extract.outputs.vm_name }}
+        run: |
+          ansible-playbook -i localhost, ansible/playbook-gcp-vm-delete.yaml

@@ -1,0 +1,27 @@
+- name: Delete GCP VM
+  hosts: localhost
+  gather_facts: no
+  ignore_errors: true
+  vars:
+    gcp_sa_key: "{{ lookup('env', 'GCP_SA_KEY') }}"
+    gcp_zone: "{{ lookup('env', 'GCP_ZONE') }}"
+    vm_name: "{{ lookup('env', 'VM_NAME') }}"
+  tasks:
+    - name: Create GCP Auth file
+      ansible.builtin.copy:
+        content: "{{ gcp_sa_key }}"
+        dest: /tmp/gcp_key.json
+        mode: '0600'
+
+    - name: Delete GCP VM instance
+      google.cloud.gcp_compute_instance:
+        state: absent
+        name: "{{ vm_name }}"
+        auth_kind: serviceaccount
+        service_account_file: /tmp/gcp_key.json
+        zone: "{{ gcp_zone }}"
+
+    - name: Remove GCP SA Key
+      ansible.builtin.file:
+        path: /tmp/gcp_key.json
+        state: absent
