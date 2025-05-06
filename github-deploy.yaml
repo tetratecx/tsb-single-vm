@@ -1,6 +1,11 @@
 MACHINE_TYPE: e2-standard-16
+IMAGE_NAME: tsb-1-12-0
 OWNER_LABEL: ric
 TEAM_LABEL: eng_cre
-IMAGE_NAME: tsb-1-12-0
 SSH_USER: ubuntu
-GCP_SA_PROJECT_ID: tsb-vm-images-repo
+GCP_PROJECT_ID: tsb-vm-images-repo
+GCP_ZONE: europe-west9-a
+TSB_SCENARIO: main
+TSB_TOPOLOGY: tsb-training
+TSB_INSTALL_METHOD: tctl
+TSB_VERSION: 1.12.2
