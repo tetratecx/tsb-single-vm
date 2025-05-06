@@ -3,6 +3,7 @@
   gather_facts: no
   ignore_errors: true
   vars:
+    gcp_project: "{{ lookup('env', 'GCP_PROJECT_ID') }}"
     gcp_sa_key: "{{ lookup('env', 'GCP_SA_KEY') }}"
     gcp_zone: "{{ lookup('env', 'GCP_ZONE') }}"
     vm_name: "{{ lookup('env', 'VM_NAME') }}"
@@ -16,6 +17,7 @@
     - name: Delete GCP VM instance
       google.cloud.gcp_compute_instance:
         state: absent
+        project: "{{ gcp_project }}"
         name: "{{ vm_name }}"
         auth_kind: serviceaccount
         service_account_file: /tmp/gcp_key.json

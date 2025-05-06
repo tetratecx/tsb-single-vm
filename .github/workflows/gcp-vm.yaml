@@ -69,6 +69,7 @@ jobs:
       - name: Always runs after failure
         if: failure()
         env:
+          GCP_PROJECT_ID: ${{ env.GCP_PROJECT_ID }}
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           GCP_ZONE: ${{ env.GCP_ZONE }}
           VM_NAME: ${{ steps.extract.outputs.vm_name }}
