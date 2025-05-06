@@ -1,0 +1,13 @@
+{
+    "scenario": "${TSB_SCENARIO}",
+    "topology": "${TSB_TOPOLOGY}",
+    "tsb": {
+      "install_method": "${TSB_INSTALL_METHOD}",
+      "istio_version": "1.22.6",
+      "tetrate_repo": {
+        "password": "${TSB_SYNC_PASS}",
+        "user": "${TSB_SYNC_USR}"
+      },
+      "version": "${TSB_VERSION}"
+    }
+  }
