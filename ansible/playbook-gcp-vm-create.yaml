@@ -33,7 +33,8 @@
             initialize_params:
               source_image: "projects/{{ gcp_project }}/global/images/{{ image_name }}"
         network_interfaces:
-          - network: default
+          - network:
+              name: default
             access_configs:
               - name: External NAT
                 type: ONE_TO_ONE_NAT
