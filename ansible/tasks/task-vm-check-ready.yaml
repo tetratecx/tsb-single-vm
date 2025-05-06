@@ -1,0 +1,21 @@
+- name: Wait for SSH to become available on target host
+  block:
+    - name: 🔍 Check SSH port on {{ wait_for_ssh_on }}
+      ansible.builtin.wait_for:
+        host: "{{ wait_for_ssh_on }}"
+        port: 22
+        timeout: 10
+        state: started
+      register: ssh_wait_result
+      retries: 18
+      delay: 10
+      until: ssh_wait_result is succeeded
+
+    - name: SSH is now available on {{ wait_for_ssh_on }}
+      ansible.builtin.debug:
+        msg: "SSH is ready on {{ wait_for_ssh_on }}"
+
+  rescue:
+    - name: SSH not ready after 3 minutes
+      ansible.builtin.fail:
+        msg: "Failed to connect to {{ wait_for_ssh_on }} on port 22 after 3 minutes"

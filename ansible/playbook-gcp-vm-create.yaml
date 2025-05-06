@@ -78,3 +78,8 @@
           [gcp]
           {{ external_ip }} ansible_user={{ ansible_user }} ansible_ssh_private_key_file=~/.ssh/id_rsa
         dest: /tmp/inventory.ini
+
+    - name: Wait for SSH on the provisioned VM
+      import_tasks: ansible/tasks/task-vm-check-ready.yaml
+      vars:
+        wait_for_ssh_on: "{{ external_ip }}"
