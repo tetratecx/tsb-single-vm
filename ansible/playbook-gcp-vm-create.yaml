@@ -27,6 +27,26 @@
           - google-cloud-storage
         executable: pip3
 
+    - name: Show Python interpreter
+      debug:
+        msg: "Using Python interpreter: {{ ansible_playbook_python }}"
+
+    - name: Check Python interpreter location
+      ansible.builtin.command: which python3
+      register: python3_path
+
+    - name: Show Python path
+      debug:
+        var: python3_path.stdout
+
+    - name: Check pip3 location
+      ansible.builtin.command: which pip3
+      register: pip3_path
+
+    - name: Show pip path
+      debug:
+        var: pip3_path.stdout
+
     - name: Create GCP VM instance
       google.cloud.gcp_compute_instance:
         state: present
