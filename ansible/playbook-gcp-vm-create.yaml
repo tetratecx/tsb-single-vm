@@ -1,0 +1,75 @@
+- name: Create and configure GCP VM
+  hosts: localhost
+  gather_facts: no
+  vars:
+    gcp_project: "{{ lookup('env', 'GCP_PROJECT_ID') }}"
+    gcp_zone: "{{ lookup('env', 'GCP_ZONE') }}"
+    vm_name: "{{ lookup('env', 'VM_NAME') }}"
+    machine_type: "{{ lookup('env', 'MACHINE_TYPE') }}"
+    image_name: "{{ lookup('env', 'IMAGE_NAME') }}"
+    ssh_user: "{{ lookup('env', 'SSH_USER') }}"
+    ssh_private_key: "{{ lookup('env', 'GCP_SSH_PRIVATE_KEY') }}"
+    ssh_public_key: "{{ lookup('env', 'GCP_SSH_PUBLIC_KEY') }}"
+    ansible_user: "{{ ssh_user }}"
+  tasks:
+    - name: Authenticate with GCP
+      gcp_auth:
+        service_account_file: "{{ lookup('env', 'GCP_SA_KEY') }}"
+        project: "{{ gcp_project }}"
+
+    - name: Create GCP VM instance
+      gcp_compute_instance:
+        name: "{{ vm_name }}"
+        machine_type: "{{ machine_type }}"
+        zone: "{{ gcp_zone }}"
+        disks:
+          - auto_delete: true
+            boot: true
+            initialize_params:
+              source_image: "projects/tsb-vm-images-repo/global/images/{{ image_name }}"
+        network_interfaces:
+          - network: default
+            access_configs:
+              - name: External NAT
+                type: ONE_TO_ONE_NAT
+        metadata:
+          ssh-keys: "{{ ssh_user }}:{{ ssh_public_key }}"
+      register: vm_result
+
+    - name: Get external IP of the VM
+      set_fact:
+        external_ip: "{{ vm_result.instance.networkInterfaces[0].accessConfigs[0].natIP }}"
+
+    - name: Save SSH private key
+      copy:
+        content: "{{ ssh_private_key }}"
+        dest: "~/.ssh/id_rsa"
+        mode: 0600
+
+    - name: Configure SSH client
+      copy:
+        content: |
+          Host *
+            StrictHostKeyChecking no
+            UserKnownHostsFile=/dev/null
+        dest: "~/.ssh/config"
+        mode: 0600
+
+    - name: Create inventory file
+      copy:
+        content: |
+          [gcp]
+          {{ external_ip }} ansible_user={{ ansible_user }} ansible_ssh_private_key_file=~/.ssh/id_rsa
+        dest: inventory.ini
+
+    # TODO: move this out of the playbook, so it can be reused.
+    - name: Run Ansible playbook on the VM
+      ansible.builtin.command:
+        cmd: ansible-playbook -i inventory.ini ansible/playbook.yaml
+
+    - name: Always runs after failure
+      if: failure()
+      run: |
+        gcloud compute instances delete ${{ steps.extract.outputs.vm_name }} \
+          --zone=europe-west9-a \
+          --quiet
