@@ -26,7 +26,7 @@
           - auto_delete: true
             boot: true
             initialize_params:
-              source_image: "projects/tsb-vm-images-repo/global/images/{{ image_name }}"
+              source_image: "projects/{{ gcp_project }}/global/images/{{ image_name }}"
         network_interfaces:
           - network: default
             access_configs:

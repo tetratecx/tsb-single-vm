@@ -59,4 +59,4 @@ jobs:
           TSB_SYNC_PASS: ${{ secrets.TSB_SYNC_PASS }}
           TSB_SYNC_USR: ${{ secrets.TSB_SYNC_USR }}
         run: |
-          ansible-playbook -i localhost, ansible/playbook-create-vm.yaml
+          ansible-playbook -i localhost, ansible/playbook-gcp-vm-create.yaml
