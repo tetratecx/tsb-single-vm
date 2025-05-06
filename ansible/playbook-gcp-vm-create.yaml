@@ -20,6 +20,7 @@
         mode: '0600'
 
     - name: Install Python packages into Ansible's pipx venv
+      # Base on: https://github.com/ansible-collections/google.cloud/blob/master/requirements.txt
       ansible.builtin.command:
         cmd: "{{ ansible_playbook_python }} -m pip install requests google-auth google-cloud-storage"
       changed_when: true
@@ -76,4 +77,4 @@
         content: |
           [gcp]
           {{ external_ip }} ansible_user={{ ansible_user }} ansible_ssh_private_key_file=~/.ssh/id_rsa
-        dest: inventory.ini
+        dest: /tmp/inventory.ini

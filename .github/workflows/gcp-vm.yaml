@@ -61,12 +61,11 @@ jobs:
         run: |
           ansible-playbook -i "localhost ansible_connection=local", ansible/playbook-gcp-vm-create.yaml
 
-      # TODO: move this out of the playbook, so it can be reused.
       - name: Run Ansible playbook on the VM
         run: |
-          ansible-playbook -i inventory.ini ansible/playbook.yaml
+          ansible-playbook -i /tmp/inventory.ini ansible/playbook.yaml
 
-      - name: Always runs after failure
+      - name: Always delete VM after failure
         if: failure()
         env:
           GCP_PROJECT_ID: ${{ env.GCP_PROJECT_ID }}
