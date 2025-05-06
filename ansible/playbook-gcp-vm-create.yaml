@@ -66,8 +66,3 @@
           [gcp]
           {{ external_ip }} ansible_user={{ ansible_user }} ansible_ssh_private_key_file=~/.ssh/id_rsa
         dest: inventory.ini
-
-    # TODO: move this out of the playbook, so it can be reused.
-    - name: Run Ansible playbook on the VM
-      ansible.builtin.command:
-        cmd: ansible-playbook -i inventory.ini ansible/playbook.yaml

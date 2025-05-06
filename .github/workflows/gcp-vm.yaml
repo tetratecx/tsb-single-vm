@@ -59,7 +59,12 @@ jobs:
           TSB_SYNC_PASS: ${{ secrets.TSB_SYNC_PASS }}
           TSB_SYNC_USR: ${{ secrets.TSB_SYNC_USR }}
         run: |
-          ansible-playbook -i localhost, ansible/playbook-gcp-vm-create.yaml
+          ansible-playbook -i "localhost ansible_connection=local", ansible/playbook-gcp-vm-create.yaml
+
+      # TODO: move this out of the playbook, so it can be reused.
+      - name: Run Ansible playbook on the VM
+        run: |
+          ansible-playbook -i inventory.ini ansible/playbook.yaml
 
       - name: Always runs after failure
         if: failure()
@@ -68,4 +73,4 @@ jobs:
           GCP_ZONE: ${{ env.GCP_ZONE }}
           VM_NAME: ${{ steps.extract.outputs.vm_name }}
         run: |
-          ansible-playbook -i localhost, ansible/playbook-gcp-vm-delete.yaml
+          ansible-playbook -i "localhost ansible_connection=local", ansible/playbook-gcp-vm-delete.yaml
