@@ -19,25 +19,10 @@
         dest: /tmp/gcp_key.json
         mode: '0600'
 
-    - name: Get Ansible's Python interpreter path
-      set_fact:
-        ansible_python_bin: "{{ ansible_playbook_python }}"
-
-    - name: Derive pip path from Ansible's Python
-      set_fact:
-        ansible_pip_bin: "{{ ansible_python_bin | regex_replace('/bin/python$', '/bin/pip') }}"
-
-    - name: Show pip path being used
-      debug:
-        msg: "Installing packages with pip: {{ ansible_pip_bin }}"
-
-    - name: Install required packages using Ansible's pip # By # By https://github.com/ansible-collections/google.cloud/blob/master/requirements.txt
-      ansible.builtin.pip:
-        name:
-          - requests
-          - google-auth
-          - google-cloud-storage
-        executable: "{{ ansible_pip_bin }}"
+    - name: Install Python packages into Ansible's pipx venv
+      ansible.builtin.command:
+        cmd: "{{ ansible_playbook_python }} -m pip install requests google-auth google-cloud-storage"
+      changed_when: true
 
     - name: Create GCP VM instance
       google.cloud.gcp_compute_instance:
