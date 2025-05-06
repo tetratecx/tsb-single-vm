@@ -27,6 +27,7 @@
     - name: Create GCP VM instance
       google.cloud.gcp_compute_instance:
         state: present
+        project: "{{ gcp_project }}"
         name: "{{ vm_name }}"
         machine_type: "{{ machine_type }}"
         zone: "{{ gcp_zone }}"
