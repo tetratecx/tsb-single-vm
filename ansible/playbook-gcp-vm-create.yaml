@@ -48,14 +48,13 @@
           ssh-keys: "{{ ssh_user }}:{{ ssh_public_key }}"
       register: vm_result
 
-    - name: Debug GCP instance creation result
+    - name: Instance created name
       debug:
-        var: vm_result
-
+        var: vm_result.name
 
     - name: Get external IP of the VM
       set_fact:
-        external_ip: "{{ vm_result.instance.networkInterfaces[0].accessConfigs[0].natIP }}"
+        external_ip: "{{ vm_result.networkInterfaces[0].accessConfigs[0].natIP }}"
 
     - name: Save SSH private key
       copy:
