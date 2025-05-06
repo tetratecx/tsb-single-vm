@@ -19,6 +19,14 @@
         dest: /tmp/gcp_key.json
         mode: '0600'
 
+    - name: Install pip3 required packages # By https://github.com/ansible-collections/google.cloud/blob/master/requirements.txt
+      ansible.builtin.pip:
+        name:
+          - requests
+          - google-auth
+          - google-cloud-storage
+        executable: pip3
+
     - name: Create GCP VM instance
       google.cloud.gcp_compute_instance:
         state: present
