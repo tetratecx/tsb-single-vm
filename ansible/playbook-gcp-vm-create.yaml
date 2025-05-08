@@ -57,6 +57,12 @@
       set_fact:
         external_ip: "{{ vm_result.networkInterfaces[0].accessConfigs[0].natIP }}"
 
+    - name: Ensure ~/.ssh directory exists
+      file:
+        path: "~/.ssh"
+        state: directory
+        mode: '0700'
+
     - name: Save SSH private key
       copy:
         content: "{{ ssh_private_key }}"
