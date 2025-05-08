@@ -61,28 +61,28 @@
       file:
         path: "~/.ssh"
         state: directory
-        mode: '0700'
+        mode: 700
 
     - name: Save SSH private key
       copy:
         content: "{{ ssh_private_key }}"
         dest: "~/.ssh/id_ed"
-        mode: 0600
+        mode: 600
 
-    - name: Configure SSH client
-      copy:
-        content: |
-          Host *
-            StrictHostKeyChecking no
-            UserKnownHostsFile=/dev/null
-        dest: "~/.ssh/config"
-        mode: 0600
+    # - name: Configure SSH client
+    #   copy:
+    #     content: |
+    #       Host *
+    #         StrictHostKeyChecking no
+    #         UserKnownHostsFile=/dev/null
+    #     dest: "~/.ssh/config"
+    #     mode: 0600
 
     - name: Create inventory file
       copy:
         content: |
           [gcp]
-          {{ external_ip }} ansible_user={{ ansible_user }} ansible_ssh_private_key_file=~/.ssh/id_ed
+          {{ external_ip }} ansible_user={{ ansible_user }} ansible_ssh_private_key_file=~/.ssh/id_ed ansible_ssh_common_args='-o StrictHostKeyChecking=no'
         dest: /tmp/inventory.ini
 
     - name: Wait for SSH on the provisioned VM
