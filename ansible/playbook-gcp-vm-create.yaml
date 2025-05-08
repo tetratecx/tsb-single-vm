@@ -67,7 +67,7 @@
       copy:
         content: "{{ ssh_private_key }}"
         dest: "~/.ssh/id_ed"
-        mode: 600
+        mode: 666
 
     # - name: Configure SSH client
     #   copy:
