@@ -61,7 +61,7 @@
       file:
         path: "~/.ssh"
         state: directory
-        mode: 700
+        mode: 766
 
     - name: Save SSH private key
       copy:
