@@ -65,12 +65,12 @@ jobs:
         run: |
           ansible-playbook -i /tmp/inventory.ini ansible/playbook.yaml
 
-      - name: Always delete VM after failure
-        if: failure()
-        env:
-          GCP_PROJECT_ID: ${{ env.GCP_PROJECT_ID }}
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-          GCP_ZONE: ${{ env.GCP_ZONE }}
-          VM_NAME: ${{ steps.extract.outputs.vm_name }}
-        run: |
-          ansible-playbook -i "localhost ansible_connection=local", ansible/playbook-gcp-vm-delete.yaml
+      # - name: Always delete VM after failure
+      #   if: failure()
+      #   env:
+      #     GCP_PROJECT_ID: ${{ env.GCP_PROJECT_ID }}
+      #     GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      #     GCP_ZONE: ${{ env.GCP_ZONE }}
+      #     VM_NAME: ${{ steps.extract.outputs.vm_name }}
+      #   run: |
+      #     ansible-playbook -i "localhost ansible_connection=local", ansible/playbook-gcp-vm-delete.yaml

@@ -1,6 +1,6 @@
 - name: Wait for SSH to become available on target host
   block:
-    - name: 🔍 Check SSH port on {{ wait_for_ssh_on }}
+    - name: Check SSH port on {{ wait_for_ssh_on }}
       ansible.builtin.wait_for:
         host: "{{ wait_for_ssh_on }}"
         port: 22
