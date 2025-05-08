@@ -66,7 +66,7 @@
     - name: Save SSH private key
       copy:
         content: "{{ ssh_private_key }}"
-        dest: "~/.ssh/id_rsa"
+        dest: "~/.ssh/id_ed"
         mode: 0600
 
     - name: Configure SSH client
@@ -82,7 +82,7 @@
       copy:
         content: |
           [gcp]
-          {{ external_ip }} ansible_user={{ ansible_user }} ansible_ssh_private_key_file=~/.ssh/id_rsa
+          {{ external_ip }} ansible_user={{ ansible_user }} ansible_ssh_private_key_file=~/.ssh/id_ed
         dest: /tmp/inventory.ini
 
     - name: Wait for SSH on the provisioned VM
