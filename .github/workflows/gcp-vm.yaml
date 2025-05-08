@@ -27,13 +27,13 @@ jobs:
           ansible --version
           ansible-galaxy collection install google.cloud
 
-      - name: Save SSH key for ansible
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" > ~/.ssh/config
-          chmod 600 ~/.ssh/config
+      # - name: Save SSH key for ansible
+      #   run: |
+      #     mkdir -p ~/.ssh
+      #     # echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+      #     # chmod 600 ~/.ssh/id_rsa
+      #     echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" > ~/.ssh/config
+      #     chmod 600 ~/.ssh/config
 
       - name: Extract branch/tag name
         id: extract
