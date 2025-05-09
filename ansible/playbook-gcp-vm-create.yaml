@@ -57,17 +57,17 @@
       set_fact:
         external_ip: "{{ vm_result.networkInterfaces[0].accessConfigs[0].natIP }}"
 
-    - name: Ensure ~/.ssh directory exists
-      file:
-        path: "~/.ssh"
-        state: directory
-        mode: 766
+    # - name: Ensure ~/.ssh directory exists
+    #   file:
+    #     path: "/tmp/.ssh"
+    #     state: directory
+    #     mode: 766
 
     - name: Save SSH private key
       copy:
-        content: "{{ ssh_private_key }}"
-        dest: "~/.ssh/id_ed"
-        mode: 666
+        content: "{{ ssh_private_key | regex_replace('\r\n', '\n') }}"
+        dest: "/tmp/id_ed"
+        mode: 600
 
     # - name: Configure SSH client
     #   copy:
@@ -82,7 +82,7 @@
       copy:
         content: |
           [gcp]
-          {{ external_ip }} ansible_user={{ ansible_user }} ansible_ssh_private_key_file=~/.ssh/id_ed ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+          {{ external_ip }} ansible_user={{ ansible_user }} ansible_ssh_private_key_file=/tmp/id_ed ansible_ssh_common_args='-o StrictHostKeyChecking=no'
         dest: /tmp/inventory.ini
 
     - name: Wait for SSH on the provisioned VM
