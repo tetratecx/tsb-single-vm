@@ -104,3 +104,7 @@
       import_tasks: tasks/task-vm-check-ready.yaml
       vars:
         wait_for_ssh_on: "{{ external_ip }}"
+
+    - name: DEBUG print ssh_private_key
+      debug:
+        msg: "{{ ssh_private_key.split('\n') }}"

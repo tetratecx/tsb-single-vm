@@ -58,13 +58,14 @@ jobs:
         run: |
           ansible-playbook -i "localhost ansible_connection=local", ansible/playbook-gcp-vm-create.yaml
 
+      - name: Check ssh file
+        run: |
+          ssh-keygen -l ~/id_ed25519
+
       - name: Run Ansible playbook on the VM
         run: |
           ansible-playbook -i /tmp/inventory.ini ansible/playbook.yaml
 
-      - name: Check ssh file
-        run: |
-          ssh-keygen -l ~/id_ed25519
 
       - name: Always delete VM after failure
         if: failure()
