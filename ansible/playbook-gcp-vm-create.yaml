@@ -12,6 +12,7 @@
     ssh_private_key: "{{ lookup('env', 'GCP_SSH_PRIVATE_KEY') }}"
     ssh_public_key: "{{ lookup('env', 'GCP_SSH_PUBLIC_KEY') }}"
     ansible_user: "{{ ssh_user }}"
+    ssh_path: "~/id_ed25519"
   tasks:
     - name: Create GCP Auth file
       ansible.builtin.copy:
@@ -25,20 +26,17 @@
         cmd: "{{ ansible_playbook_python }} -m pip install requests google-auth google-cloud-storage"
       changed_when: true
 
-
     # - name: Ensure ~/.ssh directory exists
     #   file:
     #     path: /home/runner/.ssh
     #     state: directory
-    #     owner: runner
-    #     group: docker
+
 
     - name: Save SSH private key
       copy:
         content: "{{ ssh_private_key | regex_replace('\r\n', '\n') }}"
-        dest: "/home/runner/.ssh/id_ed25519"
+        dest: "{{ ssh_path }}"
         owner: runner
-        group: docker
         mode: 600
 
     # - name: Configure SSH client
@@ -59,7 +57,7 @@
 
     - name: Stat SSH private key
       stat:
-        path: /home/runner/.ssh/id_ed25519
+        path: "{{ ssh_path }}"
       register: key_stat
 
     - debug:
@@ -101,7 +99,7 @@
       copy:
         content: |
           [gcp]
-          {{ external_ip }} ansible_user={{ ansible_user }} ansible_ssh_private_key_file=~/.ssh/id_ed25519 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+          {{ external_ip }} ansible_user={{ ansible_user }} ansible_ssh_private_key_file={{ ssh_path }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'
         dest: /tmp/inventory.ini
 
     - name: Wait for SSH on the provisioned VM
