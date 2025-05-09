@@ -60,7 +60,7 @@ jobs:
 
       - name: Check ssh file
         run: |
-          ssh-keygen -l ~/id_ed25519
+          ssh-keygen -l -f ~/id_ed25519
 
       - name: Run Ansible playbook on the VM
         run: |
