@@ -54,13 +54,13 @@
     # - debug:
     #     var: whoami_out.stdout
 
-    # - name: Stat SSH private key
-    #   stat:
-    #     path: "{{ ssh_path }}"
-    #   register: key_stat
+    - name: Stat SSH private key
+      stat:
+        path: "{{ ssh_path }}"
+      register: key_stat
 
-    # - debug:
-    #     var: key_stat.stat
+    - debug:
+        var: key_stat.stat
 
     - name: Create GCP VM instance
       google.cloud.gcp_compute_instance:
