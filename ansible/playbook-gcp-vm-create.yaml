@@ -12,7 +12,7 @@
     ssh_private_key: "{{ lookup('env', 'GCP_SSH_PRIVATE_KEY') }}"
     ssh_public_key: "{{ lookup('env', 'GCP_SSH_PUBLIC_KEY') }}"
     ansible_user: "{{ ssh_user }}"
-    ssh_path: "~/id_ed25519"
+    ssh_path: "{{ lookup('env', 'SSH_PATH') }}"
   tasks:
     - name: Create GCP Auth file
       ansible.builtin.copy:
@@ -25,41 +25,6 @@
       ansible.builtin.command:
         cmd: "{{ ansible_playbook_python }} -m pip install requests google-auth google-cloud-storage"
       changed_when: true
-
-    # - name: Ensure ~/.ssh directory exists
-    #   file:
-    #     path: /home/runner/.ssh
-    #     state: directory
-
-    - name: Save SSH private key
-      copy:
-        content: "{{ lookup('env', 'GCP_SSH_PRIVATE_KEY') }}"
-        dest: "{{ ssh_path }}"
-        mode: '0600'
-
-    # - name: Configure SSH client
-    #   copy:
-    #     content: |
-    #       Host *
-    #         StrictHostKeyChecking no
-    #         UserKnownHostsFile=/dev/null
-    #     dest: "~/.ssh/config"
-    #     mode: 0600
-
-    # - name: Who am I
-    #   command: whoami
-    #   register: whoami_out
-
-    # - debug:
-    #     var: whoami_out.stdout
-
-    - name: Stat SSH private key
-      stat:
-        path: "{{ ssh_path }}"
-      register: key_stat
-
-    - debug:
-        var: key_stat.stat
 
     - name: Create GCP VM instance
       google.cloud.gcp_compute_instance:
@@ -89,7 +54,7 @@
       debug:
         var: vm_result.name
 
-    - name: Get external IP of the VM
+    - name: Get VM's external IP
       set_fact:
         external_ip: "{{ vm_result.networkInterfaces[0].accessConfigs[0].natIP }}"
 
@@ -104,7 +69,3 @@
       import_tasks: tasks/task-vm-check-ready.yaml
       vars:
         wait_for_ssh_on: "{{ external_ip }}"
-
-    - name: DEBUG print ssh_private_key
-      debug:
-        msg: "{{ ssh_private_key.split('\n') }}"

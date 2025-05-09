@@ -3,6 +3,7 @@ IMAGE_NAME: tsb-1-12-0
 OWNER_LABEL: ric
 TEAM_LABEL: eng_cre
 SSH_USER: ubuntu
+SSH_PATH: ~/.ssh/id_ed25519
 GCP_PROJECT_ID: tsb-vm-images-repo
 GCP_ZONE: europe-west9-a
 TSB_SCENARIO: main

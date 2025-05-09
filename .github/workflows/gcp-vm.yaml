@@ -27,10 +27,11 @@ jobs:
           ansible --version
           ansible-galaxy collection install google.cloud
 
-      # - name: Save SSH key for ansible
-      #   run: |
-      #     echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-      #     chmod 600 ~/id_ed25519
+      # Had to do it outside Ansible because the builtin copy module breaks the ssh file somehow
+      - name: Save SSH key for ansible
+        run: |
+          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ${{ env.SSH_PATH }}
+          chmod 600 ${{ env.SSH_PATH }}
 
       - name: Extract branch/tag name
         id: extract
@@ -53,19 +54,15 @@ jobs:
           OWNER_LABEL: ${{ env.OWNER_LABEL }}
           TEAM_LABEL: ${{ env.TEAM_LABEL }}
           SSH_USER: ${{ env.SSH_USER }}
+          SSH_PATH: ${{ env.SSH_PATH }}
           TSB_SYNC_PASS: ${{ secrets.TSB_SYNC_PASS }}
           TSB_SYNC_USR: ${{ secrets.TSB_SYNC_USR }}
         run: |
           ansible-playbook -i "localhost ansible_connection=local", ansible/playbook-gcp-vm-create.yaml
 
-      - name: Check ssh file
-        run: |
-          ssh-keygen -l -f ~/id_ed25519
-
       - name: Run Ansible playbook on the VM
         run: |
           ansible-playbook -i /tmp/inventory.ini ansible/playbook.yaml
-
 
       - name: Always delete VM after failure
         if: failure()
