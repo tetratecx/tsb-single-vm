@@ -59,14 +59,17 @@
 
     - name: Ensure ~/.ssh directory exists
       file:
-        path: "~/.ssh"
+        path: /home/runner/.ssh
         state: directory
-        mode: 700
+        owner: runner
+        group: runner
 
     - name: Save SSH private key
       copy:
         content: "{{ ssh_private_key | regex_replace('\r\n', '\n') }}"
-        dest: "~/.ssh/id_ed25519"
+        dest: "/home/runner/.ssh/id_ed25519"
+        owner: runner
+        group: runner
         mode: 600
 
     # - name: Configure SSH client
@@ -87,7 +90,7 @@
 
     - name: Stat SSH private key
       stat:
-        path: ~/.ssh/id_ed25519
+        path: /home/runner/.ssh/id_ed25519
       register: key_stat
 
     - debug:
