@@ -31,12 +31,12 @@
     #     path: /home/runner/.ssh
     #     state: directory
 
-    - name: Save SSH private key
-      copy:
-        content: "{{ ssh_private_key | regex_replace('\r\n', '\n') }}"
-        dest: "{{ ssh_path }}"
-        owner: runner
-        mode: '0600'
+    # - name: Save SSH private key
+    #   copy:
+    #     content: "${{ ssh_private_key | regex_replace('\r\n', '\n') }}"
+    #     dest: "{{ ssh_path }}"
+    #     owner: runner
+    #     mode: '0600'
 
     # - name: Configure SSH client
     #   copy:
@@ -47,20 +47,20 @@
     #     dest: "~/.ssh/config"
     #     mode: 0600
 
-    - name: Who am I
-      command: whoami
-      register: whoami_out
+    # - name: Who am I
+    #   command: whoami
+    #   register: whoami_out
 
-    - debug:
-        var: whoami_out.stdout
+    # - debug:
+    #     var: whoami_out.stdout
 
-    - name: Stat SSH private key
-      stat:
-        path: "{{ ssh_path }}"
-      register: key_stat
+    # - name: Stat SSH private key
+    #   stat:
+    #     path: "{{ ssh_path }}"
+    #   register: key_stat
 
-    - debug:
-        var: key_stat.stat
+    # - debug:
+    #     var: key_stat.stat
 
     - name: Create GCP VM instance
       google.cloud.gcp_compute_instance:
