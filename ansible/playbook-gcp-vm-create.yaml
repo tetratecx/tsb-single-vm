@@ -25,6 +25,46 @@
         cmd: "{{ ansible_playbook_python }} -m pip install requests google-auth google-cloud-storage"
       changed_when: true
 
+
+    # - name: Ensure ~/.ssh directory exists
+    #   file:
+    #     path: /home/runner/.ssh
+    #     state: directory
+    #     owner: runner
+    #     group: docker
+
+    - name: Save SSH private key
+      copy:
+        content: "{{ ssh_private_key | regex_replace('\r\n', '\n') }}"
+        dest: "/home/runner/.ssh/id_ed25519"
+        owner: runner
+        group: docker
+        mode: 600
+
+    # - name: Configure SSH client
+    #   copy:
+    #     content: |
+    #       Host *
+    #         StrictHostKeyChecking no
+    #         UserKnownHostsFile=/dev/null
+    #     dest: "~/.ssh/config"
+    #     mode: 0600
+
+    - name: Who am I
+      command: whoami
+      register: whoami_out
+
+    - debug:
+        var: whoami_out.stdout
+
+    - name: Stat SSH private key
+      stat:
+        path: /home/runner/.ssh/id_ed25519
+      register: key_stat
+
+    - debug:
+        var: key_stat.stat
+
     - name: Create GCP VM instance
       google.cloud.gcp_compute_instance:
         state: present
@@ -56,45 +96,6 @@
     - name: Get external IP of the VM
       set_fact:
         external_ip: "{{ vm_result.networkInterfaces[0].accessConfigs[0].natIP }}"
-
-    - name: Ensure ~/.ssh directory exists
-      file:
-        path: /home/runner/.ssh
-        state: directory
-        owner: runner
-        group: runner
-
-    - name: Save SSH private key
-      copy:
-        content: "{{ ssh_private_key | regex_replace('\r\n', '\n') }}"
-        dest: "/home/runner/.ssh/id_ed25519"
-        owner: runner
-        group: runner
-        mode: 600
-
-    # - name: Configure SSH client
-    #   copy:
-    #     content: |
-    #       Host *
-    #         StrictHostKeyChecking no
-    #         UserKnownHostsFile=/dev/null
-    #     dest: "~/.ssh/config"
-    #     mode: 0600
-
-    - name: Who am I
-      command: whoami
-      register: whoami_out
-
-    - debug:
-        var: whoami_out.stdout
-
-    - name: Stat SSH private key
-      stat:
-        path: /home/runner/.ssh/id_ed25519
-      register: key_stat
-
-    - debug:
-        var: key_stat.stat
 
     - name: Create inventory file
       copy:
