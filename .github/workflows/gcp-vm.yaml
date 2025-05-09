@@ -15,10 +15,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Load deploy.env
-        id: envs
+      - name: Load vars
         run: |
-          eval $(yq e '. | to_entries | .[] | "echo \(.key)=\(.value);"' github-deploy.yaml) >> $GITHUB_ENV
+          eval $(yq e '. | to_entries | .[] | "echo \(.key)=\(.value);"' .github/workflows/vars.yaml) >> $GITHUB_ENV
 
       - name: Install Ansible
         run: |
