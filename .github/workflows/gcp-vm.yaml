@@ -27,11 +27,10 @@ jobs:
           ansible --version
           ansible-galaxy collection install google.cloud
 
-      - name: Save SSH key for ansible
-        run: |
-          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/id_ed25519
-          chmod 600 ~/id_ed25519
-          ssh-keygen -l -f ~/id_ed25519
+      # - name: Save SSH key for ansible
+      #   run: |
+      #     echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+      #     chmod 600 ~/id_ed25519
 
       - name: Extract branch/tag name
         id: extract
@@ -62,6 +61,10 @@ jobs:
       - name: Run Ansible playbook on the VM
         run: |
           ansible-playbook -i /tmp/inventory.ini ansible/playbook.yaml
+
+      - name: Check ssh file
+        run: |
+          ssh-keygen -l ~/id_ed25519
 
       - name: Always delete VM after failure
         if: failure()

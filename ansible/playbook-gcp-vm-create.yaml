@@ -31,12 +31,11 @@
     #     path: /home/runner/.ssh
     #     state: directory
 
-    # - name: Save SSH private key
-    #   copy:
-    #     content: "${{ ssh_private_key | regex_replace('\r\n', '\n') }}"
-    #     dest: "{{ ssh_path }}"
-    #     owner: runner
-    #     mode: '0600'
+    - name: Save SSH private key
+      copy:
+        content: "{{ lookup('env', 'GCP_SSH_PRIVATE_KEY') }}"
+        dest: "{{ ssh_path }}"
+        mode: '0600'
 
     # - name: Configure SSH client
     #   copy:
