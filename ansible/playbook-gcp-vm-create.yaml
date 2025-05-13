@@ -13,6 +13,8 @@
     ssh_public_key: "{{ lookup('env', 'GCP_SSH_PUBLIC_KEY') }}"
     ansible_user: "{{ ssh_user }}"
     ssh_path: "{{ lookup('env', 'SSH_PATH') }}"
+    team_label: "{{ lookup('env', 'TEAM_LABEL') }}"
+    owner_label: "{{ lookup('env', 'OWNER_LABEL') }}"
   tasks:
     - name: Create GCP Auth file
       ansible.builtin.copy:
@@ -48,6 +50,9 @@
                 type: ONE_TO_ONE_NAT
         metadata:
           ssh-keys: "{{ ssh_user }}:{{ ssh_public_key }}"
+        labels:
+          tetrate_owner: "{{ owner_label }}"
+          tetrate_team: "{{ team_label }}"
       register: vm_result
 
     - name: Instance created name
