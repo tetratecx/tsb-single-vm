@@ -144,5 +144,5 @@ sync_tsb_images "${LOCAL_REGISTRY}" "$(get_tetrate_repo_user)" "$(get_tetrate_re
 upgrade_mp_with_tctl
 upgrade_cp_with_tctl
 for cluster in "${CLUSTERS[@]}"; do
-  check_clusters_status "${cluster}"
+  tctl status cluster "${cluster}"
 done
