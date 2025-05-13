@@ -160,16 +160,13 @@ function sync_tsb_images {
 
   echo "Going to sync tetrate's tsb images to local registry '${local_registry}'" ;
   if ! command -v tctl &>/dev/null ; then print_error "Error: tctl could not be found. Please install it to continue." ; exit 1 ; fi
-  if ! docker login "${tetrate_registry_url}" --username "${tetrate_registry_user}" --password "${tetrate_registry_password}" 2>/dev/null; then
-    echo "Failed to login to docker registry at '${tetrate_registry_url}'. Check your credentials" ; exit 1 ;
+  if ! tctl install image-sync --username "${tetrate_registry_user}" \
+    --apikey "${tetrate_registry_password}" \
+    --registry "${local_registry}"; then
+    print_error "tctl failed to sync images" && return 2 ;
   else
-    echo "Docker registry is reachable and credentials valid: ok" ;
+    print_info "Images synced using tctl" ;
   fi
-
-  # Sync all tsb images to local repo
-  for image in $(timeout 3s tctl install image-sync --just-print --accept-eula 2>/dev/null) ; do
-    sync_single_image "${local_registry}" "${image}" ;
-  done
 
   # Sync images for application deployment and debugging to local repo
   sync_single_image "${local_registry}" "ghcr.io/tetratecx/tsb-single-vm/obs-tester-server:latest" ;
