@@ -10,6 +10,8 @@ source "${BASE_DIR}/helpers/print.sh"
 source "${BASE_DIR}/helpers/registry.sh"
 # shellcheck source=/dev/null
 source "${BASE_DIR}/helpers/tsb.sh"
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/debug.sh"
 
 ACTION=${1}
 
@@ -130,7 +132,6 @@ function upgrade_cp_with_tctl() {
     fi
   else
     print_error "tctl install cluster-operators failed"
-    exit 1
   fi
 }
 
@@ -139,6 +140,9 @@ function upgrade_cp_with_tctl() {
 #
 backup_manifests
 upgrade_tctl
+docker_remove_isolation
+tctl_fix_timeout
+restart_clusters_cps
 print_info "Using credentials present in env.json to sync images"
 sync_tsb_images "${LOCAL_REGISTRY}" "$(get_tetrate_repo_user)" "$(get_tetrate_repo_password)"
 upgrade_mp_with_tctl
