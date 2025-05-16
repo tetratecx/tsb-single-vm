@@ -39,7 +39,7 @@ function backup_manifests() {
   for cluster in "${CLUSTERS[@]}"; do
     kubectl --context "${cluster}" get controlplane -n istio-system -oyaml > "${backup_dir}/${cluster}-controlplane-backup.yaml"
   done
-  kubectl --context "${MP}" get managementplane -n tsb -oyaml > "${backup_dir}/${mp}-managementplane-backup.yaml"
+  kubectl --context "${MP}" get managementplane -n tsb -oyaml > "${backup_dir}/${MP}-managementplane-backup.yaml"
 }
 
 # This function gets local version in format 1.9.3
@@ -140,12 +140,13 @@ function upgrade_cp_with_tctl() {
 backup_manifests
 upgrade_tctl
 docker_remove_isolation
-tctl_fix_timeout
 restart_clusters_cps
 print_info "Using credentials present in env.json to sync images"
 sync_tsb_images "${LOCAL_REGISTRY}" "$(get_tetrate_repo_user)" "$(get_tetrate_repo_password)"
 upgrade_mp_with_tctl
 upgrade_cp_with_tctl
+tctl_fix_timeout
+login_tsb_admin
 for cluster in "${CLUSTERS[@]}"; do
   tctl status cluster "${cluster}"
 done
