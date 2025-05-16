@@ -6,6 +6,8 @@ HELPERS_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")") ;
 
 # shellcheck source=/dev/null
 source "${HELPERS_DIR}/print.sh" ;
+# shellcheck source=/dev/null
+source "${HELPERS_DIR}/../tsb.sh" ;
 
 function docker_remove_isolation() {
   sudo iptables -t filter -F DOCKER-ISOLATION-STAGE-2
@@ -32,3 +34,12 @@ function tctl_fix_timeout {
   tctl config profiles set-current tsb-profile
   tctl config clusters set t1 --timeout 30s
 }
+
+# Execution only when directly ran, avoiding execution when sourced
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    tctl_fix_timeout
+    login_tsb_admin
+    docker_remove_isolation
+    restart_clusters_cps
+fi
