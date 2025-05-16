@@ -148,5 +148,5 @@ upgrade_cp_with_tctl
 tctl_fix_timeout
 login_tsb_admin
 for cluster in "${CLUSTERS[@]}"; do
-  tctl status cluster "${cluster}"
+  tctl status cluster "${cluster}" 2>/dev/null ||  tctl x status cluster "${cluster}"
 done
