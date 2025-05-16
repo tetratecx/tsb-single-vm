@@ -74,7 +74,6 @@ function upgrade_tctl() {
     fi
   else
     print_error "You are trying to update to the same version. Go to env.json .tsb.version and change it"
-    exit 1
   fi
 }
 
