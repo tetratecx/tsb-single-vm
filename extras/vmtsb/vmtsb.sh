@@ -118,7 +118,7 @@ EOF
     filter="${filter} AND zone=${ZONE}"
   fi
 
-  names=$(gcloud compute instances list --filter "${filter}" | tail +2 | awk '{ print $1 }')
+  names=$(gcloud compute instances list --filter "${filter}" | tail -n +2 | awk '{ print $1 }')
 
   if [[ -z ${names} ]]; then
     echo "There's no instances in ${STATE} state\n"
