@@ -14,7 +14,7 @@ function docker_remove_isolation() {
 }
 
 function restart_clusters_cps() {
-  if [ -z "${1}" ]]; then
+  if [[ -z "${1}" ]]; then
     print_warning "Please provide cluster names array as 1st argument. Using default ( c1 c2 t1 )" \
       || local clusters=( c1 c2 t1 ) ;
   else
@@ -31,7 +31,7 @@ function restart_clusters_cps() {
 
 # TODO: receive as arg the MP cluster name
 function tctl_fix_timeout {
-  tctl config profiles set-current tsb-profile
+  #tctl config profiles set-current tsb-profile
   tctl config clusters set t1 --timeout 30s
 }
 
@@ -39,7 +39,7 @@ function tctl_fix_timeout {
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     tctl_fix_timeout
-    login_tsb_admin
+    login_tsb_admin "tetrate" "admin" "admin"
     docker_remove_isolation
     restart_clusters_cps
 fi
