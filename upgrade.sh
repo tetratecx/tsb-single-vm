@@ -53,11 +53,19 @@ function upgrade_tctl() {
   local tctl_dir=$(which tctl)
   # As the output is TCTL version: v1.9.3, this brings only 1.9.3 using 'v' as separator
   local tctl_current_version=$(get_tsb_local_version)
-  # Present in env.json file
-  local desired_tsb_version=$(get_tsb_version)
+  # Present in env.json file under .tsb.upgrade.version_upgrade_target
+  local desired_tsb_version=$(get_tsb_version_upgrade_target)
+
+  # Check if version_upgrade_target is set
+  if [[ -z "${desired_tsb_version}" || "${desired_tsb_version}" == "null" ]]; then
+    print_error "No upgrade target version specified in env.json at .tsb.upgrade.version_upgrade_target"
+    print_error "Please set the target version before running upgrade"
+    exit 1
+  fi
+
   local tctl_current_version_new_location="${tctl_dir}-${tctl_current_version}"
   if [[ "${tctl_current_version}" != "${desired_tsb_version}" ]]; then
-    print_info "Updating tctl to version ${desired_tsb_version}"
+    print_info "Updating tctl from version ${tctl_current_version} to version ${desired_tsb_version}"
     print_info "No worries, old tctl version ${tctl_current_version} will be kept at ${tctl_current_version_new_location}"
     sudo mv ${tctl_dir} "${tctl_current_version_new_location}"
 
@@ -71,9 +79,13 @@ function upgrade_tctl() {
       tctl_current_version=$(tctl version)
       print_error "tctl version --local-only output does not match with your desired version"
       print_error "New version is ${tctl_current_version}"
+      exit 1
     fi
+    print_info "Successfully upgraded tctl to version ${desired_tsb_version}"
   else
-    print_error "You are trying to update to the same version. Go to env.json .tsb.version and change it"
+    print_error "Current tctl version ${tctl_current_version} is already at target version ${desired_tsb_version}"
+    print_error "Please update .tsb.upgrade.version_upgrade_target in env.json to a different version"
+    exit 1
   fi
 }
 
@@ -139,12 +151,39 @@ function upgrade_cp_with_tctl() {
 #
 backup_manifests
 upgrade_tctl
+
+# Get upgrade flags from env.json
+upgrade_mp_flag=$(get_tsb_version_upgrade_mp)
+upgrade_cp_flag=$(get_tsb_version_upgrade_cp)
+
+# Validate upgrade flags
+if [[ "${upgrade_mp_flag}" != "true" && "${upgrade_cp_flag}" != "true" ]]; then
+  print_error "No components selected for upgrade"
+  print_error "Set .tsb.upgrade.mp or .tsb.upgrade.cp to true in env.json"
+  exit 1
+fi
+
 docker_remove_isolation
 restart_clusters_cps
 print_info "Using credentials present in env.json to sync images"
 sync_tsb_images "${LOCAL_REGISTRY}" "$(get_tetrate_repo_user)" "$(get_tetrate_repo_password)"
-upgrade_mp_with_tctl
-upgrade_cp_with_tctl
+
+# Upgrade management plane if flag is set
+if [[ "${upgrade_mp_flag}" == "true" ]]; then
+  print_info "Upgrading management plane as .tsb.upgrade.mp is set to true"
+  upgrade_mp_with_tctl
+else
+  print_info "Skipping management plane upgrade as .tsb.upgrade.mp is not set to true"
+fi
+
+# Upgrade control plane if flag is set
+if [[ "${upgrade_cp_flag}" == "true" ]]; then
+  print_info "Upgrading control plane as .tsb.upgrade.cp is set to true"
+  upgrade_cp_with_tctl
+else
+  print_info "Skipping control plane upgrade as .tsb.upgrade.cp is not set to true"
+fi
+
 tctl_fix_timeout
 login_tsb_admin
 for cluster in "${CLUSTERS[@]}"; do
