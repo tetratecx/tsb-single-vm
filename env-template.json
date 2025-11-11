@@ -8,6 +8,11 @@
       "password": "",
       "user": ""
     },
-    "version": "1.12.0"
+    "version": "1.12.0",
+    "upgrade": {
+      "version_upgrade_target": "",
+      "cp": "",
+      "mp": ""
+    }
   }
 }
