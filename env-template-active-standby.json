@@ -8,6 +8,7 @@
       "password": "********",
       "user": "********"
     },
-    "version": "1.7.2"
+    "version": "1.7.2",
+    "version_upgrade_target": ""
   }
 }
