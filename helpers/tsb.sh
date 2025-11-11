@@ -30,13 +30,15 @@ DONE
 #     (1) onboarding cluster name
 #     (2) timeout in seconds (optional, default 120 aka 2 minutes)
 function wait_cluster_onboarded() {
-  [[ -z "${1}" ]] && print_error "Please provide the onboarding cluster name as 1st argument" && return 2 || local cluster_name="${1}" ;
+  [[ -z "${1}" ]] && print_error "Please provide the onboarding cluster name as 1st argument" && return 2 \
+    || local cluster_name="${1}" ;
   [[ -z "${2}" ]] && local timeout=${CLUSTER_WAIT_TIMEOUT} || local timeout="${2}" ;
   local start_time; start_time=$(date +%s) ;
 
   echo -n "Wait for cluster '${cluster_name}' to be onboarded (timeout: ${timeout}s): " ;
   while :; do
-    local status_json; status_json=$(tctl status cluster "${cluster_name}" -o json) ;
+    local status_json; status_json=$(tctl status cluster "${cluster_name}" -o json 2>/dev/null || \
+      tctl x status cluster "${cluster_name}" -o json ) ;
     local current_status; current_status=$(echo "${status_json}" | jq -r '.spec.status') ;
     local current_message; current_message=$(echo "${status_json}" | jq -r '.spec.message') ;
     if [[ "${current_status}" == "READY" && "${current_message}" == "Cluster onboarded" ]]; then

@@ -1,0 +1,4 @@
+- hosts: gcp
+  tasks:
+    - name: Touch a test file
+      ansible.builtin.shell: "echo hello > ~/test.txt"

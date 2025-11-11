@@ -63,7 +63,7 @@ function install_tctl() {
       --cluster-service-account="$(cat ${cp_output_dir}/cluster-service-account.jwk)" \
       --elastic-ca-certificate="$(cat ${mp_output_dir}/es-certs.pem)" \
       --management-plane-ca-certificate="$(cat ${mp_output_dir}/mp-certs.pem)" \
-      --xcp-certs="$(cat ${mp_output_dir}/xcp-central-ca-certs.pem)" \
+      --xcp-central-ca-bundle="$(cat ${mp_output_dir}/xcp-central-ca-certs.pem)" \
       > "${cp_output_dir}/controlplane-secrets.yaml" ;
 
     # Generate controlplane.yaml by inserting the correct mgmt plane API endpoint IP address

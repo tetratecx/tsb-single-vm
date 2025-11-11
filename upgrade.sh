@@ -10,6 +10,8 @@ source "${BASE_DIR}/helpers/print.sh"
 source "${BASE_DIR}/helpers/registry.sh"
 # shellcheck source=/dev/null
 source "${BASE_DIR}/helpers/tsb.sh"
+# shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/debug.sh"
 
 ACTION=${1}
 
@@ -37,7 +39,7 @@ function backup_manifests() {
   for cluster in "${CLUSTERS[@]}"; do
     kubectl --context "${cluster}" get controlplane -n istio-system -oyaml > "${backup_dir}/${cluster}-controlplane-backup.yaml"
   done
-  kubectl --context "${MP}" get managementplane -n tsb -oyaml > "${backup_dir}/${mp}-managementplane-backup.yaml"
+  kubectl --context "${MP}" get managementplane -n tsb -oyaml > "${backup_dir}/${MP}-managementplane-backup.yaml"
 }
 
 # This function gets local version in format 1.9.3
@@ -72,7 +74,6 @@ function upgrade_tctl() {
     fi
   else
     print_error "You are trying to update to the same version. Go to env.json .tsb.version and change it"
-    exit 1
   fi
 }
 
@@ -130,7 +131,6 @@ function upgrade_cp_with_tctl() {
     fi
   else
     print_error "tctl install cluster-operators failed"
-    exit 1
   fi
 }
 
@@ -139,10 +139,14 @@ function upgrade_cp_with_tctl() {
 #
 backup_manifests
 upgrade_tctl
+docker_remove_isolation
+restart_clusters_cps
 print_info "Using credentials present in env.json to sync images"
 sync_tsb_images "${LOCAL_REGISTRY}" "$(get_tetrate_repo_user)" "$(get_tetrate_repo_password)"
 upgrade_mp_with_tctl
 upgrade_cp_with_tctl
+tctl_fix_timeout
+login_tsb_admin
 for cluster in "${CLUSTERS[@]}"; do
-  check_clusters_status "${cluster}"
+  tctl status cluster "${cluster}" 2>/dev/null ||  tctl x status cluster "${cluster}"
 done

@@ -1,0 +1,76 @@
+name: Create GCP VM
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'deploy-*'
+    tags:
+      - 'v*'
+
+jobs:
+  create-vm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Load deploy.env
+        id: envs
+        run: |
+          eval $(yq e '. | to_entries | .[] | "echo \(.key)=\(.value);"' github-deploy.yaml) >> $GITHUB_ENV
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/auth@v2
+        with:
+          credential_json: ${{ secrets.GCP_SA_KEY }}
+          
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          version: '>= 363.0.0'
+
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
+
+      - name: Extract branch/tag name
+        id: extract
+        run: |
+          ref_name=${GITHUB_REF#refs/*/}
+          vm_name="tsb-${ref_name//./-}"
+          echo "vm_name=$vm_name" >> $GITHUB_OUTPUT
+          echo "ref_name=$ref_name" >> $GITHUB_OUTPUT
+
+      - name: Create VM instance from a previously created image
+        run: |
+          gcloud compute instances create ${{ steps.extract.outputs.vm_name }} \
+            --zone=europe-west9-a \
+            --machine-type=${{ env.MACHINE_TYPE }} \
+            --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default \
+            --maintenance-policy=MIGRATE \
+            --labels=tetrate_owner=${{ env.OWNER_LABEL }},tetrate_team=${{ env.TEAM_LABEL }} \
+            --create-disk=auto-delete=yes,boot=yes,device-name=${{ steps.extract.outputs.vm_name }},image=projects/tsb-vm-images-repo/global/images/${{ env.IMAGE_NAME }},mode=rw,size=100,type=projects/tsb-vm-images-repo/zones/europe-west9-a/diskTypes/pd-standard \
+            --metadata=ssh-keys="${{ env.SSH_USER }}:${{ secrets.GCP_SSH_PUBLIC_KEY }}"
+
+      - name: Get external IP
+        id: get-ip
+        run: |
+          external_ip=$(gcloud compute instances describe ${{ steps.extract.outputs.vm_name }} --zone=europe-west9-a --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+          echo "external_ip=$external_ip" >> $GITHUB_OUTPUT
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+          ansible --version
+
+      - name: Save SSH key for ansible
+        run: |
+          echo "${{ secrets.GCP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa}
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Run Ansible
+        run: |
+          echo "[gcp]" > inventory.ini
+          echo "${{ steps.get-ip.outputs.external_ip }} ansible_user=${{ env.SSH_USER }} ansible_ssh_private_key_file=~/.ssh/id_rsa" >> inventory.ini
+          ansible-playbook -i inventory.ini playbook.yaml
