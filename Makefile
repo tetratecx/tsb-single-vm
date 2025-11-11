@@ -8,10 +8,12 @@ help: ## This help
 
 .DEFAULT_GOAL := help
 
-.PHONY: up down info
+.PHONY: up down info upgrade
 up: infra-up tsb-mp-install tsb-cp-install scenario-deploy info scenario-info ## Bring up full demo scenario
 down: clean ## Bring down full demo scenario
 info: infra-info scenario-info ## Get information about infra environment and scenario
+upgrade: ## Upgrade TSB to version specified in env.json
+	@/bin/bash -c './upgrade.sh'
 
 .PHONY: prereq-check
 prereq-check: ## Check if prerequisites are installed
