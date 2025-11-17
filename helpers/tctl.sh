@@ -213,7 +213,7 @@ function upgrade_tctl_to_version() {
   if [[ "${current_version}" == "${target_version}" ]]; then
     print_error "Current tctl version ${current_version} is already at target version ${target_version}"
     print_error "No upgrade needed"
-    return 1
+    # return 1
   fi
 
   print_info "Upgrading tctl from version ${current_version} to version ${target_version}"
