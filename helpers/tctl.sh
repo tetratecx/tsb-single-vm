@@ -135,7 +135,6 @@ function backup_tctl() {
   if [[ -f "${backup_path}" ]]; then
     print_info "Backup already exists at ${backup_path}"
     echo "${backup_path}"
-    return 0
   fi
 
   print_info "Backing up tctl version ${current_version} to ${backup_path}"
