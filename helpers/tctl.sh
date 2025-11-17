@@ -202,8 +202,10 @@ function upgrade_tctl_to_version() {
     if [[ $? -ne 0 ]]; then
       return 1
     fi
-    install_tctl "${tctl_binary}"
-    return $?
+    # download_tctl_version already installs to the correct location
+    # No need to call install_tctl again
+    print_info "Successfully installed tctl version ${target_version}"
+    return 0
   fi
 
   # Check current version
