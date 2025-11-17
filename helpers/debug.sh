@@ -15,8 +15,8 @@ function docker_remove_isolation() {
 
 function restart_clusters_cps() {
   if [[ -z "${1}" ]]; then
-    print_warning "Please provide cluster names array as 1st argument. Using default ( c1 c2 t1 )" \
-      || local clusters=( c1 c2 t1 ) ;
+    print_warning "Please provide cluster names array as 1st argument. Using default ( c1 c2 t1 )"; \
+      local clusters=( c1 c2 t1 ) ;
   else
     local clusters=("${1[@]}")
   fi
