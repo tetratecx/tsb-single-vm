@@ -69,17 +69,17 @@ function download_tctl_version() {
   local architecture; architecture=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/arm64\|aarch64/arm64/')
   local tctl_url="https://binaries.dl.tetrate.io/public/raw/versions/linux-${architecture}-${target_version}/tctl"
 
-  print_info "Downloading tctl version ${target_version} from ${tctl_url}" >&2
+  print_info "Downloading tctl version ${target_version} from ${tctl_url}"
 
   # Download to /tmp first
   local temp_path="/tmp/tctl-${target_version}-$$"
-  if ! curl -Lo "${temp_path}" "${tctl_url}" >&2; then
-    print_error "Failed to download tctl version ${target_version}" >&2
-    print_error "Please verify the version exists at ${tctl_url}" >&2
+  if ! curl -Lo "${temp_path}" "${tctl_url}" 2>&1 | grep -v "^  %" >&2; then
+    print_error "Failed to download tctl version ${target_version}"
+    print_error "Please verify the version exists at ${tctl_url}"
 
     # Restore backup if download failed (backup_path has version suffix)
     if [[ -n "${backup_path}" && -f "${backup_path}" ]]; then
-      print_info "Restoring backup from ${backup_path}" >&2
+      print_info "Restoring backup from ${backup_path}"
       sudo mv "${backup_path}" "${tctl_path}"
     fi
 
@@ -90,17 +90,17 @@ function download_tctl_version() {
   chmod +x "${temp_path}"
 
   # Move to final location (use sudo as /usr/local/bin typically requires root)
-  if sudo install "${temp_path}" "${tctl_path}" >&2; then
+  if sudo install "${temp_path}" "${tctl_path}"; then
     rm -f "${temp_path}"
-    print_info "Successfully installed tctl ${target_version} to ${tctl_path}" >&2
+    print_info "Successfully installed tctl ${target_version} to ${tctl_path}"
     echo "${tctl_path}"
     return 0
   else
-    print_error "Failed to install tctl to ${tctl_path}" >&2
+    print_error "Failed to install tctl to ${tctl_path}"
 
     # Restore backup if installation failed (backup_path has version suffix)
     if [[ -n "${backup_path}" && -f "${backup_path}" ]]; then
-      print_info "Restoring backup from ${backup_path}" >&2
+      print_info "Restoring backup from ${backup_path}"
       sudo mv "${backup_path}" "${tctl_path}"
     fi
 
@@ -135,6 +135,7 @@ function backup_tctl() {
   if [[ -f "${backup_path}" ]]; then
     print_info "Backup already exists at ${backup_path}"
     echo "${backup_path}"
+    return 0
   fi
 
   print_info "Backing up tctl version ${current_version} to ${backup_path}"
@@ -211,12 +212,11 @@ function upgrade_tctl_to_version() {
   local current_version; current_version=$(get_tctl_local_version)
 
   if [[ "${current_version}" == "${target_version}" ]]; then
-    print_error "Current tctl version ${current_version} is already at target version ${target_version}"
-    print_error "No upgrade needed"
-    # return 1
+    print_warning "Current tctl version ${current_version} is already at target version ${target_version}"
+    print_info "Continuing anyway in case cluster components need upgrading"
+  else
+    print_info "Upgrading tctl from version ${current_version} to version ${target_version}"
   fi
-
-  print_info "Upgrading tctl from version ${current_version} to version ${target_version}"
 
   # Download new version
   local new_tctl; new_tctl=$(download_tctl_version "${target_version}")
