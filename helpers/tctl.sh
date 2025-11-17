@@ -51,17 +51,12 @@ function download_tctl_version() {
     return 2
   fi
 
-  # Backup existing tctl if it exists
+  local tctl_dir; tctl_dir=$(dirname "${tctl_path}")
+
+  # Backup existing tctl if it exists using the backup_tctl function
   if [[ -f "${tctl_path}" ]]; then
-    local tctl_dir; tctl_dir=$(dirname "${tctl_path}")
-    local backup_path="${tctl_dir}/tctl-backup"
-
-    print_info "Existing tctl found at ${tctl_path}"
-    print_info "Backing up current tctl to ${backup_path}"
-
-    if sudo mv "${tctl_path}" "${backup_path}"; then
-      print_info "Backup created successfully"
-    else
+    local backup_path; backup_path=$(backup_tctl)
+    if [[ $? -ne 0 ]]; then
       print_error "Failed to backup existing tctl"
       return 1
     fi
@@ -78,10 +73,10 @@ function download_tctl_version() {
     print_error "Failed to download tctl version ${target_version}"
     print_error "Please verify the version exists at ${tctl_url}"
 
-    # Restore backup if download failed
-    if [[ -f "${tctl_dir}/tctl-backup" ]]; then
-      print_info "Restoring backup"
-      sudo mv "${tctl_dir}/tctl-backup" "${tctl_path}"
+    # Restore backup if download failed (backup_path has version suffix)
+    if [[ -n "${backup_path}" && -f "${backup_path}" ]]; then
+      print_info "Restoring backup from ${backup_path}"
+      sudo mv "${backup_path}" "${tctl_path}"
     fi
 
     rm -f "${temp_path}"
@@ -99,10 +94,10 @@ function download_tctl_version() {
   else
     print_error "Failed to install tctl to ${tctl_path}"
 
-    # Restore backup if installation failed
-    if [[ -f "${tctl_dir}/tctl-backup" ]]; then
-      print_info "Restoring backup"
-      sudo mv "${tctl_dir}/tctl-backup" "${tctl_path}"
+    # Restore backup if installation failed (backup_path has version suffix)
+    if [[ -n "${backup_path}" && -f "${backup_path}" ]]; then
+      print_info "Restoring backup from ${backup_path}"
+      sudo mv "${backup_path}" "${tctl_path}"
     fi
 
     rm -f "${temp_path}"
