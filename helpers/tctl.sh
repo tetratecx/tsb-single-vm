@@ -69,17 +69,17 @@ function download_tctl_version() {
   local architecture; architecture=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/arm64\|aarch64/arm64/')
   local tctl_url="https://binaries.dl.tetrate.io/public/raw/versions/linux-${architecture}-${target_version}/tctl"
 
-  print_info "Downloading tctl version ${target_version} from ${tctl_url}"
+  print_info "Downloading tctl version ${target_version} from ${tctl_url}" >&2
 
   # Download to /tmp first
   local temp_path="/tmp/tctl-${target_version}-$$"
-  if ! curl -Lo "${temp_path}" "${tctl_url}"; then
-    print_error "Failed to download tctl version ${target_version}"
-    print_error "Please verify the version exists at ${tctl_url}"
+  if ! curl -Lo "${temp_path}" "${tctl_url}" >&2; then
+    print_error "Failed to download tctl version ${target_version}" >&2
+    print_error "Please verify the version exists at ${tctl_url}" >&2
 
     # Restore backup if download failed (backup_path has version suffix)
     if [[ -n "${backup_path}" && -f "${backup_path}" ]]; then
-      print_info "Restoring backup from ${backup_path}"
+      print_info "Restoring backup from ${backup_path}" >&2
       sudo mv "${backup_path}" "${tctl_path}"
     fi
 
@@ -90,17 +90,17 @@ function download_tctl_version() {
   chmod +x "${temp_path}"
 
   # Move to final location (use sudo as /usr/local/bin typically requires root)
-  if sudo install "${temp_path}" "${tctl_path}"; then
+  if sudo install "${temp_path}" "${tctl_path}" >&2; then
     rm -f "${temp_path}"
-    print_info "Successfully installed tctl ${target_version} to ${tctl_path}"
+    print_info "Successfully installed tctl ${target_version} to ${tctl_path}" >&2
     echo "${tctl_path}"
     return 0
   else
-    print_error "Failed to install tctl to ${tctl_path}"
+    print_error "Failed to install tctl to ${tctl_path}" >&2
 
     # Restore backup if installation failed (backup_path has version suffix)
     if [[ -n "${backup_path}" && -f "${backup_path}" ]]; then
-      print_info "Restoring backup from ${backup_path}"
+      print_info "Restoring backup from ${backup_path}" >&2
       sudo mv "${backup_path}" "${tctl_path}"
     fi
 
