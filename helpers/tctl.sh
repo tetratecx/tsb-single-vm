@@ -52,13 +52,17 @@ function download_tctl_version() {
   fi
 
   local tctl_dir; tctl_dir=$(dirname "${tctl_path}")
+  local backup_path=""
 
   # Backup existing tctl if it exists using the backup_tctl function
   if [[ -f "${tctl_path}" ]]; then
-    local backup_path; backup_path=$(backup_tctl)
-    if [[ $? -ne 0 ]]; then
-      print_error "Failed to backup existing tctl"
-      return 1
+    local current_version; current_version=$(get_tctl_local_version)
+    if [[ -n "${current_version}" ]]; then
+      if ! backup_tctl "${current_version}" >/dev/null; then
+        print_error "Failed to backup existing tctl"
+        return 1
+      fi
+      backup_path="${tctl_dir}/tctl-${current_version}"
     fi
   fi
 
