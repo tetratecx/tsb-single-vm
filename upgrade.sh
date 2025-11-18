@@ -11,6 +11,8 @@ source "${BASE_DIR}/helpers/registry.sh"
 # shellcheck source=/dev/null
 source "${BASE_DIR}/helpers/tsb.sh"
 # shellcheck source=/dev/null
+source "${BASE_DIR}/helpers/tctl.sh"
+# shellcheck source=/dev/null
 source "${BASE_DIR}/helpers/debug.sh"
 
 ACTION=${1}
@@ -42,17 +44,9 @@ function backup_manifests() {
   kubectl --context "${MP}" get managementplane -n tsb -oyaml > "${backup_dir}/${MP}-managementplane-backup.yaml"
 }
 
-# This function gets local version in format 1.9.3
-#
-function get_tsb_local_version() {
-  tctl version --local-only | cut -d 'v' -f3
-}
 # This function brings new tctl version if needed
 #
 function upgrade_tctl() {
-  local tctl_dir=$(which tctl)
-  # As the output is TCTL version: v1.9.3, this brings only 1.9.3 using 'v' as separator
-  local tctl_current_version=$(get_tsb_local_version)
   # Present in env.json file under .tsb.upgrade.version_upgrade_target
   local desired_tsb_version=$(get_tsb_version_upgrade_target)
 
@@ -63,28 +57,8 @@ function upgrade_tctl() {
     exit 1
   fi
 
-  local tctl_current_version_new_location="${tctl_dir}-${tctl_current_version}"
-  if [[ "${tctl_current_version}" != "${desired_tsb_version}" ]]; then
-    print_info "Updating tctl from version ${tctl_current_version} to version ${desired_tsb_version}"
-    print_info "No worries, old tctl version ${tctl_current_version} will be kept at ${tctl_current_version_new_location}"
-    sudo mv ${tctl_dir} "${tctl_current_version_new_location}"
-
-    local architecture; architecture=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/arm64\|aarch64/arm64/')
-    curl -Lo /tmp/tctl "https://binaries.dl.tetrate.io/public/raw/versions/linux-${architecture}-${desired_tsb_version}/tctl"
-    chmod +x /tmp/tctl
-    sudo install /tmp/tctl /usr/local/bin/tctl
-
-    tctl_current_version=$(get_tsb_local_version)
-    if [[ "${tctl_current_version}" != "${desired_tsb_version}" ]]; then
-      tctl_current_version=$(tctl version)
-      print_error "tctl version --local-only output does not match with your desired version"
-      print_error "New version is ${tctl_current_version}"
-      exit 1
-    fi
-    print_info "Successfully upgraded tctl to version ${desired_tsb_version}"
-  else
-    print_error "Current tctl version ${tctl_current_version} is already at target version ${desired_tsb_version}"
-    print_error "Please update .tsb.upgrade.version_upgrade_target in env.json to a different version"
+  # Use the modular upgrade function from helpers/tctl.sh
+  if ! upgrade_tctl_to_version "${desired_tsb_version}"; then
     exit 1
   fi
 }
