@@ -15,6 +15,10 @@ info: infra-info scenario-info ## Get information about infra environment and sc
 upgrade: ## Upgrade TSB to version specified in env.json
 	@/bin/bash -c './upgrade.sh'
 
+.PHONY: upgrade-tctl
+upgrade-tctl: ## Only upgrade tctl to the target version in env.json
+    @/bin/bash -c 'source ./upgrade.sh; upgrade_tctl'
+
 .PHONY: prereq-check
 prereq-check: ## Check if prerequisites are installed
 	@/bin/sh -c './prereq.sh --check'
