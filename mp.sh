@@ -185,8 +185,8 @@ function install_helm {
     --kube-context "${mp_cluster_name}" \
     --namespace "tsb" \
     --values "${mp_output_dir}/mp-helm-values.yaml" \
-    --version "${TSB_VERSION}" \
-    --wait ;
+    --version "${TSB_VERSION}";
+    # --wait ;
 
   # Wait for the management plane deployments to become available
   print_info "Waiting for tsb management plane deployments to become available" ;
@@ -242,8 +242,8 @@ function install_helm {
     --set-file secrets.tsb.cacert="${mp_output_dir}/tsb-ca-cert.pem" \
     --set-file secrets.xcp.rootca="${mp_output_dir}/tsb-ca-cert.pem" \
     --set-file secrets.clusterServiceAccount.JWK="${mp_output_dir}/cluster-service-account.jwk" \
-    --values "${mp_output_dir}/cp-helm-values.yaml" \
-    --wait ;
+    --values "${mp_output_dir}/cp-helm-values.yaml";
+    # --wait ;
 
   # print_info "Waiting for tsb control plane deployments to become available" ;
   # wait_cp_ready "${mp_cluster_name}" "istio-system" ;
