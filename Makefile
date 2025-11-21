@@ -19,6 +19,10 @@ upgrade: ## Upgrade TSB to version specified in env.json
 upgrade-tctl: ## Only upgrade tctl to the target version in env.json
 	@/bin/bash -c './upgrade.sh upgrade-tctl'
 
+.PHONY: sync-images
+sync-images: ## Sync images to the running registry
+	@/bin/bash -c './sync-images.sh'
+
 .PHONY: prereq-check
 prereq-check: ## Check if prerequisites are installed
 	@/bin/bash -c './prereq.sh --check'

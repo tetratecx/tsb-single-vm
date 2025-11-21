@@ -19,8 +19,6 @@ source "${BASE_DIR}/helpers/tctl.sh"
 # shellcheck source=/dev/null
 source "${BASE_DIR}/helpers/debug.sh"
 
-LOCAL_REGISTRY="$(get_local_registry_endpoint)"
-
 # This function provides help information for the script.
 #
 function help() {
@@ -32,7 +30,6 @@ function help() {
   echo "  - Tetrate repository credentials must be set in env.json"
   echo "  - Local registry must be running"
 }
-
 
 # Main execution
 #
@@ -71,24 +68,23 @@ if [[ -z "${TETRATE_USER}" || -z "${TETRATE_PASSWORD}" ]]; then
   exit 1
 fi
 
+LOCAL_REGISTRY="$(get_local_registry_endpoint)"
 # Check if local registry is running
 if [[ -z "${LOCAL_REGISTRY}" ]]; then
   print_error "Local registry is not running"
   print_error "Please start the local registry first"
   exit 1
 fi
-
 print_info "Local registry: ${LOCAL_REGISTRY}"
+
+# Check if tctl is installed
+if ! get_tctl_path; then
+  print_error "TCTL is not installed."
+  exit 1
+fi
 
 # Remove Docker isolation (required for registry access)
 docker_remove_isolation
-
-# Download tctl using helper function
-TCTL_PATH=$(download_tctl_version "${TARGET_VERSION}")
-if [[ $? -ne 0 ]]; then
-  print_error "Failed to download tctl"
-  exit 1
-fi
 
 # Sync images using helper function
 if ! sync_tsb_images_with_tctl "${TCTL_PATH}" "${LOCAL_REGISTRY}" "${TETRATE_USER}" "${TETRATE_PASSWORD}"; then
