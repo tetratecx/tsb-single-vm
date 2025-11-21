@@ -17,7 +17,7 @@ upgrade: ## Upgrade TSB to version specified in env.json
 
 .PHONY: upgrade-tctl
 upgrade-tctl: ## Only upgrade tctl to the target version in env.json
-	@/bin/bash -c './upgrade.sh upgrade_tctl'
+	@/bin/bash -c './upgrade.sh upgrade-tctl'
 
 .PHONY: prereq-check
 prereq-check: ## Check if prerequisites are installed
