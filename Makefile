@@ -17,15 +17,15 @@ upgrade: ## Upgrade TSB to version specified in env.json
 
 .PHONY: upgrade-tctl
 upgrade-tctl: ## Only upgrade tctl to the target version in env.json
-    @/bin/bash -c 'source ./upgrade.sh; upgrade_tctl'
+	@/bin/bash -c 'source ./upgrade.sh; upgrade_tctl'
 
 .PHONY: prereq-check
 prereq-check: ## Check if prerequisites are installed
-	@/bin/sh -c './prereq.sh --check'
+	@/bin/bash -c './prereq.sh --check'
 
 .PHONY: prereq-install
 prereq-install: ## Install prerequisites
-	@/bin/sh -c './prereq.sh --install'
+	@/bin/bash -c './prereq.sh --install'
 
 .PHONY: infra-up
 infra-up: prereq-check ## Bring up and configure local kubernetes clusters and vms
