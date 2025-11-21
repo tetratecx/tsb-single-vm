@@ -218,17 +218,9 @@ function upgrade_tctl_to_version() {
     print_info "Upgrading tctl from version ${current_version} to version ${target_version}"
   fi
 
-  # Download new version
+  # Download, backup old version and install new version
   local new_tctl; new_tctl=$(download_tctl_version "${target_version}")
   if [[ $? -ne 0 ]]; then
-    return 1
-  fi
-
-  # Install new version
-  if ! install_tctl "${new_tctl}"; then
-    print_error "Failed to install new tctl version"
-    print_error "Restoring backup from ${backup_path}"
-    sudo mv "${backup_path}" "$(dirname ${backup_path})/tctl"
     return 1
   fi
 
