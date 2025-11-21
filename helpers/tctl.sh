@@ -195,7 +195,7 @@ function upgrade_tctl_to_version() {
     return 1
   fi
 
-  # Check if tctl exists
+  # If tctl doesn't exists
   if ! command -v tctl &>/dev/null; then
     print_warning "tctl not found in PATH, will install version ${target_version}"
     local tctl_binary; tctl_binary=$(download_tctl_version "${target_version}")
@@ -213,7 +213,7 @@ function upgrade_tctl_to_version() {
 
   if [[ "${current_version}" == "${target_version}" ]]; then
     print_warning "Current tctl version ${current_version} is already at target version ${target_version}"
-    print_info "Continuing anyway in case cluster components need upgrading"
+    return 1
   else
     print_info "Upgrading tctl from version ${current_version} to version ${target_version}"
   fi
@@ -223,15 +223,6 @@ function upgrade_tctl_to_version() {
   if [[ $? -ne 0 ]]; then
     return 1
   fi
-
-  # Backup current version
-  local backup_path; backup_path=$(backup_tctl "${current_version}")
-  if [[ $? -ne 0 ]]; then
-    print_error "Failed to backup current tctl version"
-    return 1
-  fi
-
-  print_info "Old tctl version ${current_version} backed up at ${backup_path}"
 
   # Install new version
   if ! install_tctl "${new_tctl}"; then
