@@ -122,8 +122,15 @@ function upgrade_cp_with_tctl() {
 }
 
 
+
 # Main execution
 #
+
+if [[ "$1" == "upgrade-tctl" ]]; then
+  upgrade_tctl
+  exit $?
+fi
+
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   backup_manifests
   upgrade_tctl
@@ -165,9 +172,4 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   for cluster in "${CLUSTERS[@]}"; do
     tctl status cluster "${cluster}" 2>/dev/null ||  tctl x status cluster "${cluster}"
   done
-fi
-
-if [[ "$1" == "upgrade-tctl" ]]; then
-  upgrade_tctl
-  exit $?
 fi
