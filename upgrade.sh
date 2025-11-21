@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-#BASE_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
-BASE_DIR="$( cd -- "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 ; pwd -P )"
+BASE_DIR="$( cd -- "$(dirname "${0}")" >/dev/null 2>&1 ; pwd -P )"
+# BASE_DIR="$( cd -- "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 ; pwd -P )"
 
 # shellcheck source=/dev/null
 source "${BASE_DIR}/env.sh"
@@ -124,43 +124,50 @@ function upgrade_cp_with_tctl() {
 
 # Main execution
 #
-backup_manifests
-upgrade_tctl
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  backup_manifests
+  upgrade_tctl
 
-# Get upgrade flags from env.json
-upgrade_mp_flag=$(get_tsb_version_upgrade_mp)
-upgrade_cp_flag=$(get_tsb_version_upgrade_cp)
+  # Get upgrade flags from env.json
+  upgrade_mp_flag=$(get_tsb_version_upgrade_mp)
+  upgrade_cp_flag=$(get_tsb_version_upgrade_cp)
 
-# Validate upgrade flags
-if [[ "${upgrade_mp_flag}" != "true" && "${upgrade_cp_flag}" != "true" ]]; then
-  print_error "No components selected for upgrade"
-  print_error "Set .tsb.upgrade.mp or .tsb.upgrade.cp to true in env.json"
-  exit 1
+  # Validate upgrade flags
+  if [[ "${upgrade_mp_flag}" != "true" && "${upgrade_cp_flag}" != "true" ]]; then
+    print_error "No components selected for upgrade"
+    print_error "Set .tsb.upgrade.mp or .tsb.upgrade.cp to true in env.json"
+    exit 1
+  fi
+
+  docker_remove_isolation
+  restart_clusters_cps
+  print_info "Using credentials present in env.json to sync images"
+  sync_tsb_images "${LOCAL_REGISTRY}" "$(get_tetrate_repo_user)" "$(get_tetrate_repo_password)"
+
+  # Upgrade management plane if flag is set
+  if [[ "${upgrade_mp_flag}" == "true" ]]; then
+    print_info "Upgrading management plane as .tsb.upgrade.mp is set to true"
+    upgrade_mp_with_tctl
+  else
+    print_info "Skipping management plane upgrade as .tsb.upgrade.mp is not set to true"
+  fi
+
+  # Upgrade control plane if flag is set
+  if [[ "${upgrade_cp_flag}" == "true" ]]; then
+    print_info "Upgrading control plane as .tsb.upgrade.cp is set to true"
+    upgrade_cp_with_tctl
+  else
+    print_info "Skipping control plane upgrade as .tsb.upgrade.cp is not set to true"
+  fi
+
+  tctl_fix_timeout
+  login_tsb_admin
+  for cluster in "${CLUSTERS[@]}"; do
+    tctl status cluster "${cluster}" 2>/dev/null ||  tctl x status cluster "${cluster}"
+  done
 fi
 
-docker_remove_isolation
-restart_clusters_cps
-print_info "Using credentials present in env.json to sync images"
-sync_tsb_images "${LOCAL_REGISTRY}" "$(get_tetrate_repo_user)" "$(get_tetrate_repo_password)"
-
-# Upgrade management plane if flag is set
-if [[ "${upgrade_mp_flag}" == "true" ]]; then
-  print_info "Upgrading management plane as .tsb.upgrade.mp is set to true"
-  upgrade_mp_with_tctl
-else
-  print_info "Skipping management plane upgrade as .tsb.upgrade.mp is not set to true"
+if [[ "$1" == "upgrade-tctl" ]]; then
+  upgrade_tctl
+  exit $?
 fi
-
-# Upgrade control plane if flag is set
-if [[ "${upgrade_cp_flag}" == "true" ]]; then
-  print_info "Upgrading control plane as .tsb.upgrade.cp is set to true"
-  upgrade_cp_with_tctl
-else
-  print_info "Skipping control plane upgrade as .tsb.upgrade.cp is not set to true"
-fi
-
-tctl_fix_timeout
-login_tsb_admin
-for cluster in "${CLUSTERS[@]}"; do
-  tctl status cluster "${cluster}" 2>/dev/null ||  tctl x status cluster "${cluster}"
-done
