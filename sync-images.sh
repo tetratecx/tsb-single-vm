@@ -78,7 +78,8 @@ fi
 print_info "Local registry: ${LOCAL_REGISTRY}"
 
 # Check if tctl is installed
-if ! get_tctl_path; then
+TCTL_PATH="$(get_tctl_path)"
+if [[ -z "${TCTL_PATH}" ]]; then
   print_error "TCTL is not installed."
   exit 1
 fi
