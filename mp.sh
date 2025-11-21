@@ -245,8 +245,8 @@ function install_helm {
     --values "${mp_output_dir}/cp-helm-values.yaml" \
     --wait ;
 
-  print_info "Waiting for tsb control plane deployments to become available" ;
-  wait_cp_ready "${mp_cluster_name}" "istio-system" ;
+  # print_info "Waiting for tsb control plane deployments to become available" ;
+  # wait_cp_ready "${mp_cluster_name}" "istio-system" ;
 
   # Expose tsb gui with kubectl port-forward
   expose_tsb_gui "${mp_cluster_name}" ;

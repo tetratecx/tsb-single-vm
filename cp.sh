@@ -263,8 +263,8 @@ function install_helm {
   cp_index=0 ;
   while [[ ${cp_index} -lt ${cp_count} ]]; do
     cp_cluster_name=$(get_cp_name_by_index ${cp_index}) ;
-    print_info "Waiting for tsb control plane deployments to become available" ;
-    wait_cp_ready "${cp_cluster_name}" "istio-system" ;
+    # print_info "Waiting for tsb control plane deployments to become available" ;
+    # wait_cp_ready "${cp_cluster_name}" "istio-system" ;
 
     kubectl --context "${cp_cluster_name}" get pods -A ;
     print_info "Finished installation of tsb control plane in cluster ${cp_cluster_name}" ;
