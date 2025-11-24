@@ -94,11 +94,15 @@ function get_tsb_api_port {
 #     (2) management plane namespace
 # 
 # kubectl get deploy -n tsb --sort-by=.metadata.creationTimestamp --no-headers -o custom-columns=":metadata.name" | tr '\n' ' '
+
+# IGNORED: oap
+MP_COMPONENTS=( "tsb-operator-management-plane" "xcp-operator-central" "kubegres-controller-manager" "central" "envoy" "iam" "mpc" "tsb" "n2ac" "otel-collector" "web" )
+
 function wait_mp_ready {
   [[ -z "${1}" ]] && print_error "Please provide cluster context as 1st argument" && return 2 || local cluster_ctx="${1}" ;
   [[ -z "${2}" ]] && print_error "Please provide management plane namespace as 2nd argument" && return 2 || local mp_namespace="${2}" ;
 
-  for tsb_deployment in tsb-operator-management-plane ldap postgres iam otel-collector tsb envoy mpc oap web xcp-operator-central central ; do
+  for tsb_deployment in "${MP_COMPONENTS[@]}" ; do
     while ! kubectl --context "${cluster_ctx}" get deployment -n "${mp_namespace}" "${tsb_deployment}" &>/dev/null; do sleep 1; done ;
     echo "Waiting for deployment '${mp_namespace}/${tsb_deployment}' to become available in cluster '${cluster_ctx}'" ;
     kubectl --context "${cluster_ctx}" wait deployment -n "${mp_namespace}" "${tsb_deployment}" --for condition=Available=True --timeout=600s ;
