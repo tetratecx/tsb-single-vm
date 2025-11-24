@@ -38,7 +38,7 @@ function wait_cluster_onboarded() {
   echo -n "Wait for cluster '${cluster_name}' to be onboarded (timeout: ${timeout}s): " ;
   while :; do
     local status_json; status_json=$(tctl status cluster "${cluster_name}" -o json 2>/dev/null || \
-      tctl x status cluster "${cluster_name}" -o json ) ;
+      tctl status cluster "${cluster_name}" -o json ) ;
     local current_status; current_status=$(echo "${status_json}" | jq -r '.spec.status') ;
     local current_message; current_message=$(echo "${status_json}" | jq -r '.spec.message') ;
     if [[ "${current_status}" == "READY" && "${current_message}" == "Cluster onboarded" ]]; then
